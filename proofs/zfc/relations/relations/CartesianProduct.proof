@@ -1,0 +1,85 @@
+import zfc.axioms.*
+import zfc.relations.relations.OrderedPair
+
+function CP(2) {
+	definition(a, b) : Separate[:(k): Left(k) @ a AND Right(k) @ b AND IsOP(k)](Power(Power(SimpleUnion(a, b))))
+}
+
+theorem in_cp : [a][b][o](o @ CP(a, b) <-> Left(o) @ a AND Right(o) @ b AND IsOP(o)) {
+	element a, b, o from goal
+
+	lemma : o @ CP(a, b) -> Left(o) @ a AND Right(o) @ b AND IsOP(o) {
+		o @ CP(a, b) | assumption
+		  @ Separate[:(k): Left(k) @ a AND Right(k) @ b AND IsOP(k)](Power(Power(SimpleUnion(a, b)))) | definition
+		Left(o) @ a AND Right(o) @ b AND IsOP(o) | axiom_of_separation
+	}
+
+	lemma : Left(o) @ a AND Right(o) @ b AND IsOP(o) -> o @ CP(a, b) {
+		Left(o) @ a AND Right(o) @ b AND IsOP(o) | assumption
+
+		lemma : o # Power(SimpleUnion(a, b)) {
+			element c from goal
+			c @ o | assumption
+
+			lemma : c # SimpleUnion(a, b) {
+				element d from goal
+				d @ c | assumption
+				d @ Union(o) | in_union
+				d @ Pair(Left(o), Right(o)) | is_op_union
+				d = Left(o) OR d = Right(o) | axiom_of_pairing
+
+				lemma : d = Left(o) -> d @ SimpleUnion(a, b) {
+					d = Left(o) | assumption
+					d @ a | substitution
+					d @ SimpleUnion(a, b) | in_simple_union
+				}
+
+				lemma : d = Right(o) -> d @ SimpleUnion(a, b) {
+					d = Right(o) | assumption
+					d @ b | substitution
+					d @ SimpleUnion(a, b) | in_simple_union
+				}
+
+				d @ SimpleUnion(a, b) | cases : [d = Left(o), d = Right(o), d @ SimpleUnion(a, b)]
+			}
+
+			c @ Power(SimpleUnion(a, b)) | axiom_of_power
+		}
+
+		o @ Power(Power(SimpleUnion(a, b))) | axiom_of_power
+		  @ Separate[:(k): Left(k) @ a AND Right(k) @ b AND IsOP(k)](Power(Power(SimpleUnion(a, b)))) | axiom_of_separation
+		  @ CP(a, b) | definition
+	}
+}
+
+theorem op_in_cp : [a][b][x][y](x @ a AND y @ b <-> OP(x, y) @ CP(a, b)){
+	element a, b, x, y from goal
+
+	lemma : x @ a AND y @ b -> OP(x, y) @ CP(a, b) {
+		x @ a AND y @ b | assumption
+
+		IsOP(OP(x, y)) | op_is_op
+		Left(OP(x, y)) @ a | left_op
+		Right(OP(x, y)) @ b | right_op
+
+		OP(x, y) @ CP(a, b) | in_cp
+	}
+
+	lemma : OP(x, y) @ CP(a, b) -> x @ a AND y @ b {
+		OP(x, y) @ CP(a, b) | assumption
+		Left(OP(x, y)) @ a AND Right(OP(x, y)) @ b | in_cp
+		x @ a | left_op
+		y @ b | right_op
+	}
+}
+
+theorem cp_subset_cp : [a][b][c][d](a # c AND b # d -> CP(a, b) # CP(c, d)) {
+	element a, b, c, d from goal
+	a # c AND b # d | assumption
+	element o from goal
+	o @ CP(a, b) | assumption
+	Left(o) @ a AND Right(o) @ b AND IsOP(o) | in_cp 
+	Left(o) @ c | in_superset
+	Right(o) @ d | in_superset
+	o @ CP(c, d) | in_cp
+}

@@ -1,0 +1,214 @@
+import zfc.axioms.*
+import zfc.relations.relations.CartesianProduct
+import zfc.relations.relations.OrderedPair
+
+predicate IsRelation(3){
+	definition(r, a, b): r # CP(a, b)
+	theorem: is_relation
+}
+
+function Domain(1) {
+	definition(r) : Separate[:(k): {o}(o @ r AND k = Left(o))](Union(Union(r)))
+}
+
+function Range(1) {
+	definition(r) : Separate[:(k): {o}(o @ r AND k = Right(o))](Union(Union(r)))
+}
+
+theorem in_relation : [r][a][b](IsRelation(r, a, b) <-> [o](o @ r -> Left(o) @ a AND Right(o) @ b AND IsOP(o))) {
+	element r, a, b from goal
+
+	lemma : IsRelation(r, a, b) -> [o](o @ r -> Left(o) @ a AND Right(o) @ b AND IsOP(o)) {
+		IsRelation(r, a, b) | assumption
+		r # CP(a, b) | is_relation
+		element o from goal
+		o @ r | assumption
+		  @ CP(a, b) | in_superset
+		Left(o) @ a AND Right(o) @ b AND IsOP(o) | in_cp
+	}
+
+	lemma : [o](o @ r -> Left(o) @ a AND Right(o) @ b AND IsOP(o)) -> IsRelation(r, a, b) {
+		[o](o @ r -> Left(o) @ a AND Right(o) @ b AND IsOP(o)) | assumption
+
+		lemma : r # CP(a, b) {
+			element o from goal
+			o @ r | assumption
+			Left(o) @ a AND Right(o) @ b AND IsOP(o) | truths
+			o @ CP(a, b) | in_cp
+		}
+
+		IsRelation(r, a, b) | is_relation
+	}
+}
+
+theorem op_in_relation : [r][a][b](IsRelation(r, a, b) -> [x][y](OP(x, y) @ r -> x @ a AND y @ b)) {
+	element r, a, b from goal
+	IsRelation(r, a, b) | assumption
+	element x, y from goal
+	OP(x, y) @ r | assumption
+	Left(OP(x, y)) @ a AND Right(OP(x, y)) @ b | in_relation
+	x @ a | left_op
+	y @ b | right_op
+}
+
+theorem in_domain : [r][a][b](IsRelation(r, a, b) -> [x](x @ Domain(r) <-> {y} OP(x, y) @ r)) {
+	element r, a, b from goal
+	IsRelation(r, a, b) | assumption
+	element x from goal
+
+	lemma : x @ Domain(r) -> {y} OP(x, y) @ r {
+		x @ Domain(r) | assumption
+		  @ Separate[:(k): {o}(o @ r AND k = Left(o))](Union(Union(r))) | definition
+		
+		element o from {o}(o @ r AND x = Left(o)) | axiom_of_separation
+		IsOP(o) | in_relation
+		
+		OP(Left(o), Right(o)) @ r | op_left_right
+		OP(x, Right(o)) @ r | substitution
+		use Right(o)
+	}
+
+	lemma : {y} OP(x, y) @ r -> x @ Domain(r) {
+		element y from {y} OP(x, y) @ r | assumption
+
+		lemma : {o}(o @ r AND x = Left(o)) {
+			use OP(x, y)
+			x = Left(OP(x, y)) | left_op
+		}
+
+		lemma : x @ Union(Union(r)) {
+			x @ Pair(x, y) | axiom_of_pairing
+			  @ Union(OP(x, y)) | union_op
+			  @ Union(Union(r)) | double_union
+		}
+
+		x @ Separate[:(k): {o}(o @ r AND k = Left(o))](Union(Union(r))) | axiom_of_separation
+		  @ Domain(r) | definition
+	}
+}
+
+theorem in_range : [r][a][b](IsRelation(r, a, b) -> [y](y @ Range(r) <-> {x} OP(x, y) @ r)) {
+	element r, a, b from goal
+	IsRelation(r, a, b) | assumption
+	element y from goal
+
+	lemma : y @ Range(r) -> {x} OP(x, y) @ r {
+		y @ Range(r) | assumption
+		  @ Separate[:(k): {o}(o @ r AND k = Right(o))](Union(Union(r))) | definition
+		
+		element o from {o}(o @ r AND y = Right(o)) | axiom_of_separation
+		IsOP(o) | in_relation
+		
+		OP(Left(o), Right(o)) @ r | op_left_right
+		OP(Left(o), y) @ r | substitution
+		use Left(o)
+	}
+
+	lemma : {x} OP(x, y) @ r -> y @ Range(r) {
+		element x from {x} OP(x, y) @ r | assumption
+
+		lemma : {o}(o @ r AND y = Right(o)) {
+			use OP(x, y)
+			y = Right(OP(x, y)) | right_op
+		}
+
+		lemma : y @ Union(Union(r)) {
+			y @ Pair(x, y) | axiom_of_pairing
+			  @ Union(OP(x, y)) | union_op
+			  @ Union(Union(r)) | double_union
+		}
+
+		y @ Separate[:(k): {o}(o @ r AND k = Right(o))](Union(Union(r))) | axiom_of_separation
+		  @ Range(r) | definition
+	}
+}
+
+theorem left_in_domain : [r][a][b](IsRelation(r, a, b) -> [o](o @ r -> Left(o) @ Domain(r))) {
+	element r, a, b from goal
+	IsRelation(r, a, b) | assumption
+	element o from goal
+	o @ r | assumption
+	IsOP(o) | in_relation
+
+	lemma : {y} OP(Left(o), y) @ r {
+		use Right(o)
+		OP(Left(o), Right(o)) @ r | op_left_right
+	}
+
+	Left(o) @ Domain(r) | in_domain
+}
+
+theorem right_in_range : [r][a][b](IsRelation(r, a, b) -> [o](o @ r -> Right(o) @ Range(r))) {
+	element r, a, b from goal
+	IsRelation(r, a, b) | assumption
+	element o from goal
+	o @ r | assumption
+	IsOP(o) | in_relation
+
+	lemma : {x} OP(x, Right(o)) @ r {
+		use Left(o)
+		OP(Left(o), Right(o)) @ r | op_left_right
+	}
+
+	Right(o) @ Range(r) | in_range
+}
+
+theorem left_op_in_domain : [r][a][b](IsRelation(r, a, b) -> [x][y](OP(x, y) @ r -> x @ Domain(r))){
+	element r, a, b from goal
+	IsRelation(r, a, b) | assumption
+	element x, y from goal
+	      OP(x, y) @ r | assumption
+	Left(OP(x, y)) @ Domain(r) | left_in_domain
+	             x @ Domain(r) | left_op
+}
+
+theorem right_op_in_range : [r][a][b](IsRelation(r, a, b) -> [x][y](OP(x, y) @ r -> y @ Range(r))){
+	element r, a, b from goal
+	IsRelation(r, a, b) | assumption
+	element x, y from goal
+	       OP(x, y) @ r | assumption
+	Right(OP(x, y)) @ Range(r) | right_in_range
+	              y @ Range(r) | right_op
+}
+
+theorem separation_is_relation [P(1)] : [a][b](IsRelation(Separate[P](CP(a, b)), a, b)) {
+	element a, b from goal
+	Separate[P](CP(a, b)) # CP(a, b) | separation_is_subset
+	IsRelation(Separate[P](CP(a, b)), a, b) | is_relation
+}
+
+theorem is_relation_on_domain_range : [r][a][b](IsRelation(r, a, b) -> IsRelation(r, Domain(r), Range(r))) {
+	element r, a, b from goal
+	IsRelation(r, a, b) | assumption
+
+	lemma : r # CP(Domain(r), Range(r)) {
+		element o from goal
+		o @ r | assumption
+
+		Left(o) @ Domain(r) | left_in_domain
+		Right(o) @ Range(r) | right_in_range
+		IsOP(o) | in_relation
+		o @ CP(Domain(r), Range(r)) | in_cp
+	}
+
+	IsRelation(r, Domain(r), Range(r)) | is_relation
+}
+
+theorem is_relation_domain_range_subset : [r][a][b](IsRelation(r, a, b) -> Domain(r) # a AND Range(r) # b) {
+	element r, a, b from goal
+	IsRelation(r, a, b) | assumption
+
+	lemma : Domain(r) # a {
+		element x from goal
+		x @ Domain(r) | assumption
+		element y from {y} OP(x, y) @ r | in_domain
+		x @ a | op_in_relation
+	}
+
+	lemma : Range(r) # b {
+		element y from goal
+		y @ Range(r) | assumption
+		element x from {x} OP(x, y) @ r | in_range
+		y @ b | op_in_relation
+	}
+}

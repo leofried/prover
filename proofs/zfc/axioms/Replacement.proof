@@ -1,0 +1,13 @@
+import zfc.axioms.Extensionality
+import zfc.axioms.Propositions
+
+function Replacement{(1)}(1)
+
+axiom axiom_of_replacement {F(1)} : [a][y](y @ Replacement{F}(a) <-> {x}(x @ a AND y = F(x)))
+
+theorem in_replacement {F(1)} : [a][x](x @ a -> F(x) @ Replacement{F}(a)) {
+	element a, x from goal
+	x @ a | assumption
+	{y}(y @ a AND F(x) = F(y)) | example
+	F(x) @ Replacement{F}(a) | axiom_of_replacement
+}

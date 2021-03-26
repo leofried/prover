@@ -1,0 +1,583 @@
+import zfc.axioms.*
+import zfc.relations.relations.*
+import zfc.numbers.naturals.NaturalAdditionAxioms
+import zfc.numbers.naturals.NaturalAdditionTheorems
+import zfc.numbers.naturals.NaturalMultiplicationAxioms
+import zfc.numbers.naturals.NaturalMultiplicationTheorems
+
+function NaturalInequality {
+	definition: Separate[:(k): {c}(c @ nat AND Left(k) + c = Right(k))](CP(nat, nat))
+}
+
+predicate <= (2) {
+	definition(a, b): OP(a, b) @ NaturalInequality
+	strength: 0
+}
+
+theorem nat_le_definition : [a](a @ nat -> [b](b @ nat -> a <= b -> {c}(c @ nat AND a + c = b))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	a <= b | assumption
+	OP(a, b) @ NaturalInequality | definition
+	         @ Separate[:(k): {c}(c @ nat AND Left(k) + c = Right(k))](CP(nat, nat)) | definition
+
+	{c}(c @ nat AND Left(OP(a, b)) + c = Right(OP(a, b))) | axiom_of_separation
+	{c}(c @ nat AND a + c = Right(OP(a, b))) | left_op
+	{c}(c @ nat AND a + c = b) | right_op
+}
+
+theorem nat_le_example : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> a + c = b -> a <= b))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	OP(a, b) @ CP(nat, nat) | op_in_cp
+
+	element c from goal
+	c @ nat | assumption
+
+	a + c = b | assumption
+
+	{c}(c @ nat AND a + c = b) | example
+	{c}(c @ nat AND Left(OP(a, b)) + c = b) | left_op
+	{c}(c @ nat AND Left(OP(a, b)) + c = Right(OP(a, b))) | right_op
+
+	OP(a, b) @ Separate[:(k): {c}(c @ nat AND Left(k) + c = Right(k))](CP(nat, nat)) | axiom_of_separation
+	         @ NaturalInequality | definition
+	a <= b | definition
+}
+
+theorem nat_le_refl : [a](a @ nat -> a <= a) {
+	0 @ nat | zero_is_nat
+
+	element a from goal
+	a @ nat | assumption
+
+	a + 0 = a | nat_add_zero
+	a <= a | nat_le_example
+}
+
+theorem nat_le_antisymm : [a](a @ nat -> [b](b @ nat -> a <= b AND b <= a -> a = b)) {
+	0 @ nat | zero_is_nat
+
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	a <= b AND b <= a | assumption
+	
+	element c from {c}(c @ nat AND a + c = b) | nat_le_definition
+	element d from {d}(d @ nat AND b + d = a) | nat_le_definition
+	d + c @ nat | add_is_nat
+
+	b + 0 = b | nat_add_zero
+	      = a + c | truths
+	      = b + d + c | substitution
+	      = b + (d + c) | nat_add_assoc
+
+	0 = d + c | nat_add_cancel_left
+	  = d | nat_add_to_zero_left
+
+	a = b + d | truths
+	  = b + 0 | substitution
+	  = b | nat_add_zero
+}
+
+theorem nat_le_trans : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> a <= b AND b <= c -> a <= c))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	element c from goal
+	c @ nat | assumption
+
+	a <= b AND b <= c | assumption
+
+	element d from {d}(d @ nat AND a + d = b) | nat_le_definition
+	element e from {e}(e @ nat AND b + e = c) | nat_le_definition
+
+	d + e @ nat | add_is_nat
+
+	a + (d + e) = a + d + e | nat_add_assoc
+				= b + e | substitution 
+				= c | substitution
+
+	a <= c | nat_le_example
+}
+
+theorem nat_zero_le : [a](a @ nat -> 0 <= a) {
+	element a from goal
+	a @ nat | assumption
+
+	0 @ nat | zero_is_nat
+
+	0 + a = a | nat_zero_add
+	0 <= a | nat_le_example
+}
+
+theorem nat_le_zero : [a](a @ nat -> a <= 0 -> a = 0) {
+	element a from goal
+	a @ nat | assumption
+	a <= 0 | assumption
+
+	0 @ nat | zero_is_nat
+
+	element b from {b}(b @ nat AND a + b = 0) | nat_le_definition
+	a = 0 | nat_add_to_zero_left
+}
+
+theorem nat_le_le_succ : [a](a @ nat -> [b](b @ nat -> a <= b -> a <= S(b))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+	S(b) @ nat | nat_succ
+
+	a <= b | assumption
+
+	element c from {c}(c @ nat AND a + c = b) | nat_le_definition
+	S(c) @ nat | nat_succ
+
+	a + S(c) = S(a + c) | nat_add_succ
+			 = S(b) | substitution
+
+	a <= S(b) | nat_le_example
+}
+
+theorem nat_le_succ_le_succ : [a](a @ nat -> [b](b @ nat -> a <= b -> S(a) <= S(b))) {
+	element a from goal
+	a @ nat | assumption
+	S(a) @ nat | nat_succ
+
+	element b from goal
+	b @ nat | assumption
+	S(b) @ nat | nat_succ
+
+	a <= b | assumption
+
+	element c from {c}(c @ nat AND a + c = b) | nat_le_definition
+
+	S(a) + c = S(a + c) | nat_succ_add
+			 = S(b) | substitution
+	S(a) <= S(b) | nat_le_example
+}
+
+theorem nat_succ_le_succ_le : [a](a @ nat -> [b](b @ nat -> S(a) <= S(b) -> a <= b)) {
+	element a from goal
+	a @ nat | assumption
+	S(a) @ nat | nat_succ
+
+	element b from goal
+	b @ nat | assumption
+	S(b) @ nat | nat_succ
+
+	S(a) <= S(b) | assumption
+
+	element c from {c}(c @ nat AND S(a) + c = S(b)) | nat_le_definition
+
+	S(a + c) = S(a) + c | nat_succ_add
+			 = S(b) | substitution
+	a + c = b | succ_inj
+	a <= b | nat_le_example
+}
+
+theorem nat_le_cancel_add_left : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> a + b <= a + c -> b <= c))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+	a + b @ nat | add_is_nat
+
+	element c from goal
+	c @ nat | assumption
+	a + c @ nat | add_is_nat
+
+	a + b <= a + c | assumption
+
+	element d from {d}(d @ nat AND a + b + d = a + c) | nat_le_definition
+	b + d @ nat | add_is_nat
+
+	a + c = a + b + d | truths
+		  = a + (b + d) | nat_add_assoc
+	b + d = c | nat_add_cancel_left
+	b <= c | nat_le_example
+}
+
+theorem nat_le_cancel_add_right : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> a + c <= b + c -> a <= b))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	element c from goal
+	c @ nat | assumption
+	a + c @ nat | add_is_nat
+	b + c @ nat | add_is_nat
+
+	a + c <= b + c | assumption
+
+	element d from {d}(d @ nat AND a + c + d = b + c) | nat_le_definition
+	a + d @ nat | add_is_nat
+
+	b + c = a + c + d | truths
+		  = a + d + c | nat_add_paren_comm_right
+	a + d = b | nat_add_cancel_right
+	a <= b | nat_le_example
+}
+
+theorem nat_le_cancel_mul_left : [a](a @ nat -> a = 0 OR [b](b @ nat -> [c](c @ nat -> a * b <= a * c -> b <= c))) {
+	element a from goal
+	a @ nat | assumption
+	a != 0 | assumption
+
+	lemma : [c](c @ nat -> a * 0 <= a * c -> 0 <= c) {
+		element c from goal
+		c @ nat | assumption
+		a * 0 <= a * c | assumption
+		0 <= c | nat_zero_le
+	}
+
+	lemma : [b](b @ nat -> [c](c @ nat -> a * b <= a * c -> b <= c) -> [c](c @ nat -> a * S(b) <= a * c -> S(b) <= c)) {
+		element b from goal
+		b @ nat | assumption
+		S(b) @ nat | nat_succ
+		a * b @ nat | mul_is_nat
+		a * S(b) @ nat | mul_is_nat
+
+		[c](c @ nat -> a * b <= a * c -> b <= c) | assumption
+
+		element c from goal
+		c @ nat | assumption
+		a * c @ nat | mul_is_nat
+
+		a * S(b) <= a * c | assumption
+		element d from {d}(d @ nat AND a * S(b) + d = a * c) | nat_le_definition
+		a * b + d @ nat | add_is_nat
+
+		lemma : c != 0 {
+			c = 0 | assumption
+			a * b + d + a = a * b + a + d | nat_add_paren_comm_right
+						  = a * S(b) + d | nat_mul_succ
+						  = a * c | substitution
+						  = a * 0 | substitution
+						  = 0 | nat_mul_zero
+						  = a | nat_add_to_zero_right
+			| truths
+		}
+
+		
+		element e from {e}(e @ nat AND c = S(e)) | nat_zero_or_succ
+		a * e @ nat | mul_is_nat
+
+		a * b + d + a = a * b + a + d | nat_add_paren_comm_right
+					  = a * S(b) + d | nat_mul_succ
+					  = a * c | substitution
+					  = a * S(e) | substitution
+					  = a * e + a | nat_mul_succ
+
+		a * b + d = a * e | nat_add_cancel_right
+		a * b <= a * e | nat_le_example
+		b <= e | truths
+		S(b) <= S(e) | nat_le_succ_le_succ
+		S(b) <= c | substitution
+	}
+
+ 	| nat_induction
+}
+
+theorem nat_le_cancel_mul_right : [a](a @ nat -> a = 0 OR [b](b @ nat -> [c](c @ nat -> b * a <= c * a -> b <= c))) {
+	element a from goal
+	a @ nat | assumption
+	a != 0 | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	element c from goal
+	c @ nat | assumption
+
+	b * a <= c * a | assumption
+	a * b <= c * a | nat_mul_comm
+	a * b <= a * c | nat_mul_comm
+	b <= c | nat_le_cancel_mul_left
+}
+
+theorem nat_le_resp_mul_left : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> a <= b -> c * a <= c * b))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	element c from goal
+	c @ nat | assumption
+	c * a @ nat | mul_is_nat
+	c * b @ nat | mul_is_nat
+
+	a <= b | assumption
+
+	element d from {d}(d @ nat AND a + d = b) | nat_le_definition
+	c * d @ nat | mul_is_nat
+
+	c * b = c * (a + d) | substitution
+		  = c * a + c * d | nat_mul_add
+	c * a <= c * b | nat_le_example
+}
+
+theorem nat_le_resp_mul_right : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> a <= b -> a * c <= b * c))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	element c from goal
+	c @ nat | assumption
+	a * c @ nat | mul_is_nat
+	b * c @ nat | mul_is_nat
+
+	a <= b | assumption
+	
+	element d from {d}(d @ nat AND a + d = b) | nat_le_definition
+	d * c @ nat | mul_is_nat
+
+	b * c = (a + d) * c | substitution
+		  = a * c + d * c | nat_add_mul
+    a * c <= b * c | nat_le_example
+}
+
+theorem nat_le_eq_or_succ_le : [a](a @ nat -> [b](b @ nat -> a <= b -> a = b OR S(a) <= b)) {
+	element a from goal
+	a @ nat | assumption
+	S(a) @ nat | nat_succ
+
+	element b from goal
+	b @ nat | assumption
+
+	a <= b | assumption
+	element c from {c}(c @ nat AND a + c = b) | nat_le_definition
+
+	lemma : c = 0 -> a = b OR S(a) <= b {
+		b = a + c | truths
+		  = a + 0 | assumption
+		  = a | nat_add_zero
+	}
+
+	lemma : {d}(d @ nat AND c = S(d)) -> a = b OR S(a) <= b {
+		element d from {d}(d @ nat AND c = S(d)) | assumption
+		b = a + c | truths
+		  = a + S(d) | substitution
+		  = S(a + d) | nat_add_succ
+		  = S(a) + d | nat_succ_add
+		S(a) <= b | nat_le_example
+	}
+
+	| nat_cases
+}
+
+theorem nat_le_succ_eq_or_le : [a](a @ nat -> [b](b @ nat -> a <= S(b) -> a = S(b) OR a <= b)) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+	S(b) @ nat | nat_succ
+
+	a <= S(b) | assumption
+	a != S(b) | assumption
+	S(a) <= S(b) | nat_le_eq_or_succ_le
+	a <= b | nat_succ_le_succ_le
+}
+
+theorem nat_le_total : [a](a @ nat -> [b](b @ nat -> a <= b OR b <= a)) {
+
+	lemma : [b](b @ nat -> 0 <= b OR b <= 0) {
+		element b from goal
+		b @ nat | assumption
+		0 <= b | nat_zero_le
+	}
+
+	lemma : [a](a @ nat -> [b](b @ nat -> a <= b OR b <= a) -> [b](b @ nat -> S(a) <= b OR b <= S(a))) {
+		element a from goal
+		a @ nat | assumption
+
+		[b](b @ nat -> a <= b OR b <= a) | assumption
+
+		element b from goal
+		b @ nat | assumption
+		a <= b OR b <= a | truths
+
+		NOT S(a) <= b | assumption
+
+		lemma : a <= b -> b <= S(a) {
+			a <= b | assumption
+			a = b | nat_le_eq_or_succ_le
+
+			b <= b | nat_le_refl
+			  <= a | substitution
+			  <= S(a) | nat_le_le_succ
+		}
+
+		lemma : b <= a -> b <= S(a){
+			b <= a | assumption
+			b <= S(a) | nat_le_le_succ
+		}
+
+		| cases : [a <= b, b <= a, b <= S(a)]
+	}
+
+	| nat_induction
+}
+
+theorem nat_strong_induction [P(1)] : P(0) -> [a](a @ nat -> [b](b @ nat -> b <= a -> P(b)) -> P(S(a))) -> [a](a @ nat -> P(a)) {
+	P(0) | assumption
+	[a](a @ nat -> [b](b @ nat -> b <= a -> P(b)) -> P(S(a))) | assumption
+
+	lemma lema : [a](a @ nat -> [b](b @ nat -> b <= a -> P(b))) {
+		lemma : [b](b @ nat -> b <= 0 -> P(b)){
+			element b from goal
+			b @ nat | assumption
+			b <= 0 | assumption
+			b = 0 | nat_le_zero
+			P(b) | substitution
+		}
+
+		lemma : [a](a @ nat -> [b](b @ nat -> b <= a -> P(b)) -> [b](b @ nat -> b <= S(a) -> P(b))) {
+			element a from goal
+			a @ nat | assumption
+			[b](b @ nat -> b <= a -> P(b)) | assumption
+
+			element b from goal
+			b @ nat | assumption
+			b <= S(a) | assumption
+			b = S(a) OR b <= a | nat_le_succ_eq_or_le
+
+			lemma : b = S(a) -> P(b) {
+				P(S(a)) | truths
+				P(b) | assumption
+			}
+
+			b <= a -> P(b) | truths
+
+			P(b) | cases : [b = S(a), b <= a, P(b)]
+		}
+
+		| nat_induction
+	}
+
+	element a from goal
+	a @ nat | assumption
+	a <= a | nat_le_refl
+	P(a) | lema
+}
+
+theorem nat_le_one : [a](a @ nat -> a <= 1 -> a = 0 OR a = 1) {
+	0 @ nat | zero_is_nat
+
+	element a from goal
+	a @ nat | assumption
+	
+	a <= 1 | assumption
+	
+	lemma : a = 0 -> a = 0 OR a = 1 {
+		a = 0 | assumption
+	}
+
+	lemma : {b}(b @ nat AND a = S(b)) -> a = 0 OR a = 1 {
+		element b from {b}(b @ nat AND a = S(b)) | assumption
+		   a <= S(0) | one_is_succ_zero
+		S(b) <= S(0) | substitution
+		   b <= 0 | nat_succ_le_succ_le
+
+		a = S(b) | truths
+		  = S(0) | nat_le_zero
+		  = 1 | one_is_succ_zero
+	}
+
+	| nat_cases
+}
+
+theorem nat_four_cycle : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> [d](d @ nat -> a * c + b * d = a * d + b * c -> a = b OR c = d)))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	lemma lema : [c](c @ nat -> [d](d @ nat -> c <= d -> a * c + b * d = a * d + b * c -> a = b OR c = d)) {
+		element c from goal
+		c @ nat | assumption
+
+		element d from goal
+		d @ nat | assumption
+
+		c <= d | assumption
+		element e from {e}(e @ nat AND c + e = d) | nat_le_definition
+
+		a * c @ nat | mul_is_nat
+		b * c @ nat | mul_is_nat
+		b * e @ nat | mul_is_nat
+		a * e @ nat | mul_is_nat
+
+		a * c + b * c @ nat | add_is_nat
+
+		a * c + b * c + b * e = a * c + (b * c + b * e) | nat_add_assoc
+		                      = a * c + b * (c + e) | nat_mul_add
+		                      = a * c + b * d | substitution
+		                      = a * d + b * c | assumption
+		                      = a * (c + e) + b * c | substitution
+		                      = a * c + a * e + b * c | nat_mul_add
+		                      = a * c + b * c + a * e | nat_add_paren_comm_right
+
+		b * e = a * e | nat_add_cancel_left
+
+		lemma : e = 0 -> a = b OR c = d {
+			c = c + 0 | nat_add_zero
+			  = c + e | assumption
+		}
+
+		lemma : e != 0 -> a = b OR c = d {
+			e != 0 | assumption
+			b = a | nat_mul_cancel_right
+		}
+
+		| excluded_middle : [e = 0, a = b OR c = d]
+	}
+
+	element c from goal
+	c @ nat | assumption
+
+	element d from goal
+	d @ nat | assumption
+
+	a * c + b * d = a * d + b * c | assumption
+
+	c <= d OR d <= c | nat_le_total
+
+	lemma : c <= d -> a = b OR c = d {
+		c <= d | assumption
+		| lema
+	}
+
+	lemma : d <= c -> a = b OR c = d {
+		d <= c | assumption
+		| lema
+	}
+
+	| cases : [c <= d, d <= c, a = b OR c = d]
+}
+
+

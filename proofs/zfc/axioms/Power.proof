@@ -1,0 +1,59 @@
+import zfc.axioms.Extensionality
+import zfc.axioms.Pairing
+import zfc.axioms.Subset
+
+function Power(1)
+
+axiom axiom_of_power : [a][x](x @ Power(a) <-> x # a)
+
+theorem set_in_power_set : [a] a @ Power(a) {
+	element a from goal
+	a # a | subset_reflexive
+	a @ Power(a) | axiom_of_power
+}
+
+theorem singleton_in_power_set : [a][x](x @ a <-> Singleton(x) @ Power(a)) {
+	element a, x from goal
+
+	lemma : x @ a -> Singleton(x) @ Power(a) {
+		x @ a | assumption
+
+		lemma : Singleton(x) # a {
+			element y from goal
+			y @ Singleton(x) | assumption
+			  @ a | in_singleton
+		}
+
+		Singleton(x) @ Power(a) | axiom_of_power
+	}
+
+	lemma : Singleton(x) @ Power(a) -> x @ a {
+		Singleton(x) @ Power(a) | assumption
+		Singleton(x) # a | axiom_of_power
+		x @ Singleton(x) | in_singleton
+		x @ a | in_superset
+	}
+}
+
+theorem power_inj : [a][b](Power(a) = Power(b) -> a = b) {
+	element a, b from goal
+	Power(a) = Power(b) | assumption
+
+	lemma : a # b {
+		element x from goal
+		x @ a | assumption
+		Singleton(x) @ Power(a) | singleton_in_power_set
+		Singleton(x) @ Power(b) | substitution
+		x @ b | singleton_in_power_set
+	}
+
+	lemma : b # a {
+		element x from goal
+		x @ b | assumption
+		Singleton(x) @ Power(b) | singleton_in_power_set
+		Singleton(x) @ Power(a) | substitution
+		x @ a | singleton_in_power_set
+	}
+
+	a = b | double_inclusion
+}

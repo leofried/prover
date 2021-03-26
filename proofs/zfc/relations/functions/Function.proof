@@ -1,0 +1,145 @@
+import zfc.axioms.*
+import zfc.relations.relations.*
+import zfc.relations.functions.Properties
+
+predicate IsFunction(3) {
+	sugar(f, a, b): IsSerialRelation(f, a, b) AND IsFunctionalRelation(f, a, b)
+}
+
+function .(2) {
+	strength: 10
+	definition(f, x): Union(Separate[:(k): OP(x, k) @ f](Range(f)))
+}
+
+function Functionator {(1)}(1) {
+	definition{F}(a): Replacement{:(x): OP(x, F(x))}(a)
+}
+
+theorem is_function_ops : [f][a][b](IsFunction(f, a, b) -> [x][y](OP(x, y) @ f <-> x @ a AND f . x = y)) {
+	element f, a, b from goal
+	IsFunction(f, a, b) | assumption
+	element x from goal
+	
+	lemma lema : [y](OP(x, y) @ f -> Separate[:(k): OP(x, k) @ f](Range(f)) = Singleton(y)) {
+		element y from goal
+		OP(x, y) @ f | assumption
+
+		lemma : Separate[:(k): OP(x, k) @ f](Range(f)) # Singleton(y) {
+			element z from goal
+			z @ Separate[:(k): OP(x, k) @ f](Range(f)) | assumption
+			OP(x, z) @ f | axiom_of_separation
+			z = y | is_functional
+			z @ Singleton(y) | in_singleton
+		}
+
+		lemma : Singleton(y) # Separate[:(k): OP(x, k) @ f](Range(f)) {
+			element z from goal
+			z @ Singleton(y) | assumption
+			OP(x, z) @ f | in_singleton
+			z @ Range(f) | right_op_in_range
+			  @ Separate[:(k): OP(x, k) @ f](Range(f)) | axiom_of_separation
+		}
+
+		Separate[:(k): OP(x, k) @ f](Range(f)) = Singleton(y) | double_inclusion
+	}
+
+	element y from goal
+
+	lemma : OP(x, y) @ f -> x @ a AND f . x = y {
+		OP(x, y) @ f | assumption
+		       x @ Domain(f) | left_op_in_domain
+		       x @ a | is_relation_domain_range_subset
+
+		f . x = Union(Separate[:(k): OP(x, k) @ f](Range(f))) | definition
+		    = Union(Singleton(y)) | lema
+		    = y | union_singleton
+	}
+
+	lemma : x @ a AND f . x = y -> OP(x, y) @ f {
+		x @ a AND y = f . x | assumption
+
+		                         element z from {z} OP(x, z) @ f | is_serial
+		                          OP(x, Union(Singleton(z))) @ f | union_singleton
+		OP(x, Union(Separate[:(k): OP(x, k) @ f](Range(f)))) @ f | lema
+		                                          OP(x, f . x) @ f | definition
+		                                            OP(x, y) @ f | substitution
+	}
+}
+
+theorem is_function_map : [f][a][b](IsFunction(f, a, b) -> [x](x @ a -> f . x @ b)) {
+	element f, a, b from goal
+	IsFunction(f, a, b) | assumption
+
+	element x from goal
+	x @ a | assumption
+	OP(x, f . x) @ f | is_function_ops
+	       f . x @ b | op_in_relation
+}
+
+theorem functionator_is_function {F(1)} : [a][b]([x](x @ a -> F(x) @ b) -> IsFunction(Functionator{F}(a), a, b) AND [x](x @ a -> Functionator{F}(a) . x = F(x))) {
+	element a, b from goal
+	[x](x @ a -> F(x) @ b) | assumption
+
+	lemma : IsFunction(Functionator{F}(a), a, b) {
+		lemma : IsRelation(Functionator{F}(a), a, b) {
+			lemma : [o](o @ Functionator{F}(a) -> Left(o) @ a AND Right(o) @ b AND IsOP(o)) {
+				element o from goal
+				o @ Functionator{F}(a) | assumption
+				  @ Replacement{:(x): OP(x, F(x))}(a) | definition
+
+				element x from {x}(x @ a AND o = OP(x, F(x))) | axiom_of_replacement
+				F(x) @ b | truths
+
+				lemma : IsOP(OP(x, F(x))) AND Left(OP(x, F(x))) @ a AND Right(OP(x, F(x))) @ b {
+					IsOP(OP(x, F(x))) | op_is_op
+					Left(OP(x, F(x))) @ a | left_op
+					Right(OP(x, F(x))) @ b | right_op
+				}
+
+				IsOP(o) AND Left(o) @ a AND Right(o) @ b | substitution
+			}
+
+			IsRelation(Functionator{F}(a), a, b) | in_relation
+		}
+
+		lemma : IsSerialRelation(Functionator{F}(a), a, b) {
+			lemma : [x](x @ a -> {y}(OP(x, y) @ Functionator{F}(a))) {
+				element x from goal
+				x @ a | assumption
+				use F(x)
+				OP(x, F(x)) @ Replacement{:(x): OP(x, F(x))}(a) | in_replacement
+				            @ Functionator{F}(a) | definition
+			}
+
+			IsSerial(Functionator{F}(a), a, b) | is_serial
+		}
+
+		lemma : IsFunctionalRelation(Functionator{F}(a), a, b) {
+			lemma : [x][y][z](OP(x, y) @ Functionator{F}(a) AND OP(x, z) @ Functionator{F}(a) -> y = z) {
+				element x, y, z from goal
+				OP(x, y) @ Functionator{F}(a) AND OP(x, z) @ Functionator{F}(a) | assumption
+				OP(x, y) @ Replacement{:(x): OP(x, F(x))}(a) AND OP(x, z) @ Replacement{:(x): OP(x, F(x))}(a) | definition
+				OP(x, y) @ Replacement{:(x): OP(x, F(x))}(a) | definition
+				OP(x, z) @ Replacement{:(x): OP(x, F(x))}(a) | definition
+
+				element u from {u}(u @ a AND OP(x, y) = OP(u, F(u))) | axiom_of_replacement
+				element v from {v}(v @ a AND OP(x, z) = OP(v, F(v))) | axiom_of_replacement
+
+				y = F(u) | op_inj
+				  = F(x) | op_inj
+				  = F(v) | op_inj
+				  = z    | op_inj
+			}
+
+			IsFunctional(Functionator{F}(a), a, b) | is_functional
+		}
+	}
+
+	lemma : [x](x @ a -> Functionator{F}(a) . x = F(x)) {
+		element x from goal
+		x @ a | assumption
+		OP(x, F(x)) @ Replacement{:(x): OP(x, F(x))}(a) | in_replacement
+		            @ Functionator{F}(a) | definition
+		Functionator{F}(a) . x = F(x) | is_function_ops
+	}
+}

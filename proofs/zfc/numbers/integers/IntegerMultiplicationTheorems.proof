@@ -1,0 +1,304 @@
+import zfc.axioms.*
+import zfc.numbers.naturals.*
+import zfc.numbers.integers.Integers
+import zfc.numbers.integers.IntegerAdditionAxioms
+import zfc.numbers.integers.IntegerMultiplicationAxioms
+
+theorem int_mul_comm : [x](x @ int -> [y](y @ int -> x ** y = y ** x)) {
+	element x from goal
+	x @ int | assumption
+	element a, b from {a}{b}(a @ nat AND b @ nat AND x = Int(a, b)) | int_to_nat
+
+	element y from goal
+	y @ int | assumption
+	element c, d from {c}{d}(c @ nat AND d @ nat AND y = Int(c, d)) | int_to_nat
+
+	c * b @ nat | mul_is_nat
+	d * a @ nat | mul_is_nat
+
+	x ** y = Int(a, b) ** Int(c, d) | substitution
+	       = Int(a * c + b * d, a * d + b * c) | int_mul
+	       = Int(c * a + b * d, a * d + b * c) | nat_mul_comm
+	       = Int(c * a + d * b, a * d + b * c) | nat_mul_comm
+	       = Int(c * a + d * b, d * a + b * c) | nat_mul_comm
+	       = Int(c * a + d * b, d * a + c * b) | nat_mul_comm
+	       = Int(c * a + d * b, c * b + d * a) | nat_add_comm
+	       = Int(c, d) ** Int(a, b) | int_mul
+	       = y ** x | substitution
+}
+
+theorem int_mul_assoc : [x](x @ int -> [y](y @ int -> [z](z @ int -> x ** y ** z = x ** (y ** z)))) {
+	element x from goal
+	x @ int | assumption
+	element a, b from {a}{b}(a @ nat AND b @ nat AND x = Int(a, b)) | int_to_nat
+
+	element y from goal
+	y @ int | assumption
+	element c, d from {c}{d}(c @ nat AND d @ nat AND y = Int(c, d)) | int_to_nat
+
+	element z from goal
+	z @ int | assumption
+	element e, f from {e}{f}(e @ nat AND f @ nat AND z = Int(e, f)) | int_to_nat
+
+
+	a * c @ nat | mul_is_nat
+	b * d @ nat | mul_is_nat
+	a * d @ nat | mul_is_nat
+	b * c @ nat | mul_is_nat
+	c * e @ nat | mul_is_nat
+	d * f @ nat | mul_is_nat
+	c * f @ nat | mul_is_nat
+	d * e @ nat | mul_is_nat
+
+	a * c + b * d @ nat | add_is_nat
+	a * d + b * c @ nat | add_is_nat
+	c * e + d * f @ nat | add_is_nat
+	c * f + d * e @ nat | add_is_nat
+
+	a * (c * e) @ nat | mul_is_nat
+	b * (d * e) @ nat | mul_is_nat
+	a * (d * f) @ nat | mul_is_nat
+	b * (c * f) @ nat | mul_is_nat
+	a * (c * f) @ nat | mul_is_nat
+	b * (d * f) @ nat | mul_is_nat
+	a * (d * e) @ nat | mul_is_nat
+	b * (c * e) @ nat | mul_is_nat
+
+	( a * (c * e) +  b * (d * e)) + ( a * (d * f) +  b * (c * f)) = (a * (c * e) + a * (d * f) ) + ( b * (d * e) +  b * (c * f)) | nat_paren_add_paren_comm
+	( a * (c * f) +  b * (d * f)) + ( a * (d * e) +  b * (c * e)) = (a * (c * f) +  a * (d * e)) + ( b * (d * f) +  b * (c * e)) | nat_paren_add_paren_comm
+
+	x ** y ** z = Int(a, b) ** Int(c, d) ** Int(e, f) | substitution
+	            = Int(a * c + b * d, a * d + b * c) ** Int(e, f) | int_mul
+	            = Int( (a * c       +  b * d) * e   +  (a * d       +  b * c) * f  ,  (a * c       +  b * d) * f   +  (a * d       +  b * c) * e  ) | int_mul
+	            = Int(((a * c) * e  + (b * d) * e ) +  (a * d       +  b * c) * f  ,  (a * c       +  b * d) * f   +  (a * d       +  b * c) * e  ) | nat_add_mul
+	            = Int(((a * c) * e  + (b * d) * e ) + ((a * d) * f  + (b * c) * f ),  (a * c       +  b * d) * f   +  (a * d       +  b * c) * e  ) | nat_add_mul
+	            = Int(((a * c) * e  + (b * d) * e ) + ((a * d) * f  + (b * c) * f ), ((a * c) * f  + (b * d) * f ) +  (a * d       +  b * c) * e  ) | nat_add_mul
+	            = Int(((a * c) * e  + (b * d) * e ) + ((a * d) * f  + (b * c) * f ), ((a * c) * f  + (b * d) * f ) + ((a * d) * e  + (b * c) * e )) | nat_add_mul
+	            = Int(( a * (c * e) + (b * d) * e ) + ((a * d) * f  + (b * c) * f ), ((a * c) * f  + (b * d) * f ) + ((a * d) * e  + (b * c) * e )) | nat_mul_assoc
+	            = Int(( a * (c * e) +  b * (d * e)) + ((a * d) * f  + (b * c) * f ), ((a * c) * f  + (b * d) * f ) + ((a * d) * e  + (b * c) * e )) | nat_mul_assoc
+	            = Int(( a * (c * e) +  b * (d * e)) + ( a * (d * f) + (b * c) * f ), ((a * c) * f  + (b * d) * f ) + ((a * d) * e  + (b * c) * e )) | nat_mul_assoc
+	            = Int(( a * (c * e) +  b * (d * e)) + ( a * (d * f) +  b * (c * f)), ((a * c) * f  + (b * d) * f ) + ((a * d) * e  + (b * c) * e )) | nat_mul_assoc
+	            = Int(( a * (c * e) +  b * (d * e)) + ( a * (d * f) +  b * (c * f)), ( a * (c * f) + (b * d) * f ) + ((a * d) * e  + (b * c) * e )) | nat_mul_assoc
+	            = Int(( a * (c * e) +  b * (d * e)) + ( a * (d * f) +  b * (c * f)), ( a * (c * f) +  b * (d * f)) + ((a * d) * e  + (b * c) * e )) | nat_mul_assoc
+	            = Int(( a * (c * e) +  b * (d * e)) + ( a * (d * f) +  b * (c * f)), ( a * (c * f) +  b * (d * f)) + ( a * (d * e) + (b * c) * e )) | nat_mul_assoc
+	            = Int(( a * (c * e) +  b * (d * e)) + ( a * (d * f) +  b * (c * f)), ( a * (c * f) +  b * (d * f)) + ( a * (d * e) +  b * (c * e))) | nat_mul_assoc
+	            = Int(( a * (c * e) +  a * (d * f)) + ( b * (d * e) +  b * (c * f)), ( a * (c * f) +  b * (d * f)) + ( a * (d * e) +  b * (c * e))) | substitution
+	            = Int(( a * (c * e) +  a * (d * f)) + ( b * (d * e) +  b * (c * f)), ( a * (c * f) +  a * (d * e)) + ( b * (d * f) +  b * (c * e))) | substitution
+	            = Int(( a * (c * e) +  a * (d * f)) + ( b * (d * e) +  b * (c * f)), ( a * (c * f) +  a * (d * e)) + ( b * (c * e) +  b * (d * f))) | nat_add_comm
+	            = Int(( a * (c * e) +  a * (d * f)) + ( b * (c * f) +  b * (d * e)), ( a * (c * f) +  a * (d * e)) + ( b * (c * e) +  b * (d * f))) | nat_add_comm
+	            = Int(  a * (c * e  +       d * f ) + ( b * (c * f) +  b * (d * e)), ( a * (c * f) +  a * (d * e)) + ( b * (c * e) +  b * (d * f))) | nat_mul_add
+	            = Int(  a * (c * e  +       d * f ) +   b * (c * f  +       d * e ), ( a * (c * f) +  a * (d * e)) + ( b * (c * e) +  b * (d * f))) | nat_mul_add
+	            = Int(  a * (c * e  +       d * f ) +   b * (c * f  +       d * e ),   a * (c * f  +       d * e ) + ( b * (c * e) +  b * (d * f))) | nat_mul_add
+	            = Int(  a * (c * e  +       d * f ) +   b * (c * f  +       d * e ),   a * (c * f  +       d * e ) +   b * (c * e  +       d * f )) | nat_mul_add
+	            = Int(a, b) ** Int(c * e + d * f, c * f + d * e) | int_mul
+	            = Int(a, b) ** (Int(c, d) ** Int(e, f)) | int_mul
+	            = x ** (y ** z) | substitution
+}
+
+theorem int_add_mul : [x](x @ int -> [y](y @ int -> [z](z @ int -> (x ++ y) ** z = x ** z ++ y ** z))) {
+	element x from goal
+	x @ int | assumption
+	element a, b from {a}{b}(a @ nat AND b @ nat AND x = Int(a, b)) | int_to_nat
+
+	element y from goal
+	y @ int | assumption
+	element c, d from {c}{d}(c @ nat AND d @ nat AND y = Int(c, d)) | int_to_nat
+
+	element z from goal
+	z @ int | assumption
+	element e, f from {e}{f}(e @ nat AND f @ nat AND z = Int(e, f)) | int_to_nat
+
+	a + c @ nat | add_is_nat
+	b + d @ nat | add_is_nat
+
+	a * e @ nat | mul_is_nat
+	b * e @ nat | mul_is_nat
+	c * e @ nat | mul_is_nat
+	d * e @ nat | mul_is_nat
+	a * f @ nat | mul_is_nat
+	b * f @ nat | mul_is_nat
+	c * f @ nat | mul_is_nat
+	d * f @ nat | mul_is_nat
+
+	a * e + b * f @ nat | add_is_nat
+	a * f + b * e @ nat | add_is_nat
+	c * e + d * f @ nat | add_is_nat
+	c * f + d * e @ nat | add_is_nat
+
+	(x ++ y) ** z = (Int(a, b) ++ Int(c, d)) ** Int(e, f) | substitution
+	              = Int(a + c, b + d) ** Int(e, f) | int_add
+	              = Int((a     + c) * e  + (b     + d) * f , (a     + c) * f  + (b     + d) * e ) | int_mul
+	              = Int((a * e + c  * e) + (b     + d) * f , (a     + c) * f  + (b     + d) * e ) | nat_add_mul
+	              = Int((a * e + c  * e) + (b * f + d  * f), (a     + c) * f  + (b     + d) * e ) | nat_add_mul
+	              = Int((a * e + c  * e) + (b * f + d  * f), (a * f + c  * f) + (b     + d) * e ) | nat_add_mul
+	              = Int((a * e + c  * e) + (b * f + d  * f), (a * f + c  * f) + (b * e + d  * e)) | nat_add_mul
+	              = Int((a * e + c  * e) + (b * f + d  * f), (a * f + c  * f) + (b * e + d  * e)) | nat_add_mul
+	              = Int((a * e + b  * f) + (c * e + d  * f), (a * f + c  * f) + (b * e + d  * e)) | nat_paren_add_paren_comm
+	              = Int((a * e + b  * f) + (c * e + d  * f), (a * f + b  * e) + (c * f + d  * e)) | nat_paren_add_paren_comm
+	              = Int(a * e + b  * f, a * f + b * e) ++ Int(c * e + d * f, c * f + d * e) | int_add
+	              = Int(a, b) ** Int(e, f) ++ Int(c * e + d * f, c * f + d * e) | int_mul
+	              = Int(a, b) ** Int(e, f) ++ Int(c, d) ** Int(e, f) | int_mul
+	              = x ** z ++ y ** z | substitution
+}
+
+theorem int_mul_add : [x](x @ int -> [y](y @ int -> [z](z @ int -> x ** (y ++ z) = x ** y ++ x ** z))) {
+	element x from goal
+	x @ int | assumption
+
+	element y from goal
+	y @ int | assumption
+
+	element z from goal
+	z @ int | assumption
+
+	y ++ z @ int | add_is_int
+
+	x ** (y ++ z) = (y ++ z) ** x | int_mul_comm
+	              = y ** x ++ z ** x | int_add_mul
+	              = x ** y ++ z ** x | int_mul_comm
+	              = x ** y ++ x ** z | int_mul_comm
+}
+
+theorem int_mul_paren_comm_left : [x](x @ int -> [y](y @ int -> [z](z @ int -> x ** (y ** z) = y ** (x ** z)))) {
+	element x from goal
+	x @ int | assumption
+	
+	element y from goal
+	y @ int | assumption
+	
+	element z from goal
+	z @ int | assumption
+
+	x ** (y ** z) = x ** y ** z | int_mul_assoc
+	              = y ** x ** z | int_mul_comm
+	              = y ** (x ** z) | int_mul_assoc
+}
+
+theorem int_mul_paren_comm_right : [x](x @ int -> [y](y @ int -> [z](z @ int -> x ** y ** z = x ** z ** y))) {
+	element x from goal
+	x @ int | assumption
+	
+	element y from goal
+	y @ int | assumption
+	
+	element z from goal
+	z @ int | assumption
+
+	x ** y ** z = x ** (y ** z) | int_mul_assoc
+	            = x ** (z ** y) | int_mul_comm
+	            = x ** z ** y | int_mul_assoc
+}
+
+theorem int_mul_cancel_right : [x](x @ int -> [y](y @ int -> [z](z @ int -> z = 00 OR (x ** z = y ** z -> x = y)))) {
+	element x from goal
+	x @ int | assumption
+	element a, b from {a}{b}(a @ nat AND b @ nat AND x = Int(a, b)) | int_to_nat
+
+	element y from goal
+	y @ int | assumption
+	element c, d from {c}{d}(c @ nat AND d @ nat AND y = Int(c, d)) | int_to_nat
+
+	element z from goal
+	z @ int | assumption
+	element e, f from {e}{f}(e @ nat AND f @ nat AND z = Int(e, f)) | int_to_nat
+
+	//modes tollens
+	z != 00 | assumption
+	lemma : e != f {
+		e = f | assumption
+		z = 00 | int_is_zero
+		False | truths
+	}
+
+	a * e @ nat | mul_is_nat
+	a * f @ nat | mul_is_nat
+	b * e @ nat | mul_is_nat
+	b * f @ nat | mul_is_nat
+	c * e @ nat | mul_is_nat
+	c * f @ nat | mul_is_nat
+	d * e @ nat | mul_is_nat
+	d * f @ nat | mul_is_nat
+
+	a * e + b * f @ nat | add_is_nat
+	a * f + b * e @ nat | add_is_nat
+	c * e + d * f @ nat | add_is_nat
+	c * f + d * e @ nat | add_is_nat
+
+	a + d @ nat | add_is_nat
+	b + c @ nat | add_is_nat
+    
+    Int(a * e + b * f, a * f + b * e) = Int(a, b) ** Int(e, f) | int_mul
+	                                  = x ** z | substitution
+	                                  = y ** z | assumption
+	                                  = Int(c, d) ** Int(e, f) | substitution
+	                                  = Int(c * e + d * f, c * f + d * e) | int_mul
+	
+	  (a     + d) * e + (b     + c) * f 
+	= (a     + d) * e + (b * f + c * f) | nat_add_mul
+	= (a * e + d * e) + (b * f + c * f) | nat_add_mul
+	= (a * e + b * f) + (d * e + c * f) | nat_paren_add_paren_comm
+	= (a * e + b * f) + (c * f + d * e) | nat_add_comm
+	= (a * f + b * e) + (c * e + d * f) | int_equiv
+	= (a * f + b * e) + (d * f + c * e) | nat_add_comm
+	= (a * f + d * f) + (b * e + c * e) | nat_paren_add_paren_comm
+	= (a     + d) * f + (b * e + c * e) | nat_add_mul
+	= (a     + d) * f + (b     + c) * e | nat_add_mul
+
+	a + d = b + c | nat_four_cycle
+	Int(a, b) = Int(c, d) | int_equiv
+}
+
+
+theorem int_mul_zero : [x](x @ int -> x ** 00 = 00) {
+	element x from goal
+	x @ int | assumption
+	element a, b from {a}{b}(a @ nat AND b @ nat AND x = Int(a, b)) | int_to_nat
+
+	0 @ nat | zero_is_nat
+	a * 0 @ nat | mul_is_nat
+	b * 0 @ nat | mul_is_nat
+	a * 0 + b * 0 @ nat | add_is_nat
+
+	x ** 00 = Int(a, b) ** 00 | substitution
+	        = Int(a, b) ** Int(0, 0) | int_is_zero
+	        = Int(a * 0 + b * 0, a * 0 + b * 0) | int_mul
+	        = 00 | int_is_zero
+}
+
+theorem int_zero_mul : [x](x @ int -> 00 ** x = 00) {
+	element x from goal
+	x @ int | assumption
+	00 @ int | zero_is_int
+
+	00 ** x = x ** 00 | int_mul_comm
+	        = 00 | int_mul_zero
+}
+
+theorem int_mul_one : [x](x @ int -> x ** 11 = x) {
+	element x from goal
+	x @ int | assumption
+	element a, b from {a}{b}(a @ nat AND b @ nat AND x = Int(a, b)) | int_to_nat
+
+	0 @ nat | zero_is_nat
+	1 @ nat | one_is_nat
+
+	x ** 11 = Int(a, b) ** 11 | substitution
+	        = Int(a, b) ** Int(1, 0) | int_is_one
+	        = Int(a * 1 + b * 0, a * 0 + b * 1) | int_mul
+	        = Int(a     + b * 0, a * 0 + b * 1) | nat_mul_one
+	        = Int(a     +     0, a * 0 + b * 1) | nat_mul_zero
+	        = Int(a     +     0,     0 + b * 1) | nat_mul_zero
+	        = Int(a     +     0,     0 + b    ) | nat_mul_one
+	        = Int(a            ,     0 + b    ) | nat_add_zero
+	        = Int(a            ,         b    ) | nat_zero_add
+	        = x | substitution
+}
+
+theorem int_one_mul : [x](x @ int -> 11 ** x = x) {
+	element x from goal
+	x @ int | assumption
+	11 @ int | one_is_int
+
+	11 ** x = x ** 11 | int_mul_comm
+	        = x | int_mul_one
+}

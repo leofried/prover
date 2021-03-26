@@ -1,0 +1,98 @@
+import zfc.axioms.*
+import zfc.relations.relations.*
+import zfc.numbers.naturals.NaturalAdditionAxioms
+import zfc.numbers.naturals.NaturalAdditionTheorems
+import zfc.numbers.naturals.NaturalMultiplicationAxioms
+import zfc.numbers.naturals.NaturalMultiplicationTheorems
+import zfc.numbers.naturals.NaturalInequality
+import zfc.numbers.naturals.NaturalDivides
+
+predicate Plural(1){
+	definition(a): a @ nat AND 2 <= a
+	theorem: nat_plural
+}
+
+theorem zero_not_plural : NOT Plural(0) {
+	2 @ nat | two_is_nat
+
+	Plural(0) | assumption
+	2 <= 0 | nat_plural
+	2 = 0 | nat_le_zero
+	False | two_not_zero
+}
+
+theorem one_not_plural : NOT Plural(1) {
+	0 @ nat | zero_is_nat
+	1 @ nat | one_is_nat
+
+	Plural(1) | assumption
+
+	   2 <= 1 | nat_plural
+	S(1) <=   | two_is_succ_one
+	     <= S(0) | one_is_succ_zero
+	   1 <= 0 | nat_succ_le_succ_le
+	1 = 0 | nat_le_zero
+	False | one_not_zero
+}
+
+theorem nat_plural_succ : [a](a @ nat -> a != 0 -> Plural(S(a))) {
+	1 @ nat | one_is_nat
+	2 @ nat | two_is_nat
+
+	element a from goal
+	a @ nat | assumption
+	S(a) @ nat | nat_succ
+
+	a != 0 | assumption
+
+	element b from {b}(b @ nat AND a = S(b)) | nat_zero_or_succ
+	S(b) @ nat | nat_succ
+	
+	lemma : 2 <= S(a) {
+		lemma : b @ nat AND 2 + b = S(a) {
+			S(a) = S(S(b)) | substitution
+			     = 1 + S(b) | nat_one_add
+			     = S(1 + b) | nat_add_succ
+			     = S(1) + b | nat_succ_add
+			     = 2 + b | two_is_succ_one
+		}
+
+		| nat_le_example
+	}
+
+	| nat_plural
+}
+
+theorem nat_plural_or : [a](a @ nat -> Plural(a) OR a = 1 OR a = 0) {
+	1 @ nat | one_is_nat
+
+	element a from goal
+	a @ nat | assumption
+
+	lemma : a = 0 -> Plural(a) OR a = 1 OR a = 0 {
+		a = 0 | assumption
+	}
+
+	lemma : {b}(b @ nat AND a = S(b)) -> Plural(a) OR a = 1 OR a = 0 {
+		element b from {b}(b @ nat AND a = S(b)) | assumption
+
+		lemma : Plural(a) OR a = 1 {
+
+			lemma : b = 0 -> Plural(a) OR a = 1 {
+				a = S(0) | assumption
+				  = 1 | one_is_succ_zero
+			}
+
+			lemma : b != 0 -> Plural(a) OR a = 1 {
+				b != 0 | assumption
+				Plural(S(b)) | nat_plural_succ
+				Plural(a) | substitution
+			}
+
+			| excluded_middle
+		}
+	}
+
+	| nat_cases
+}
+

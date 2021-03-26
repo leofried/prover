@@ -1,0 +1,145 @@
+import zfc.axioms.*
+import zfc.relations.relations.*
+import zfc.relations.equivalences.EquivalenceRelation
+
+function Part(2) {
+	definition(r, x): Separate[:(k): OP(x, k) @ r](Range(r))
+}
+
+function Partition(1) {
+	definition(r): Separate[:(k): {x}(x @ Domain(r) AND k = Part(r, x))](Power(Domain(r)))
+}
+
+theorem equiv_part : [r][a](IsEquivalenceRelation(r, a) -> [x][y](Equiv(r, x, y) <-> y @ Part(r, x))) {
+	element r, a from goal
+	IsEquivalenceRelation(r, a) | assumption
+	element x, y from goal
+
+	lemma : Equiv(r, x, y) -> y @ Part(r, x) {
+		Equiv(r, x, y) | assumption
+		OP(x, y) @ r | equiv_op
+		y @ Range(r) | right_op_in_range
+		  @ Separate[:(k): OP(x, k) @ r](Range(r)) | axiom_of_separation
+		  @ Part(r, x) | definition
+	}
+
+	lemma : y @ Part(r, x) -> Equiv(r, x, y) {
+		y @ Part(r, x) | assumption
+		  @ Separate[:(k): OP(x, k) @ r](Range(r)) | definition
+		OP(x, y) @ r | axiom_of_separation
+		Equiv(r, x, y) | equiv_op
+	}
+}
+
+theorem equiv_eq_part : [r][a](IsEquivalenceRelation(r, a) -> [x][y](Equiv(r, x, y) -> x @ a AND y @ a AND Part(r, x) = Part(r, y))) {
+	element r, a from goal
+	IsEquivalenceRelation(r, a) | assumption
+	element x, y from goal
+
+	Equiv(r, x, y) | assumption
+
+	lemma : Part(r, y) # Part(r, x) {
+		element z from goal
+		z @ Part(r, y) | assumption
+		Equiv(r, y, z) | equiv_part
+		Equiv(r, x, z) | is_transitive
+		z @ Part(r, x) | equiv_part
+	}
+
+	Equiv(r, y, x) | is_symmetric
+
+	lemma : Part(r, x) # Part(r, y) {
+		element z from goal
+		z @ Part(r, x) | assumption
+		Equiv(r, x, z) | equiv_part
+		Equiv(r, y, z) | is_transitive
+		z @ Part(r, y) | equiv_part
+	}
+
+	Part(r, x) = Part(r, y) | double_inclusion
+	x @ a AND y @ a | equiv_op_in_set
+}
+
+theorem eq_part_equiv : [r][a](IsEquivalenceRelation(r, a) -> [x][y](x @ a -> Part(r, x) = Part(r, y) -> Equiv(r, x, y))) {
+	element r, a from goal
+	IsEquivalenceRelation(r, a) | assumption
+	element x, y from goal
+	x @ a | assumption
+
+	Equiv(r, x, x) | is_reflexive
+	x @ Part(r, x) | equiv_part
+	  @ Part(r, y) | assumption
+	  @ Separate[:(k): OP(y, k) @ r](Range(r)) | definition
+    OP(y, x) @ r | axiom_of_separation
+    Equiv(r, y, x) | equiv_part
+    Equiv(r, x, y) | is_symmetric
+}
+
+theorem part_is_subset : [r][a][x](IsEquivalenceRelation(r, a) -> Part(r, x) # a) {
+	element r, a, x from goal
+	IsEquivalenceRelation(r, a) | assumption
+	                              Range(r) # a | is_relation_domain_range_subset
+	Separate[:(k): OP(x, k) @ r](Range(r)) # Range(r) | separation_is_subset
+	                            Part(r, x) # Range(r) | definition
+	                            Part(r, x) # a        | subset_transitive
+}
+
+theorem in_partition : [r][a](IsEquivalenceRelation(r, a) -> [p](p @ Partition(r) <-> {x}(x @ a AND p = Part(r, x)))) {
+	element r, a from goal
+	IsEquivalenceRelation(r, a) | assumption
+	element p from goal
+
+	lemma : p @ Partition(r) -> {x}(x @ a AND p = Part(r, x)) {
+		p @ Partition(r) | assumption
+		  @ Separate[:(k): {x}(x @ Domain(r) AND k = Part(r, x))](Power(Domain(r))) | definition
+		element x from {x}(x @ Domain(r) AND p = Part(r, x)) | axiom_of_separation
+		use x
+		x @ a | is_relation_domain_range_subset
+	}
+
+	lemma : a # Domain(r) {
+		element x from goal
+		x @ a | assumption
+		Equiv(r, x, x) | is_reflexive
+		OP(x, x) @ r | equiv_op
+		x @ Domain(r) | left_op_in_domain
+	}
+
+	lemma : {x}(x @ a AND p = Part(r, x)) -> p @ Partition(r) {
+		element x from {x}(x @ a AND p = Part(r, x)) | assumption
+		x @ Domain(r) | truths
+		{x}(x @ Domain(r) AND p = Part(r, x)) | example
+
+		Part(r, x) # a | part_is_subset
+		         p # a | substitution
+		           # Domain(r) | subset_transitive
+		           @ Power(Domain(r)) | axiom_of_power
+		           @ Separate[:(k): {x}(x @ Domain(r) AND k = Part(r, x))](Power(Domain(r))) | axiom_of_separation
+		           @ Partition(r) | definition 
+	}
+}
+
+theorem part_in_partition : [r][a](IsEquivalenceRelation(r, a) -> [x](x @ a <-> Part(r, x) @ Partition(r))) {
+	element r, a from goal
+	IsEquivalenceRelation(r, a) | assumption
+	element x from goal
+
+	lemma : x @ a -> Part(r, x) @ Partition(r) {
+		x @ a | assumption
+		{y}(y @ a AND Part(r, x) = Part(r, y)) | example
+		Part(r, x) @ Partition(r) | in_partition
+	}
+
+	lemma : Part(r, x) @ Partition(r) -> x @ a {
+		Part(r, x) @ Partition(r) | assumption
+		element y from {y}(y @ a AND Part(r, x) = Part(r, y)) | in_partition
+		Equiv(r, y, y) | is_reflexive
+		y @ Part(r, y) | equiv_part
+		y @ Part(r, x) | substitution
+		Equiv(r, x, y) | equiv_part
+		Equiv(r, y, x) | is_symmetric
+		x @ Part(r, y) | equiv_part
+		Part(r, y) # a | part_is_subset
+		x @ a | in_superset
+	}
+}

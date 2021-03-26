@@ -1,0 +1,209 @@
+import zfc.axioms.*
+import zfc.relations.*
+import zfc.numbers.helpers.*
+import zfc.numbers.naturals.*
+import zfc.numbers.integers.Integers
+
+function IntegerMultiplicationL(4) {
+	sugar(a, b, c, d): a * c + b * d
+}
+
+function IntegerMultiplicationR(4) {
+	sugar(a, b, c, d): a * d + b * c
+}
+
+function IntegerMultiplication {
+	definition: HelperBinary{Int, IntegerMultiplicationL, IntegerMultiplicationR}(int)
+}
+
+function ** (2) {
+	sugar(a, b): IntegerMultiplication . OP(a, b)
+	strength: 2
+}
+
+theorem integer_multiplication_is_helper_binary : IsHelperBinary{Int, IntegerMultiplicationL, IntegerMultiplicationR}(int, IntegerEquivalenceRelation, nat) {
+	IsEquivalenceRelation(IntegerEquivalenceRelation, CP(nat, nat)) | integers_are_equivalence_relation
+
+	IsHelperPartition{Int}(int, IntegerEquivalenceRelation, nat) | integers_are_helper_partition
+
+	lemma : IsHelperBinaryClosed{IntegerMultiplicationL}(nat) {
+		lemma : [a][b][c][d](a @ nat AND b @ nat AND c @ nat AND d @ nat -> IntegerMultiplicationL(a, b, c, d) @ nat) {
+			element a, b, c, d from goal
+			a @ nat AND b @ nat AND c @ nat AND d @ nat | assumption
+			a * c @ nat | mul_is_nat
+			b * d @ nat | mul_is_nat
+			a * c + b * d @ nat | add_is_nat
+		}
+
+		| is_helper_binary_closed
+	}
+
+	lemma : IsHelperBinaryClosed{IntegerMultiplicationR}(nat) {
+		lemma : [a][b][c][d](a @ nat AND b @ nat AND c @ nat AND d @ nat -> IntegerMultiplicationR(a, b, c, d) @ nat) {
+			element a, b, c, d from goal
+			a @ nat AND b @ nat AND c @ nat AND d @ nat | assumption
+			a * d @ nat | mul_is_nat
+			b * c @ nat | mul_is_nat
+			a * d + b * c @ nat | add_is_nat
+		}
+
+		| is_helper_binary_closed
+	}
+
+	lemma : IsHelperBinaryWellDefined{IntegerMultiplicationL, IntegerMultiplicationR}(IntegerEquivalenceRelation, nat) {
+		lemma : 
+			[a][b][c][d](
+						a @ CP(nat, nat) AND b @ CP(nat, nat) AND c @ CP(nat, nat) AND d @ CP(nat, nat)
+					AND
+						Equiv(IntegerEquivalenceRelation, a, c) AND Equiv(IntegerEquivalenceRelation, b, d)
+				->
+					Equiv(IntegerEquivalenceRelation, HelperOP{IntegerMultiplicationL, IntegerMultiplicationR}(a, b), HelperOP{IntegerMultiplicationL, IntegerMultiplicationR}(c, d))
+			)
+		{
+
+			element a, b, c, d from goal
+			a @ CP(nat, nat) AND b @ CP(nat, nat) AND c @ CP(nat, nat) AND d @ CP(nat, nat) AND Equiv(IntegerEquivalenceRelation, a, c) AND Equiv(IntegerEquivalenceRelation, b, d) | assumption
+
+			HelperOP{IntegerMultiplicationL, IntegerMultiplicationR}(a, b) @ CP(nat, nat) | is_helper_binary_closed_op
+			HelperOP{IntegerMultiplicationL, IntegerMultiplicationR}(c, d) @ CP(nat, nat) | is_helper_binary_closed_op
+
+
+			lemma lema1 : [e][f](e @ CP(nat, nat) AND f @ CP(nat, nat) AND Equiv(IntegerEquivalenceRelation, e, f) -> [x](x @ nat -> Left(e) * x + Right(f) * x = Left(f) * x + Right(e) * x)) {
+				element e, f from goal
+				e @ CP(nat, nat) AND f @ CP(nat, nat) AND Equiv(IntegerEquivalenceRelation, e, f) | assumption
+
+				Left(e) @ nat AND Right(e) @ nat | in_cp
+				Left(f) @ nat AND Right(f) @ nat | in_cp
+
+				element x from goal
+				x @ nat | assumption
+
+				Left(e) * x + Right(f) * x = (Left(e) + Right(f)) * x | nat_add_mul
+				                           = (Left(f) + Right(e)) * x | integers_are_equivalent
+				                           = Left(f) * x + Right(e) * x | nat_add_mul
+			}
+
+			lemma lema2 : [e][f](e @ CP(nat, nat) AND f @ CP(nat, nat) AND Equiv(IntegerEquivalenceRelation, e, f) -> [x](x @ nat -> x * Left(e) + x * Right(f) = x * Left(f) + x * Right(e))) {
+				element e, f from goal
+				e @ CP(nat, nat) AND f @ CP(nat, nat) AND Equiv(IntegerEquivalenceRelation, e, f) | assumption
+
+				Left(e) @ nat AND Right(e) @ nat | in_cp
+				Left(f) @ nat AND Right(f) @ nat | in_cp
+
+				element x from goal
+				x @ nat | assumption
+
+				x * Left(e) + x * Right(f) = x * (Left(e) + Right(f)) | nat_mul_add
+				                           = x * (Left(f) + Right(e)) | integers_are_equivalent
+				                           = x * Left(f) + x * Right(e) | nat_mul_add
+			}
+
+			function r {sugar: Left (a)} function s {sugar: Right(a)}
+			function t {sugar: Left (b)} function u {sugar: Right(b)}
+			function x {sugar: Left (c)} function y {sugar: Right(c)}
+			function w {sugar: Left (d)} function z {sugar: Right(d)}
+
+			r @ nat AND s @ nat | in_cp
+			t @ nat AND u @ nat | in_cp
+			x @ nat AND y @ nat | in_cp
+			w @ nat AND z @ nat | in_cp
+
+			y * t @ nat | mul_is_nat
+			x * u @ nat | mul_is_nat
+			r * t @ nat | mul_is_nat
+			s * u @ nat | mul_is_nat
+			y * t @ nat | mul_is_nat
+			x * z @ nat | mul_is_nat
+			y * w @ nat | mul_is_nat
+			x * t @ nat | mul_is_nat
+			s * t @ nat | mul_is_nat
+			r * u @ nat | mul_is_nat
+			y * u @ nat | mul_is_nat
+			y * z @ nat | mul_is_nat
+			x * w @ nat | mul_is_nat
+
+			y * t + x * u @ nat | add_is_nat
+			r * t + s * u @ nat | add_is_nat
+			x * z + y * w @ nat | add_is_nat
+			x * t + s * t @ nat | add_is_nat
+			r * u + y * u @ nat | add_is_nat
+			y * t + y * z @ nat | add_is_nat
+			r * u + x * z @ nat | add_is_nat
+			r * u + s * t @ nat | add_is_nat
+			x * w + x * u @ nat | add_is_nat
+			x * w + y * z @ nat | add_is_nat
+
+			(r * t + s * u) + (x * z + y * w) @ nat | add_is_nat
+			(x * w + y * z) + (r * u + s * t) @ nat | add_is_nat
+
+			  (y * t + x * u) +((r * t + s * u) + (x * z + y * w))
+			= (y * t + x * u) + (r * t + s * u) + (x * z + y * w) | nat_add_assoc
+			= (y * t + r * t) + (x * u + s * u) + (x * z + y * w) | nat_paren_add_paren_comm
+			= (r * t + y * t) + (x * u + s * u) + (x * z + y * w) | nat_add_comm
+			= (x * t + s * t) + (x * u + s * u) + (x * z + y * w) | lema1
+			= (x * t + s * t) + (r * u + y * u) + (x * z + y * w) | lema1
+			= (x * t + s * t) +((r * u + y * u) + (x * z + y * w))| nat_add_assoc
+			= (x * t + s * t) +((r * u + x * z) + (y * u + y * w))| nat_paren_add_paren_comm
+			= (x * t + s * t) +((r * u + x * z) + (y * w + y * u))| nat_add_comm
+			= (x * t + s * t) +((r * u + x * z) + (y * t + y * z))| lema2
+			= (x * t + s * t) + (r * u + x * z) + (y * t + y * z) | nat_add_assoc
+			= (x * t + s * t) + (x * z + r * u) + (y * t + y * z) | nat_add_comm
+			= (x * t + x * z) + (s * t + r * u) + (y * t + y * z) | nat_paren_add_paren_comm
+			= (x * t + x * z) + (r * u + s * t) + (y * t + y * z) | nat_add_comm
+			= (x * w + x * u) + (r * u + s * t) + (y * t + y * z) | lema2
+			= (x * w + x * u) + (y * t + y * z) + (r * u + s * t) | nat_add_paren_comm_right
+			= (y * t + y * z) + (x * w + x * u) + (r * u + s * t) | nat_add_comm
+			= (y * t + y * z) + (x * u + x * w) + (r * u + s * t) | nat_add_comm
+			= (y * t + x * u) + (y * z + x * w) + (r * u + s * t) | nat_paren_add_paren_comm
+			= (y * t + x * u) + (x * w + y * z) + (r * u + s * t) | nat_add_comm
+			= (y * t + x * u) +((x * w + y * z) + (r * u + s * t))| nat_add_assoc
+
+			  Left(HelperOP{IntegerMultiplicationL, IntegerMultiplicationR}(a, b)) + Right(HelperOP{IntegerMultiplicationL, IntegerMultiplicationR}(c, d))
+			= (r * t + s * u) + Right(HelperOP{IntegerMultiplicationL, IntegerMultiplicationR}(c, d)) | left_op
+			= (r * t + s * u) + (x * z + y * w) | right_op
+			= (x * w + y * z) + (r * u + s * t) | nat_add_cancel_left
+			= (x * w + y * z) + Right(HelperOP{IntegerMultiplicationL, IntegerMultiplicationR}(a, b)) | right_op
+			= Left(HelperOP{IntegerMultiplicationL, IntegerMultiplicationR}(c, d)) + Right(HelperOP{IntegerMultiplicationL, IntegerMultiplicationR}(a, b)) | left_op
+			
+			| integers_are_equivalent
+		}
+
+		| is_helper_binary_well_defined
+	}
+}
+
+theorem int_mul : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> [d](d @ nat -> Int(a, b) ** Int(c, d) = Int(a * c + b * d, a * d + b * c))))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	element c from goal
+	c @ nat | assumption
+
+	element d from goal
+	d @ nat | assumption
+
+	IsHelperBinary{Int, IntegerMultiplicationL, IntegerMultiplicationR}(int, IntegerEquivalenceRelation, nat) | integer_multiplication_is_helper_binary
+
+	Int(a, b) ** Int(c, d) = HelperBinary{Int, IntegerMultiplicationL, IntegerMultiplicationR}(int) . OP(Int(a, b), Int(c, d)) | definition
+						   = Int(a * c + b * d, a * d + b * c) | helper_binary
+}
+
+theorem mul_is_int : [x](x @ int -> [y](y @ int -> x ** y @ int)) {
+	element x from goal
+	x @ int | assumption
+
+	element y from goal
+	y @ int | assumption
+
+	OP(x, y) @ CP(int, int) | op_in_cp
+
+	IsHelperBinary{Int, IntegerMultiplicationL, IntegerMultiplicationR}(int, IntegerEquivalenceRelation, nat) | integer_multiplication_is_helper_binary
+
+	IsFunction(HelperBinary{Int, IntegerMultiplicationL, IntegerMultiplicationR}(int), CP(int, int), int) | helper_binary
+	IsFunction(IntegerMultiplication, CP(int, int), int) | definition
+
+	x ** y @ int | is_function_map
+}

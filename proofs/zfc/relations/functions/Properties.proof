@@ -1,0 +1,38 @@
+import zfc.axioms.*
+import zfc.relations.relations.*
+
+predicate IsFunctional(3) {
+	definition(r, a, b): IsRelation(r, a, b) AND [x][y][z](OP(x, y) @ r AND OP(x, z) @ r -> y = z)
+	theorem: is_functional
+}
+
+predicate IsFunctionalRelation(3) {
+	sugar(r, a, b): IsRelation(r, a, b) AND IsFunctional(r, a, b)
+}
+
+predicate IsInjective(3) {
+	definition(r, a, b): IsRelation(r, a, b) AND [x][y][z](OP(x, z) @ r AND OP(y, z) @ r -> x = y)
+	theorem: is_injective
+}
+
+predicate IsInjectiveRelation(3) {
+	sugar(r, a, b): IsRelation(r, a, b) AND IsInjective(r, a, b)
+}
+
+predicate IsSerial(3) {
+	definition(r, a, b): IsRelation(r, a, b) AND [x](x @ a -> {y}(OP(x, y) @ r))
+	theorem: is_serial
+}
+
+predicate IsSerialRelation(3) {
+	sugar(r, a, b): IsRelation(r, a, b) AND IsSerial(r, a, b)
+}
+
+predicate IsSurjective(3) {
+	definition(r, a, b): IsRelation(r, a, b) AND [y](y @ b -> {x}(OP(x, y) @ r))
+	theorem: is_surjective
+}
+
+predicate IsSurjectiveRelation(3) {
+	sugar(r, a, b): IsRelation(r, a, b) AND IsSurjective(r, a, b)
+}

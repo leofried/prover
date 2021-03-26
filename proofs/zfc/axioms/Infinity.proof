@@ -1,0 +1,124 @@
+import zfc.axioms.EmptySet
+import zfc.axioms.Extensionality
+import zfc.axioms.Propositions
+import zfc.axioms.Separation
+import zfc.axioms.Subset
+import zfc.axioms.Successor
+
+predicate Inductive(1){
+	definition(a): 0 @ a AND [x](x @ a -> S(x) @ a)
+}
+
+function nat
+
+axiom axiom_of_infinity : Inductive(nat) AND [a](Inductive(a) -> nat # a)
+
+theorem zero_is_nat : 0 @ nat {
+	Inductive(nat) | axiom_of_infinity
+	0 @ nat | definition
+}
+
+theorem nat_succ : [a](a @ nat -> S(a) @ nat){
+	Inductive(nat) | axiom_of_infinity
+	[a](a @ nat -> S(a) @ nat) | definition
+}
+
+theorem nat_induction [P(1)] : P(0) AND [x](x @ nat -> P(x) -> P(S(x))) -> [x](x @ nat -> P(x)) {
+	P(0) AND [x](x @ nat -> P(x) -> P(S(x))) | assumption
+		
+	lemma : Inductive(Separate[:(k): P(k)](nat)) {
+		lemma : 0 @ Separate[:(k): P(k)](nat) {
+			P(0) | truths
+			0 @ nat | zero_is_nat
+			  @ Separate[:(k): P(k)](nat) | axiom_of_separation
+		}
+
+		lemma : [x](x @ Separate[:(k): P(k)](nat) -> S(x) @ Separate[:(k): P(k)](nat)){
+			element x from goal
+			x @ Separate[:(k): P(k)](nat) | assumption
+			x @ nat AND P(x) | axiom_of_separation
+
+			P(S(x)) | truths
+			S(x) @ nat | nat_succ
+			     @ Separate[:(k): P(k)](nat) | axiom_of_separation
+		}
+
+		Inductive(Separate[:(k): P(k)](nat)) | definition
+	}
+
+	nat # Separate[:(k): P(k)](nat) | axiom_of_infinity
+
+	element x from goal
+	x @ nat | assumption
+	  @ Separate[:(k): P(k)](nat) | in_superset
+	P(x) | axiom_of_separation
+}
+
+theorem nat_zero_or_succ : [a](a @ nat -> a = 0 OR {b}(b @ nat AND a = S(b))) {
+	0 = 0 OR {b}(b @ nat AND 0 = S(b)) | truths 
+
+	lemma : [a](a @ nat -> a = 0 OR {b}(b @ nat AND a = S(b)) -> S(a) = 0 OR {b}(b @ nat AND S(a) = S(b))) {
+		element a from goal
+		a @ nat | assumption
+		a = 0 OR {b}(b @ nat AND a = S(b)) | assumption
+		{b}(b @ nat AND S(a) = S(b)) | example
+	}
+
+	| nat_induction
+}
+
+theorem nat_cases [P] : [a](a @ nat -> (a = 0 -> P) AND ({b}(b @ nat AND a = S(b)) -> P) -> P) {
+	element a from goal
+	a @ nat | assumption
+
+	a = 0 OR {b}(b @ nat AND a = S(b)) | nat_zero_or_succ
+	(a = 0 -> P) AND ({b}(b @ nat AND a = S(b)) -> P) | assumption
+	P | cases : [a = 0, {b}(b @ nat AND a = S(b)), P]
+}
+
+function 1 {
+	definition: S(0)
+	theorem: one_is_succ_zero
+}
+
+theorem one_is_nat : 1 @ nat {   
+	0 @ nat | zero_is_nat
+	S(0) @ nat | nat_succ
+	   1 @ nat | one_is_succ_zero
+}
+
+function 2 {
+	definition: S(1)
+	theorem: two_is_succ_one
+}
+
+theorem two_is_succ_succ_zero : 2 = S(S(0)) {
+	2 = S(1) | two_is_succ_one
+	  = S(S(0)) | one_is_succ_zero
+}
+
+theorem two_is_nat : 2 @ nat {
+	1 @ nat | one_is_nat
+	S(1) @ nat | nat_succ
+	   2 @ nat | two_is_succ_one
+}
+
+theorem one_not_zero : 1 != 0 {
+	0 = 1 | assumption
+	  = S(0) | one_is_succ_zero
+	False | succ_not_zero
+}
+
+theorem two_not_zero : 2 != 0 {
+	0 = 2 | assumption
+	  = S(1) | two_is_succ_one
+	False | succ_not_zero
+}
+
+theorem two_not_one : 2 != 1 {
+	S(0) = 1 | one_is_succ_zero
+	     = 2 | assumption
+	     = S(1) | two_is_succ_one
+	0 = 1 | succ_inj
+	False | one_not_zero
+}

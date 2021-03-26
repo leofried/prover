@@ -1,0 +1,75 @@
+import zfc.axioms.*
+import zfc.numbers.naturals.*
+import zfc.numbers.integers.Integers
+import zfc.numbers.integers.IntegerAdditionAxioms
+
+theorem int_add_comm : [x](x @ int -> [y](y @ int -> x ++ y = y ++ x)) {
+	element x from goal
+	x @ int | assumption
+	element a, b from {a}{b}(a @ nat AND b @ nat AND x = Int(a, b)) | int_to_nat
+
+	element y from goal
+	y @ int | assumption
+	element c, d from {c}{d}(c @ nat AND d @ nat AND y = Int(c, d)) | int_to_nat
+
+	x ++ y = Int(a, b) ++ Int(c, d) | substitution
+	       = Int(a + c, b + d) | int_add
+	       = Int(c + a, b + d) | nat_add_comm
+	       = Int(c + a, d + b) | nat_add_comm
+	       = Int(c, d) ++ Int(a, b) | int_add
+	       = y ++ x | substitution
+}
+
+theorem int_add_assoc : [x](x @ int -> [y](y @ int -> [z](z @ int -> x ++ y ++ z = x ++ (y ++ z)))) {
+	element x from goal
+	x @ int | assumption
+	element a, b from {a}{b}(a @ nat AND b @ nat AND x = Int(a, b)) | int_to_nat
+
+	element y from goal
+	y @ int | assumption
+	element c, d from {c}{d}(c @ nat AND d @ nat AND y = Int(c, d)) | int_to_nat
+
+	element z from goal
+	z @ int | assumption
+	element e, f from {e}{f}(e @ nat AND f @ nat AND z = Int(e, f)) | int_to_nat
+
+	a + c @ nat | add_is_nat
+	b + d @ nat | add_is_nat
+	c + e @ nat | add_is_nat
+	d + f @ nat | add_is_nat
+
+	x ++ y ++ z = Int(a, b) ++ Int(c, d) ++ Int(e, f) | substitution
+	            = Int(a + c, b + d) ++ Int(e, f) | int_add
+	            = Int(a + c + e, b + d + f) | int_add
+	            = Int(a + (c + e), b + d + f) | nat_add_assoc
+	            = Int(a + (c + e), b + (d + f)) | nat_add_assoc
+	            = Int(a, b) ++ Int(c + e, d + f) | int_add
+	            = Int(a, b) ++ (Int(c, d) ++ Int(e, f)) | int_add
+	            = x ++ (y ++ z) | substitution
+}
+
+theorem int_add_zero : [x](x @ int -> x ++ 00 = x) {
+	element x from goal
+	x @ int | assumption
+	element a, b from {a}{b}(a @ nat AND b @ nat AND x = Int(a, b)) | int_to_nat
+
+	0 @ nat | zero_is_nat
+
+	x ++ 00 = Int(a, b) ++ 00 | substitution
+			= Int(a, b) ++ Int(0, 0) | int_is_zero
+	        = Int(a + 0, b + 0) | int_add
+	        = Int(a, b + 0) | nat_add_zero
+	        = Int(a, b) | nat_add_zero
+	        = x | substitution
+}
+
+theorem int_zero_add : [x](x @ int -> 00 ++ x = x) {
+	element x from goal
+	x @ int | assumption
+	element a, b from {a}{b}(a @ nat AND b @ nat AND x = Int(a, b)) | int_to_nat
+
+	00 @ int | zero_is_int
+
+	00 ++ x = x ++ 00 | int_add_comm
+	        = x | int_add_zero
+}

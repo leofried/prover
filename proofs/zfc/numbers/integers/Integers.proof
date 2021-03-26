@@ -1,0 +1,269 @@
+import zfc.axioms.*
+import zfc.relations.*
+import zfc.numbers.helpers.*
+import zfc.numbers.naturals.*
+
+function IntegerEquivalenceRelation(0) {
+	definition: Separate[:(k): Left(Left(k)) + Right(Right(k)) = Left(Right(k)) + Right(Left(k))](CP(CP(nat, nat), CP(nat, nat)))
+}
+
+function Int(2) {
+	definition(a, b): Part(IntegerEquivalenceRelation, OP(a, b))
+}
+
+function int {
+	definition: Partition(IntegerEquivalenceRelation)
+}
+
+theorem integers_are_equivalent : [o][p](Equiv(IntegerEquivalenceRelation, o, p) <-> o @ CP(nat, nat) AND p @ CP(nat, nat) AND Left(o) + Right(p) = Left(p) + Right(o)) {
+	element o, p from goal
+
+	lemma : IsRelation(IntegerEquivalenceRelation, CP(nat, nat), CP(nat, nat)) {
+		IsRelation(Separate[:(k): Left(Left(k)) + Right(Right(k)) = Left(Right(k)) + Right(Left(k))](CP(CP(nat, nat), CP(nat, nat))), CP(nat, nat), CP(nat, nat)) | separation_is_relation
+		IsRelation(IntegerEquivalenceRelation, CP(nat, nat), CP(nat, nat)) | definition
+	}
+
+	lemma : Equiv(IntegerEquivalenceRelation, o, p) -> o @ CP(nat, nat) AND p @ CP(nat, nat) AND Left(o) + Right(p) = Left(p) + Right(o) {
+		Equiv(IntegerEquivalenceRelation, o, p) | assumption
+		OP(o, p) @ IntegerEquivalenceRelation | equiv_op
+		         @ Separate[:(k): Left(Left(k)) + Right(Right(k)) = Left(Right(k)) + Right(Left(k))](CP(CP(nat, nat), CP(nat, nat))) | definition
+		o @ CP(nat, nat) AND p @ CP(nat, nat) | op_in_relation
+
+		Left(o) + Right(p) = Left(Left(OP(o, p))) + Right(p) | left_op
+		                   = Left(Left(OP(o, p))) + Right(Right(OP(o, p))) | right_op
+		                   = Left(Right(OP(o, p))) + Right(Left(OP(o, p))) | axiom_of_separation
+	                       = Left(Right(OP(o, p))) + Right(o) | left_op
+	                       = Left(p) + Right(o) | right_op
+	}
+
+	lemma : o @ CP(nat, nat) AND p @ CP(nat, nat) AND Left(o) + Right(p) = Left(p) + Right(o) -> Equiv(IntegerEquivalenceRelation, o, p) {
+		o @ CP(nat, nat) AND p @ CP(nat, nat) AND Left(o) + Right(p) = Left(p) + Right(o) | assumption
+		OP(o, p) @ CP(CP(nat, nat), CP(nat, nat)) | op_in_cp
+
+		Left(Left(OP(o, p))) + Right(Right(OP(o, p))) = Left(o) + Right(Right(OP(o, p))) | left_op
+		                                              = Left(o) + Right(p) | right_op
+		                                              = Left(p) + Right(o) | truths
+		                                              = Left(p) + Right(Left(OP(o, p))) | left_op
+		                                              = Left(Right(OP(o, p))) + Right(Left(OP(o, p))) | right_op
+
+		OP(o, p) @ Separate[:(k): Left(Left(k)) + Right(Right(k)) = Left(Right(k)) + Right(Left(k))](CP(CP(nat, nat), CP(nat, nat))) | axiom_of_separation
+		         @ IntegerEquivalenceRelation | definition
+		Equiv(IntegerEquivalenceRelation, o, p) | equiv_op
+	}
+}
+
+theorem integers_are_equivalence_relation : IsEquivalenceRelation(IntegerEquivalenceRelation, CP(nat, nat)) {
+	lemma : IsRelation(IntegerEquivalenceRelation, CP(nat, nat), CP(nat, nat)) {
+		IsRelation(Separate[:(k): Left(Left(k)) + Right(Right(k)) = Left(Right(k)) + Right(Left(k))](CP(CP(nat, nat), CP(nat, nat))), CP(nat, nat), CP(nat, nat)) | separation_is_relation
+		IsRelation(IntegerEquivalenceRelation, CP(nat, nat), CP(nat, nat)) | definition
+	}
+
+	lemma : IsReflexive(IntegerEquivalenceRelation, CP(nat, nat)) {
+		lemma : [o](o @ CP(nat, nat) -> Equiv(IntegerEquivalenceRelation, o, o)) {
+			element o from goal
+			o @ CP(nat, nat) | assumption
+			Left(o) + Right(o) = Left(o) + Right(o) | truths
+			Equiv(IntegerEquivalenceRelation, o, o) | integers_are_equivalent
+		}
+
+		| is_reflexive
+	}
+
+	lemma : IsSymmetric(IntegerEquivalenceRelation, CP(nat, nat)) {
+		lemma : [o][p](Equiv(IntegerEquivalenceRelation, o, p) -> Equiv(IntegerEquivalenceRelation, p, o)) {
+			element o, p from goal
+			Equiv(IntegerEquivalenceRelation, o, p) | assumption
+			o @ CP(nat, nat) AND p @ CP(nat, nat) | integers_are_equivalent
+			Left(o) + Right(p) = Left(p) + Right(o) | integers_are_equivalent
+			Equiv(IntegerEquivalenceRelation, p, o) | integers_are_equivalent
+		}
+
+		| is_symmetric
+	}
+
+	lemma : IsTransitive(IntegerEquivalenceRelation, CP(nat, nat)) {
+		lemma : [o][p][q](Equiv(IntegerEquivalenceRelation, o, p) AND Equiv(IntegerEquivalenceRelation, p, q) -> Equiv(IntegerEquivalenceRelation, o, q)) {
+			element o, p, q from goal
+			Equiv(IntegerEquivalenceRelation, o, p) AND Equiv(IntegerEquivalenceRelation, p, q) | assumption
+			o @ CP(nat, nat) AND p @ CP(nat, nat) | integers_are_equivalent
+			p @ CP(nat, nat) AND q @ CP(nat, nat) | integers_are_equivalent
+
+			lemma : Left(o) + Right(q) = Left(q) + Right(o) {
+				Left(o) @ nat AND Right(o) @ nat | in_cp
+				Left(p) @ nat AND Right(p) @ nat | in_cp
+				Left(q) @ nat AND Right(q) @ nat | in_cp
+
+				lemma : Left(o) + Right(q) + Right(p) = Left(q) + Right(o) + Right(p) {
+					Left(o) + Right(q) + Right(p) = Left(o) + Right(p) + Right(q) | nat_add_paren_comm_right
+					                              = Left(p) + Right(o) + Right(q) | integers_are_equivalent
+				                                  = Left(p) + Right(q) + Right(o) | nat_add_paren_comm_right
+				                                  = Left(q) + Right(p) + Right(o) | integers_are_equivalent
+				                                  = Left(q) + Right(o) + Right(p) | nat_add_paren_comm_right
+				}
+
+				Left(o) + Right(q) @ nat | add_is_nat
+				Left(q) + Right(o) @ nat | add_is_nat
+
+				Left(o) + Right(q) = Left(q) + Right(o) | nat_add_cancel_right
+			}
+
+			| integers_are_equivalent
+		}
+
+		| is_transitive
+	}
+}
+
+theorem integers_are_helper_partition : IsHelperPartition{Int}(int, IntegerEquivalenceRelation, nat) {
+	int = Partition(IntegerEquivalenceRelation) | definition
+
+	lemma : [x][y](Int(x, y) = Part(IntegerEquivalenceRelation, OP(x, y))) {
+		element x, y from goal
+		Int(x, y) = Part(IntegerEquivalenceRelation, OP(x, y)) | definition
+	}
+
+	| is_helper_partition
+}
+
+theorem int_to_nat : [x](x @ int -> {a}{b}(a @ nat AND b @ nat AND x = Int(a, b))) {
+	IsEquivalenceRelation(IntegerEquivalenceRelation, CP(nat, nat)) | integers_are_equivalence_relation
+
+	element x from goal
+	x @ int | assumption
+	  @ Partition(IntegerEquivalenceRelation) | definition
+	element o from {o}(o @ CP(nat, nat) AND x = Part(IntegerEquivalenceRelation, o)) | in_partition
+
+	Left(o) @ nat AND Right(o) @ nat AND IsOP(o) | in_cp
+	use Left(o)
+	use Right(o)
+
+	Int(Left(o), Right(o)) = Part(IntegerEquivalenceRelation, OP(Left(o), Right(o))) | definition
+	                       = Part(IntegerEquivalenceRelation, o) | op_left_right
+}
+
+theorem nat_to_int : [a][b](a @ nat AND b @ nat -> Int(a, b) @ int) {
+	IsEquivalenceRelation(IntegerEquivalenceRelation, CP(nat, nat)) | integers_are_equivalence_relation
+
+	element a, b from goal
+	a @ nat AND b @ nat | assumption
+	OP(a, b) @ CP(nat, nat) | op_in_cp
+	
+	Part(IntegerEquivalenceRelation, OP(a, b)) @ Partition(IntegerEquivalenceRelation) | part_in_partition
+	                                           @ int | definition
+	                                 Int(a, b) @ int | definition
+}
+
+theorem int_equiv : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> [d](d @ nat -> (a + d = b + c <-> Int(a, b) = Int(c, d)))))) {
+	element a from goal
+	a @ nat | assumption
+	
+	element b from goal
+	b @ nat | assumption
+	
+	element c from goal
+	c @ nat | assumption
+
+	element d from goal
+	d @ nat | assumption
+
+	OP(a, b) @ CP(nat, nat) | op_in_cp
+	OP(c, d) @ CP(nat, nat) | op_in_cp
+	IsEquivalenceRelation(IntegerEquivalenceRelation, CP(nat, nat)) | integers_are_equivalence_relation
+	IsHelperPartition{Int}(int, IntegerEquivalenceRelation, nat) | integers_are_helper_partition
+
+	lemma : a + d = b + c -> Int(a, b) = Int(c, d) {
+		Left(OP(a, b)) + Right(OP(c, d)) = a + Right(OP(c, d)) | left_op
+		                                 = a + d | right_op
+		                                 = b + c | assumption
+		                                 = c + b | nat_add_comm
+		                                 = c + Right(OP(a, b)) | right_op
+		                                 = Left(OP(c, d)) + Right(OP(a, b)) | left_op
+
+		Equiv(IntegerEquivalenceRelation, OP(a, b), OP(c, d)) | integers_are_equivalent
+
+		Int(a, b) = Part(IntegerEquivalenceRelation, OP(a, b)) | is_helper_partition
+		          = Part(IntegerEquivalenceRelation, OP(c, d)) | equiv_eq_part
+		          = Int(c, d) | is_helper_partition
+	}
+
+	lemma : Int(a, b) = Int(c, d) -> a + d = b + c {
+		Part(IntegerEquivalenceRelation, OP(a, b)) = Int(a, b) | is_helper_partition
+		                                           = Int(c, d) | assumption
+		                                           = Part(IntegerEquivalenceRelation, OP(c, d)) | is_helper_partition
+
+		Equiv(IntegerEquivalenceRelation, OP(a, b), OP(c, d)) | eq_part_equiv
+
+		a + d = a + Right(OP(c, d)) | right_op
+		      = Left(OP(a, b)) + Right(OP(c, d)) | left_op
+		      = Left(OP(c, d)) + Right(OP(a, b)) | integers_are_equivalent
+		      = Left(OP(c, d)) + b | right_op
+		      = c + b | left_op
+		      = b + c | nat_add_comm
+	}
+}
+
+
+function 00 {
+	definition: Int(0, 0)
+}
+
+theorem zero_is_int : 00 @ int {
+	0 @ nat | zero_is_nat
+	Int(0, 0) @ int | nat_to_int
+	00 @ int | definition
+}
+
+theorem int_is_zero : [a][b](a @ nat AND b @ nat -> (a = b <-> Int(a, b) = 00)) {
+	element a, b from goal
+	a @ nat AND b @ nat | assumption
+	OP(a, b) @ CP(nat, nat) | op_in_cp
+	0 @ nat | zero_is_nat
+	OP(0, 0) @ CP(nat, nat) | op_in_cp
+
+	IsEquivalenceRelation(IntegerEquivalenceRelation, CP(nat, nat)) | integers_are_equivalence_relation
+
+	lemma : a = b -> Int(a, b) = 00 {
+		Left(OP(a, b)) + Right(OP(0, 0)) = a + Right(OP(0, 0)) | left_op
+		                                 = a + 0 | right_op
+		                                 = 0 + a | nat_add_comm
+		                                 = 0 + b | assumption
+		                                 = 0 + Right(OP(a, b)) | right_op
+		                                 = Left(OP(0, 0)) + Right(OP(a, b)) | left_op
+
+		Equiv(IntegerEquivalenceRelation, OP(a, b), OP(0, 0)) | integers_are_equivalent
+
+		Int(a, b) = Part(IntegerEquivalenceRelation, OP(a, b)) | definition
+				  = Part(IntegerEquivalenceRelation, OP(0, 0)) | equiv_eq_part
+				  = Int(0, 0) | definition
+				  = 00 | definition
+	}
+
+	lemma : Int(a, b) = 00 -> a = b {
+		Part(IntegerEquivalenceRelation, OP(a, b)) = Int(a, b) | definition
+		                                           = 00 | assumption
+		                                           = Int(0, 0) | definition
+		                                           = Part(IntegerEquivalenceRelation, OP(0, 0)) | definition
+	
+		Equiv(IntegerEquivalenceRelation, OP(a, b), OP(0, 0)) | eq_part_equiv
+
+		a = a + 0 | nat_add_zero
+		  = a + Right(OP(0, 0)) | right_op
+		  = Left(OP(a, b)) + Right(OP(0, 0)) | left_op
+		  = Left(OP(0, 0)) + Right(OP(a, b)) | integers_are_equivalent
+		  = Left(OP(0, 0)) + b | right_op
+		  = 0 + b | left_op
+		  = b | nat_zero_add
+	}
+}
+
+function 11 {
+	definition: Int(1, 0)
+	theorem: int_is_one
+}
+
+theorem one_is_int : 11 @ int {
+	1 @ nat | one_is_nat
+	0 @ nat | zero_is_nat
+	Int(1, 0) @ int | nat_to_int
+	11 @ int | int_is_one
+}

@@ -1,0 +1,82 @@
+import zfc.axioms.*
+import zfc.relations.relations.*
+import zfc.relations.functions.Function
+import zfc.relations.functions.Properties
+
+predicate IsInjection(3) {
+	sugar(f, a, b): IsFunction(f, a, b) AND IsInjectiveRelation(f, a, b)
+}
+
+predicate IsSurjection(3) {
+	sugar(f, a, b): IsFunction(f, a, b) AND IsSurjectiveRelation(f, a, b)
+}
+
+predicate IsBijection(3) {
+	sugar(f, a, b): IsInjection(f, a, b) AND IsSurjection(f, a, b)
+}
+
+theorem is_injection : [f][a][b](IsInjection(f, a, b) <-> IsFunction(f, a, b) AND [x][y](x @ a AND y @ a AND f . x = f . y -> x = y)) {
+	element f, a, b from goal
+
+	lemma : IsInjection(f, a, b) -> IsFunction(f, a, b) AND [x][y](x @ a AND y @ a AND f . x = f . y -> x = y) {
+		IsInjection(f, a, b) | assumption
+
+		lemma : [x][y](x @ a AND y @ a AND f . x = f . y -> x = y) {
+			element x, y from goal
+			x @ a AND y @ a AND f . x = f . y | assumption
+			OP(x, f . x) @ f | is_function_ops
+			OP(y, f . x) @ f | is_function_ops
+			x = y | is_injective
+		}
+	}
+
+	lemma : IsFunction(f, a, b) AND [x][y](x @ a AND y @ a AND f . x = f . y -> x = y) -> IsInjection(f, a, b) {
+		IsFunction(f, a, b) AND [x][y](x @ a AND y @ a AND f . x = f . y -> x = y) | assumption
+
+		lemma : [x][y][z](OP(x, z) @ f AND OP(y, z) @ f -> x = y) {
+			element x, y, z from goal
+			OP(x, z) @ f AND OP(y, z) @ f | assumption
+
+			x @ a | op_in_relation
+			y @ a | op_in_relation
+
+			f . x = z   | is_function_ops
+			    = f . y | is_function_ops
+
+			x = y | truths
+		}
+
+		IsInjective(f, a, b) | is_injective
+	}
+}
+
+theorem is_surjection : [f][a][b](IsSurjection(f, a, b) <-> IsFunction(f, a, b) AND [y](y @ b -> {x}(x @ a AND f . x = y))) {
+	element f, a, b from goal
+
+	lemma : IsSurjection(f, a, b) -> IsFunction(f, a, b) AND [y](y @ b -> {x}(x @ a AND f . x = y)) {
+		IsSurjection(f, a, b) | assumption
+
+		lemma : [y](y @ b -> {x}(x @ a AND f . x = y)) {
+			element y from goal
+			y @ b | assumption
+			element x from {x} OP(x, y) @ f | is_surjective
+			use x
+			x @ a | op_in_relation
+			f . x = y | is_function_ops
+		}
+	}
+
+	lemma : IsFunction(f, a, b) AND [y](y @ b -> {x}(x @ a AND f . x = y)) -> IsSurjection(f, a, b) {
+		IsFunction(f, a, b) AND [y](y @ b -> {x}(x @ a AND f . x = y)) | assumption
+
+		lemma : [y](y @ b -> {x} OP(x, y) @ f) {
+			element y from goal
+			y @ b | assumption
+			element x from {x}(x @ a AND f . x = y) | truths
+			use x
+			OP(x, y) @ f | is_function_ops
+		}
+
+		IsSurjective(f, a, b) | is_surjective
+	}
+}

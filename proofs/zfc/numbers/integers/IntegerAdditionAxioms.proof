@@ -1,0 +1,132 @@
+import zfc.axioms.*
+import zfc.relations.*
+import zfc.numbers.helpers.*
+import zfc.numbers.naturals.*
+import zfc.numbers.integers.Integers
+
+function IntegerAdditionL(4) {
+	sugar(a, b, c, d): a + c
+}
+
+function IntegerAdditionR(4) {
+	sugar(a, b, c, d): b + d
+}
+
+function IntegerAddition {
+	definition: HelperBinary{Int, IntegerAdditionL, IntegerAdditionR}(int)
+}
+
+function ++ (2) {
+	sugar(a, b): IntegerAddition . OP(a, b)
+	strength: 1
+}
+
+theorem integer_addition_is_helper_binary : IsHelperBinary{Int, IntegerAdditionL, IntegerAdditionR}(int, IntegerEquivalenceRelation, nat) {
+	IsEquivalenceRelation(IntegerEquivalenceRelation, CP(nat, nat)) | integers_are_equivalence_relation
+
+	IsHelperPartition{Int}(int, IntegerEquivalenceRelation, nat) | integers_are_helper_partition
+
+	lemma : IsHelperBinaryClosed{IntegerAdditionL}(nat) {
+		lemma : [a][b][c][d](a @ nat AND b @ nat AND c @ nat AND d @ nat -> IntegerAdditionL(a, b, c, d) @ nat) {
+			element a, b, c, d from goal
+			a @ nat AND b @ nat AND c @ nat AND d @ nat | assumption
+			a + c @ nat | add_is_nat
+		}
+
+		| is_helper_binary_closed
+	}
+
+	lemma : IsHelperBinaryClosed{IntegerAdditionR}(nat) {
+		lemma : [a][b][c][d](a @ nat AND b @ nat AND c @ nat AND d @ nat -> IntegerAdditionR(a, b, c, d) @ nat) {
+			element a, b, c, d from goal
+			a @ nat AND b @ nat AND c @ nat AND d @ nat | assumption
+			b + d @ nat | add_is_nat
+		}
+
+		| is_helper_binary_closed
+	}
+
+	lemma : IsHelperBinaryWellDefined{IntegerAdditionL, IntegerAdditionR}(IntegerEquivalenceRelation, nat) {
+		lemma : 
+			[a][b][c][d](
+						a @ CP(nat, nat) AND b @ CP(nat, nat) AND c @ CP(nat, nat) AND d @ CP(nat, nat)
+					AND
+						Equiv(IntegerEquivalenceRelation, a, c) AND Equiv(IntegerEquivalenceRelation, b, d)
+				->
+					Equiv(IntegerEquivalenceRelation, HelperOP{IntegerAdditionL, IntegerAdditionR}(a, b), HelperOP{IntegerAdditionL, IntegerAdditionR}(c, d))
+			)
+		{
+
+			element a, b, c, d from goal
+			a @ CP(nat, nat) AND b @ CP(nat, nat) AND c @ CP(nat, nat) AND d @ CP(nat, nat) AND Equiv(IntegerEquivalenceRelation, a, c) AND Equiv(IntegerEquivalenceRelation, b, d) | assumption
+
+			HelperOP{IntegerAdditionL, IntegerAdditionR}(a, b) @ CP(nat, nat) | is_helper_binary_closed_op
+			HelperOP{IntegerAdditionL, IntegerAdditionR}(c, d) @ CP(nat, nat) | is_helper_binary_closed_op
+
+			function r {sugar: Left (a)}
+			function s {sugar: Right(a)}
+			function t {sugar: Left (b)}
+			function u {sugar: Right(b)}
+			function x {sugar: Left (c)}
+			function y {sugar: Right(c)}
+			function w {sugar: Left (d)}
+			function z {sugar: Right(d)}
+
+			r @ nat AND s @ nat | in_cp
+			t @ nat AND u @ nat | in_cp
+			x @ nat AND y @ nat | in_cp
+			w @ nat AND z @ nat | in_cp
+
+			  Left(HelperOP{IntegerAdditionL, IntegerAdditionR}(a, b)) + Right(HelperOP{IntegerAdditionL, IntegerAdditionR}(c, d))
+			= (r + t) + Right(HelperOP{IntegerAdditionL, IntegerAdditionR}(c, d)) | left_op
+			= (r + t) + (y + z) | right_op
+			= (r + y) + (t + z) | nat_paren_add_paren_comm
+			= (x + s) + (t + z) | integers_are_equivalent
+			= (x + s) + (w + u) | integers_are_equivalent
+			= (x + w) + (s + u) | nat_paren_add_paren_comm
+			= (x + w) + Right(HelperOP{IntegerAdditionL, IntegerAdditionR}(a, b)) | right_op
+			= Left(HelperOP{IntegerAdditionL, IntegerAdditionR}(c, d)) + Right(HelperOP{IntegerAdditionL, IntegerAdditionR}(a, b)) | left_op
+
+			| integers_are_equivalent
+		}
+
+		| is_helper_binary_well_defined
+	}
+}
+
+theorem int_add : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> [d](d @ nat -> Int(a, b) ++ Int(c, d) = Int(a + c, b + d))))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	element c from goal
+	c @ nat | assumption
+
+	element d from goal
+	d @ nat | assumption
+
+
+	IsHelperBinary{Int, IntegerAdditionL, IntegerAdditionR}(int, IntegerEquivalenceRelation, nat) | integer_addition_is_helper_binary
+
+	Int(a, b) ++ Int(c, d) = HelperBinary{Int, IntegerAdditionL, IntegerAdditionR}(int) . OP(Int(a, b), Int(c, d)) | definition
+						   = Int(a + c, b + d) | helper_binary
+}
+
+theorem add_is_int : [x](x @ int -> [y](y @ int -> x ++ y @ int)) {
+	element x from goal
+	x @ int | assumption
+
+	element y from goal
+	y @ int | assumption
+
+	OP(x, y) @ CP(int, int) | op_in_cp
+
+	IsHelperBinary{Int, IntegerAdditionL, IntegerAdditionR}(int, IntegerEquivalenceRelation, nat) | integer_addition_is_helper_binary
+
+	IsFunction(HelperBinary{Int, IntegerAdditionL, IntegerAdditionR}(int), CP(int, int), int) | helper_binary
+	IsFunction(IntegerAddition, CP(int, int), int) | definition
+
+	x ++ y @ int | is_function_map
+}

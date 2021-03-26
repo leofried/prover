@@ -1,0 +1,223 @@
+import zfc.axioms.*
+import zfc.relations.*
+import zfc.numbers.helpers.HelperPartition
+/*
+function HelperOP {(4), (4)}(2) {
+	sugar{L, R}(s, t): OP(L(Left(s), Right(s), Left(t), Right(t)), R(Left(s), Right(s), Left(t), Right(t)))
+}
+
+function HelperOperator {(2), (4), (4)}(2) {
+	sugar{P, L, R}(s, t): P(L(Left(s), Right(s), Left(t), Right(t)), R(Left(s), Right(s), Left(t), Right(t)))
+}
+
+function HelperUnary {(2), (2), (2)}(1) {
+	definition{P, L, R}(p): Separate
+		[:(k):
+			[s](
+					s @ Left(k)
+				->
+					Right(k) = P(L(Left(s), Right(s)), R(Left(s), Right(s)))
+			)
+		]
+		(CP(p, p))
+}
+
+predicate IsHelperUnaryClosed {(2)}(1) {
+	definition{F}(a): [x][y](x @ a AND y @ a -> F(x, y) @ a)
+	theorem: is_helper_unary_closed
+}
+
+predicate IsHelperUnaryWellDefined{(2), (2)}(2) {
+	definition{L, R}(r, a): 
+		[s][t](
+					s @ CP(a, a) AND t @ CP(a, a)
+				AND
+					Equiv(r, s, t)
+			->
+				Equiv(r, P(L(Left(s), Right(s)), R(Left(s), Right(s))), P(L(Left(t), Right(t)), R(Left(t), Right(t))))
+		)
+	theorem: is_helper_unary_well_defined
+}
+
+predicate IsHelperUnary{(2), (2), (2)}(3) {
+	sugar{P, L, R}(p, r, a):
+		IsEquivalenceRelation(r, CP(a, a)) AND
+		IsHelperPartition{P}(p, r, a) AND
+		IsHelperUnaryClosed{L}(a) AND
+		IsHelperUnaryClosed{R}(a) AND
+		IsHelperUnaryWellDefined{L, R}(r, a)
+}
+
+theorem helper_unary {P(2), L(4), R(4)}:
+	[p][r][a](IsHelperUnary{P, L, R}(p, r, a) ->
+		IsFunction(HelperUnary{P, L, R}(p), CP(p, p), p) AND
+		[x][y][w][z](
+				x @ a AND y @ a AND w @ a AND z @ a
+			->
+				HelperUnary{P, L, R}(p) . OP(P(x, y), P(w, z))
+					=
+				P(L(x, y, w, z), R(x, y, w, z))
+		)
+	)
+{
+
+	element p, r, a from goal
+	IsHelperUnary{P, L, R}(p, r, a) | assumption
+
+	lemma lema1 : [x][y](x @ a AND y @ a -> OP(P(x, y), P(L(x, y), R(x, y))) @ HelperUnary{P, L, R}(p)) {
+		element x, y from goal
+		x @ a AND y @ a | assumption
+
+		function o {
+			sugar: OP(P(x, y), P(L(x, y), R(x, y)))
+		}
+
+		lemma : [s](s @ Left(o) -> Right(o) = P(L(Left(s), Right(s)), R(Left(s), Right(s))) {
+			element s from goal
+			s @ Left(o) | assumption
+
+			OP(x, y) @ CP(a, a) | op_in_cp
+			s @ Left(OP(P(x, y), P() | left_op
+			  @ P(x, y) | left_op
+			  @ Part(r, OP(x, y)) | is_helper_partition
+			  @ CP(a, a) | part_is_subset
+			Equiv(r, OP(x, y), s) | equiv_part
+
+			OP(w, z) @ CP(a, a) | op_in_cp
+			t @ Right(OP(P(x, y), P(w, z))) | left_op
+			  @ P(w, z) | right_op
+			  @ Part(r, OP(w, z)) | is_helper_partition
+			  @ CP(a, a) | part_is_subset
+			Equiv(r, OP(w, z), t) | equiv_part
+
+			Equiv(r, HelperOP{L, R}(OP(x, y), OP(w, z)), HelperOP{L, R}(s, t)) | is_helper_binary_well_defined
+		
+			Right(o) = P(L(x,              y,               w,              z              ), R(x,              y,               w,              z              )) | right_op
+			         = P(L(Left(OP(x, y)), y,               w,              z              ), R(Left(OP(x, y)), y,               w,              z              )) | left_op
+			         = P(L(Left(OP(x, y)), Right(OP(x, y)), w,              z              ), R(Left(OP(x, y)), Right(OP(x, y)), w,              z              )) | right_op
+			         = P(L(Left(OP(x, y)), Right(OP(x, y)), Left(OP(w, z)), z              ), R(Left(OP(x, y)), Right(OP(x, y)), Left(OP(w, z)), z              )) | left_op
+			         = P(L(Left(OP(x, y)), Right(OP(x, y)), Left(OP(w, z)), Right(OP(w, z))), R(Left(OP(x, y)), Right(OP(x, y)), Left(OP(w, z)), Right(OP(w, z)))) | right_op
+			         = Part(r, HelperOP{L, R}(OP(x, y), OP(w, z))) | is_helper_partition
+			         = Part(r, HelperOP{L, R}(s, t)) | equiv_eq_part
+			         = HelperOperator{P, L, R}(s, t) | is_helper_partition
+		}
+
+		lemma : o @ CP(CP(p, p), p) {
+			lemma lema2 : [u][v](u @ a AND v @ a -> P(u, v) @ p) {
+				element u, v from goal
+				u @ a AND v @ a | assumption
+				OP(u, v) @ CP(a, a) | op_in_cp
+				Part(r, OP(u, v)) @ Partition(r) | part_in_partition
+				          P(u, v) @ Partition(r) | is_helper_partition
+				          P(u, v) @ p | is_helper_partition
+			}
+
+			P(x, y) @ p | lema2
+			P(w, z) @ p | lema2
+			OP(P(x, y), P(w, z)) @ CP(p, p) | op_in_cp
+
+			L(x, y, w, z) @ a | is_helper_binary_closed
+			R(x, y, w, z) @ a | is_helper_binary_closed
+			P(L(x, y, w, z), R(x, y, w, z)) @ p | lema2
+			OP(OP(P(x, y), P(w, z)), P(L(x, y, w, z), R(x, y, w, z))) @ CP(CP(p, p), p) | op_in_cp
+		}
+
+		o @ Separate[:(k): [s][t](s @ Left(Left(k)) AND t @ Right(Left(k)) -> Right(k) = HelperOperator{P, L, R}(s, t))](CP(CP(p, p), p)) | axiom_of_separation	
+		  @ HelperUnary{P, L, R}(p) | definition
+	}
+
+	lemma : IsFunction(HelperUnary{P, L, R}(p), CP(p, p), p) {
+		lemma : IsRelation(HelperUnary{P, L, R}(p), CP(p, p), p) {
+			IsRelation(Separate[:(k): [s][t](s @ Left(Left(k)) AND t @ Right(Left(k)) -> Right(k) = HelperOperator{P, L, R}(s, t))](CP(CP(p, p), p)), CP(p, p), p) | separation_is_relation
+			| definition
+		}
+
+		lemma : IsFunctional(HelperUnary{P, L, R}(p), CP(p, p), p) {
+			
+			lemma : [o][b][c](OP(o, b) @ HelperUnary{P, L, R}(p) AND OP(o, c) @ HelperUnary{P, L, R}(p) -> b = c) {
+				element o, b, c from goal
+				OP(o, b) @ HelperUnary{P, L, R}(p) AND OP(o, c) @ HelperUnary{P, L, R}(p) | assumption
+				OP(o, b) @ Separate[:(k): [s][t](s @ Left(Left(k)) AND t @ Right(Left(k)) -> Right(k) = HelperOperator{P, L, R}(s, t))](CP(CP(p, p), p)) | definition
+				OP(o, c) @ Separate[:(k): [s][t](s @ Left(Left(k)) AND t @ Right(Left(k)) -> Right(k) = HelperOperator{P, L, R}(s, t))](CP(CP(p, p), p)) | definition
+
+				o @ CP(p, p) | op_in_relation
+
+				Left(o) @ p | in_cp
+						@ Partition(r) | is_helper_partition
+				element s from {s}(s @ CP(a, a) AND Left(o) = Part(r, s)) | in_partition
+				Equiv(r, s, s) | is_reflexive
+				s @ Part(r, s) | equiv_part
+				  @ Left(o) | substitution
+				  @ Left(Left(OP(o, b))) | left_op
+				  @ Left(Left(OP(o, c))) | left_op
+
+				Right(o) @ p | in_cp
+						 @ Partition(r) | is_helper_partition
+				element t from {t}(t @ CP(a, a) AND Right(o) = Part(r, t)) | in_partition
+				Equiv(r, t, t) | is_reflexive
+				t @ Part(r, t) | equiv_part
+				  @ Right(o) | substitution
+				  @ Right(Left(OP(o, b))) | left_op
+				  @ Right(Left(OP(o, c))) | left_op
+
+				b = Right(OP(o, b)) | right_op
+				  = HelperOperator{P, L, R}(s, t) | axiom_of_separation
+				  = Right(OP(o, c)) | axiom_of_separation
+				  = c | right_op
+			}
+
+			| is_functional
+		}
+
+		lemma : IsSerial(HelperUnary{P, L, R}(p), CP(p, p), p) {
+			lemma : [o](o @ CP(p, p) -> {s}(OP(o, s) @ HelperUnary{P, L, R}(p))) {
+				element o from goal
+				o @ CP(p, p) | assumption
+				Left(o) @ p AND Right(o) @ p AND IsOP(o) | in_cp
+				Left(o) @ Partition(r) | is_helper_partition
+				Right(o) @ Partition(r) | is_helper_partition
+
+				element s from {s}(s @ CP(a, a) AND Left(o) = Part(r, s)) | in_partition
+				element t from {t}(t @ CP(a, a) AND Right(o) = Part(r, t)) | in_partition
+
+				Left(s) @ a AND Right(s) @ a AND IsOP(s) | in_cp
+				Left(t) @ a AND Right(t) @ a AND IsOP(t) | in_cp
+
+				use HelperOperator{P, L, R}(s, t)
+
+				OP(OP(P(Left(s), Right(s)),                     P(Left(t), Right(t))),                     HelperOperator{P, L, R}(s, t)) @ HelperUnary{P, L, R}(p) | lema1
+				OP(OP(Part(r, OP(Left(s), Right(s))),           P(Left(t), Right(t))),                     HelperOperator{P, L, R}(s, t)) @ HelperUnary{P, L, R}(p) | is_helper_partition
+				OP(OP(Part(r, s),                               P(Left(t), Right(t))),                     HelperOperator{P, L, R}(s, t)) @ HelperUnary{P, L, R}(p) | op_left_right
+				OP(OP(Left(o),                                  P(Left(t), Right(t))),                     HelperOperator{P, L, R}(s, t)) @ HelperUnary{P, L, R}(p) | substitution
+				OP(OP(Left(o),                                  Part(r, OP(Left(t), Right(t)))),           HelperOperator{P, L, R}(s, t)) @ HelperUnary{P, L, R}(p) | is_helper_partition
+				OP(OP(Left(o),                                  Part(r, t)),                               HelperOperator{P, L, R}(s, t)) @ HelperUnary{P, L, R}(p) | op_left_right
+				OP(OP(Left(o),                                  Right(o)),                                 HelperOperator{P, L, R}(s, t)) @ HelperUnary{P, L, R}(p) | substitution
+				OP(o,                                                                                      HelperOperator{P, L, R}(s, t)) @ HelperUnary{P, L, R}(p) | op_left_right				
+			}
+
+			| is_serial
+		}
+	}
+
+	lemma : [x][y][w][z](x @ a AND y @ a AND w @ a AND z @ a -> HelperUnary{P, L, R}(p) . OP(P(x, y), P(w, z)) = P(L(x, y, w, z), R(x, y, w, z))) {
+		element x, y, w, z from goal
+		x @ a AND y @ a AND w @ a AND z @ a | assumption
+		OP(OP(P(x, y), P(w, z)), P(L(x, y, w, z), R(x, y, w, z))) @ HelperUnary{P, L, R}(p) | lema1
+		HelperUnary{P, L, R}(p) . OP(P(x, y), P(w, z)) = P(L(x, y, w, z), R(x, y, w, z)) | is_function_ops
+	}
+}
+
+theorem is_helper_binary_closed_op {L(4), R(4)} : [a](IsHelperUnaryClosed{L}(a) AND IsHelperUnaryClosed{R}(a) -> [x][y](x @ CP(a, a) AND y @ CP(a, a) -> HelperOP{L, R}(x, y) @ CP(a, a))) {
+	element a from goal
+	IsHelperUnaryClosed{L}(a) AND IsHelperUnaryClosed{R}(a) | assumption
+	element x, y from goal
+	x @ CP(a, a) AND y @ CP(a, a) | assumption
+
+	Left(x) @ a AND Right(x) @ a | in_cp
+	Left(y) @ a AND Right(y) @ a | in_cp
+
+	L(Left(x), Right(x), Left(y), Right(y)) @ a | is_helper_binary_closed
+	R(Left(x), Right(x), Left(y), Right(y)) @ a | is_helper_binary_closed
+
+	HelperOP{L, R}(x, y) @ CP(a, a) | op_in_cp
+}

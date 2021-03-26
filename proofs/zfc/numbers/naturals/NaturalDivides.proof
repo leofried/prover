@@ -1,0 +1,296 @@
+import zfc.axioms.*
+import zfc.relations.relations.*
+import zfc.numbers.naturals.NaturalAdditionAxioms
+import zfc.numbers.naturals.NaturalAdditionTheorems
+import zfc.numbers.naturals.NaturalMultiplicationAxioms
+import zfc.numbers.naturals.NaturalMultiplicationTheorems
+import zfc.numbers.naturals.NaturalInequality
+
+function NaturalDivides {
+	definition: Separate[:(k): {c}(c @ nat AND Left(k) * c = Right(k))](CP(nat, nat))
+}
+
+predicate \ (2) {
+	definition(a, b): OP(a, b) @ NaturalDivides
+	strength: 0
+}
+
+theorem nat_div_definition : [a](a @ nat -> [b](b @ nat -> a \ b -> {c}(c @ nat AND a * c = b))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	a \ b | assumption
+	OP(a, b) @ NaturalDivides | definition
+	         @ Separate[:(k): {c}(c @ nat AND Left(k) * c = Right(k))](CP(nat, nat)) | definition
+
+	{c}(c @ nat AND Left(OP(a, b)) * c = Right(OP(a, b))) | axiom_of_separation
+	{c}(c @ nat AND a * c = Right(OP(a, b))) | left_op
+	{c}(c @ nat AND a * c = b) | right_op
+}
+
+theorem nat_div_example : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> a * c = b -> a \ b))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	OP(a, b) @ CP(nat, nat) | op_in_cp
+
+	element c from goal
+	c @ nat | assumption
+
+	a * c = b | assumption
+	{c}(c @ nat AND a * c = b) | example
+	{c}(c @ nat AND Left(OP(a, b)) * c = b) | left_op
+	{c}(c @ nat AND Left(OP(a, b)) * c = Right(OP(a, b))) | right_op
+
+	OP(a, b) @ Separate[:(k): {c}(c @ nat AND Left(k) * c = Right(k))](CP(nat, nat)) | axiom_of_separation
+	         @ NaturalDivides | definition
+	a \ b | definition
+}
+
+theorem nat_div_refl : [a](a @ nat -> a \ a) {
+	element a from goal
+	a @ nat | assumption
+	1 @ nat | one_is_nat
+	a * 1 = a | nat_mul_one
+	a \ a | nat_div_example
+}
+
+theorem nat_div_trans : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> a \ b AND b \ c -> a \ c))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	element c from goal
+	c @ nat | assumption
+
+	a \ b AND b \ c | assumption
+	element d from {d}(d @ nat AND a * d = b) | nat_div_definition
+	element e from {e}(e @ nat AND b * e = c) | nat_div_definition
+	d * e @ nat | mul_is_nat
+
+	a * (d * e) = a * d * e | nat_mul_assoc
+				= b * e | substitution
+				= c | substitution
+	a \ c | nat_div_example
+}
+
+theorem nat_div_zero : [a](a @ nat -> a \ 0) {
+	element a from goal
+	a @ nat | assumption
+	0 @ nat | zero_is_nat
+	a * 0 = 0 | nat_mul_zero
+	a \ 0 | nat_div_example
+}
+
+theorem nat_zero_div : [a](a @ nat -> 0 \ a -> a = 0) {
+	element a from goal
+	a @ nat | assumption
+	0 @ nat | zero_is_nat
+	0 \ a | assumption
+	element b from {b}(b @ nat AND 0 * b = a) | nat_div_definition
+	a = 0 | nat_zero_mul
+}
+
+theorem nat_div_zero_or_le : [a](a @ nat -> [b](b @ nat -> a \ b -> b = 0 OR a <= b)) {
+	1 @ nat | one_is_nat
+
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	a \ b | assumption
+	element c from {c}(c @ nat AND a * c = b) | nat_div_definition
+
+	lemma : c = 0 -> b = 0 OR a <= b {
+		b = a * c | truths
+		  = a * 0 | assumption
+		  = 0 | nat_mul_zero
+	}
+
+	lemma : {d}(d @ nat AND c = S(d)) -> b = 0 OR a <= b {
+		element d from {d}(d @ nat AND c = S(d)) | assumption
+		a * d @ nat | mul_is_nat
+
+		b = a * c | truths
+		  = a * S(d) | substitution
+		  = a * (1 + d) | nat_one_add
+		  = a * 1 + a * d | nat_mul_add
+		  = a + a * d | nat_mul_one
+		a <= b | nat_le_example
+	}
+
+	| nat_cases
+}
+
+theorem nat_div_one : [a](a @ nat -> a \ 1 -> a = 1){
+	1 @ nat | one_is_nat
+
+	element a from goal
+	a @ nat | assumption
+	
+	a \ 1 | assumption
+	
+	1 != 0 | one_not_zero
+	a <= 1 | nat_div_zero_or_le
+
+	lemma : a != 0 {
+		0 \ 1 | assumption
+		0 = 1 | nat_zero_div
+		False | one_not_zero
+	}
+
+	| nat_le_one
+}
+
+theorem nat_div_extend_right : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> a \ b -> a \ b * c))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	element c from goal
+	c @ nat | assumption
+	b * c @ nat | mul_is_nat
+
+	a \ b | assumption
+	element d from {d}(d @ nat AND a * d = b) | nat_div_definition
+	d * c @ nat | mul_is_nat
+
+	a * (d * c) = a * d * c | nat_mul_assoc
+				= b * c | substitution
+	a \ b * c | nat_div_example
+}
+
+theorem nat_div_extend_left : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> a \ b -> a \ c * b))) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	element c from goal
+	c @ nat | assumption
+
+	a \ b | assumption
+	  \ b * c | nat_div_extend_right
+	  \ c * b | nat_mul_comm
+}
+
+theorem nat_div_cancel_left : [a](a @ nat -> a = 0 OR [b](b @ nat -> [c](c @ nat -> a * b \ a * c -> b \ c))) {
+	element a from goal
+	a @ nat | assumption
+	a != 0 | assumption
+	
+	element b from goal
+	b @ nat | assumption
+	a * b @ nat | mul_is_nat
+
+	element c from goal
+	c @ nat | assumption
+	a * c @ nat | mul_is_nat
+
+	a * b \ a * c | assumption
+	element d from {d}(d @ nat AND a * b * d = a * c) | nat_div_definition
+	b * d @ nat | mul_is_nat
+
+	a * c = a * b * d | truths
+		  = a * (b * d) | nat_mul_assoc
+	b * d = c | nat_mul_cancel_left
+	b \ c | nat_div_example
+}
+
+theorem nat_div_cancel_right : [a](a @ nat -> a = 0 OR [b](b @ nat -> [c](c @ nat -> b * a \ c * a -> b \ c))) {
+	element a from goal
+	a @ nat | assumption
+	a != 0 | assumption
+	
+	element b from goal
+	b @ nat | assumption
+
+	element c from goal
+	c @ nat | assumption
+
+	b * a \ c * a | assumption
+	a * b \       | nat_mul_comm
+	      \ a * c | nat_mul_comm
+	b \ c | nat_div_cancel_left 
+}
+
+theorem nat_div_split : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> a \ b + c -> (a \ b <-> a \ c)))) {
+	element a from goal
+	a @ nat | assumption
+
+	lemma lema : [b](b @ nat -> [c](c @ nat -> a \ b + c -> (a \ b -> a \ c))) {
+		element b from goal
+		b @ nat | assumption
+
+		element c from goal
+		c @ nat | assumption
+		b + c @ nat | add_is_nat
+
+		a \ b + c | assumption
+		element d from {d}(d @ nat AND a * d = b + c) | nat_div_definition
+		a * d @ nat | mul_is_nat
+
+		a \ b | assumption
+		element e from {e}(e @ nat AND a * e = b) | nat_div_definition
+		a * e @ nat | mul_is_nat
+
+		lemma : a = 0 -> a \ c {
+			0 \ b + c | assumption
+			0 = b + c | nat_zero_div
+			a \ 0 | nat_div_zero
+			  \ c | nat_add_to_zero_right
+		}
+
+		lemma : a != 0 -> a \ c {
+			a != 0 | assumption
+
+			a * d = b + c | truths
+			      = a * e + c | substitution
+			a * e <= a * d | nat_le_example
+			e <= d | nat_le_cancel_mul_left
+			element f from {f}(f @ nat AND e + f = d) | nat_le_definition
+			a * f @ nat | mul_is_nat
+
+			b + a * f = a * e + a * f | substitution
+			          = a * (e + f) | nat_mul_add
+			          = a * d | substitution
+			          = b + c | substitution
+			a * f = c | nat_add_cancel_left
+			a \ c | nat_div_example
+		}
+
+		| excluded_middle
+	}
+
+	element b from goal
+	b @ nat | assumption
+
+	element c from goal
+	c @ nat | assumption
+
+	a \ b + c | assumption
+	  \ c + b | nat_add_comm
+
+	lemma : a \ b -> a \ c {
+		a \ b | assumption
+		  \ c | lema
+	}
+
+	lemma : a \ c -> a \ b {
+		a \ c | assumption
+		  \ b | lema
+	}
+}

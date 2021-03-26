@@ -1,0 +1,12 @@
+import zfc.axioms.Extensionality
+import zfc.axioms.Subset
+
+function Separate[(1)](1)
+
+axiom axiom_of_separation [P(1)] : [a][x](x @ Separate[P](a) <-> x @ a AND P(x))
+
+theorem separation_is_subset [P(1)] : [a](Separate[P](a) # a){ 
+	element a, x from goal
+	x @ Separate[P](a) | assumption
+	  @ a | axiom_of_separation
+}

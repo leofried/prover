@@ -1,0 +1,5 @@
+predicate @(2) {
+	strength: 0
+}
+
+axiom axiom_of_extensionality : [a][b]([x](x @ a <-> x @ b) -> a = b)

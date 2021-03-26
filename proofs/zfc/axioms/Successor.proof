@@ -1,0 +1,59 @@
+import zfc.axioms.EmptySet
+import zfc.axioms.Extensionality
+import zfc.axioms.Foundation
+import zfc.axioms.Pairing
+import zfc.axioms.Propositions
+import zfc.axioms.Separation
+import zfc.axioms.Simple
+import zfc.axioms.Subset
+
+function S(1){
+	definition(x): SimpleUnion(x, Singleton(x))
+}
+
+theorem succ_not_zero : [a] NOT S(a) = 0 {
+	element a from goal
+
+	a @ Singleton(a) | in_singleton
+	  @ SimpleUnion(a, Singleton(a)) | in_simple_union
+	  @ S(a) | definition
+
+	NOT S(a) = 0 | not_empty_is_not_empty_set
+}
+
+theorem succ_inj : [a][b](S(a) = S(b) -> a = b) {
+	element a, b from goal
+	SimpleUnion(a, Singleton(a)) = S(a) | definition
+	                             = S(b) | assumption
+	                             = SimpleUnion(b, Singleton(b)) | definition
+	
+	a @ Singleton(a) | in_singleton
+	  @ SimpleUnion(a, Singleton(a)) | in_simple_union
+	  @ SimpleUnion(b, Singleton(b)) | substitution
+
+	a @ b OR a @ Singleton(b) | in_simple_union
+
+	lemma : a @ b -> a = b {
+		a @ b | assumption
+
+		b @ Singleton(b) | in_singleton
+		  @ SimpleUnion(b, Singleton(b)) | in_simple_union
+		  @ SimpleUnion(a, Singleton(a)) | substitution
+
+		b @ a OR b @ Singleton(a) | in_simple_union
+
+		lemma : b @ a -> a = b {
+			b @ a | assumption
+			False | element_of_asymmetric
+			a = b | explosion
+		}
+
+		b @ Singleton(a) -> a = b | in_singleton
+
+		a = b | cases : [b @ a, b @ Singleton(a), a = b]
+	}
+
+	a @ Singleton(b) -> a = b | in_singleton
+
+	a = b | cases : [a @ b, a @ Singleton(b), a = b]
+}

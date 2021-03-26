@@ -1,0 +1,74 @@
+import zfc.axioms.Extensionality
+import zfc.axioms.Pairing
+import zfc.axioms.Power
+import zfc.axioms.Propositions
+import zfc.axioms.Subset
+
+function Union(1)
+
+axiom axiom_of_union : [a][x](x @ Union(a) <-> {b}(x @ b AND b @ a))
+
+theorem in_union : [a][b][c](a @ b AND b @ c -> a @ Union(c)){
+	element a, b, c from goal
+	a @ b AND b @ c | assumption
+	{x}(a @ x AND x @ c) | example
+	a @ Union(c) | axiom_of_union
+}
+
+theorem double_union : [a][b][c](a @ Union(b) AND b @ c -> a @ Union(Union(c))) {
+	element a, b, c from goal
+	a @ Union(b) AND b @ c | assumption
+	element d from {d}(a @ d AND d @ b) | axiom_of_union
+	d @ Union(c) | in_union
+	a @ Union(Union(c)) | in_union
+}
+
+theorem subset_union : [a][b](b @ a -> b # Union(a)) {
+	element a, b from goal
+	b @ a | assumption
+	element x from goal
+	x @ b | assumption
+	x @ Union(a) | in_union
+}
+
+theorem union_singleton : [a] Union(Singleton(a)) = a {
+	element a from goal
+
+	lemma : Union(Singleton(a)) # a {
+		element x from goal
+		x @ Union(Singleton(a)) | assumption
+		element b from {b}(x @ b AND b @ Singleton(a)) | axiom_of_union
+		a = b | in_singleton
+		x @ a | substitution
+	}
+
+	lemma : a # Union(Singleton(a)) {
+		element x from goal
+		x @ a | assumption
+		a @ Singleton(a) | in_singleton
+		x @ Union(Singleton(a)) | in_union
+	}
+
+	Union(Singleton(a)) = a | double_inclusion
+}
+
+theorem union_power : [a](Union(Power(a)) = a) {
+	element a from goal
+
+	lemma : Union(Power(a)) # a {
+		element x from goal
+		x @ Union(Power(a)) | assumption
+		element b from {b}(x @ b AND b @ Power(a)) | axiom_of_union
+		b # a | axiom_of_power
+		x @ a | in_superset
+	}
+
+	lemma : a # Union(Power(a)) {
+		element x from goal
+		x @ a | assumption
+		a @ Power(a) | set_in_power_set
+		x @ Union(Power(a)) | in_union
+	}
+
+	Union(Power(a)) = a | double_inclusion
+}

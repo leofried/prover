@@ -1,0 +1,41 @@
+import zfc.axioms.EmptySet
+import zfc.axioms.Extensionality
+import zfc.axioms.Pairing
+import zfc.axioms.Propositions
+
+axiom axiom_of_foundation : [a](a != 0 -> {x}(x @ a AND [y](NOT (y @ a AND y @ x))))
+
+theorem element_of_asymmetric : [a][b](NOT (a @ b AND b @ a)){
+	element a, b from goal
+	a @ b AND b @ a | assumption
+
+	lemma : NOT Pair(a, b) = 0 {
+		a @ Pair(a, b) | axiom_of_pairing
+		NOT Pair(a, b) = 0 | not_empty_is_not_empty_set
+	}
+
+	element x from {x}(x @ Pair(a, b) AND [y](NOT (y @ Pair(a, b) AND y @ x))) | axiom_of_foundation
+	x = a OR x = b | axiom_of_pairing
+
+	lemma : x != a {
+		x = a | assumption
+		b @ Pair(a, b) | axiom_of_pairing
+		b @ x | substitution
+		False | truths
+	}
+
+	lemma : x != b {
+		x = b | assumption
+		a @ Pair(a, b) | axiom_of_pairing
+		a @ x | substitution
+		False | truths
+	}
+
+	False | cases : [x = a, x = b, False]
+}
+
+theorem element_of_irreflexive : [a](NOT a @ a) {
+	element a from goal
+	a @ a | assumption
+	False | element_of_asymmetric
+}

@@ -1,0 +1,474 @@
+import zfc.axioms.*
+import zfc.relations.*
+import zfc.numbers.naturals.NaturalAdditionAxioms
+
+function NaturalMultiplicationSuccessor(1){
+	definition(r): 
+		Separate [:(k):
+			k @ r
+			OR  (
+				Right(Left(k)) = 0
+				AND Right(k) = 0
+			)
+			OR  {o}(
+				o @ r
+				AND Left(Left(k)) = Left(Left(o))
+				AND Right(Left(k)) = S(Right(Left(o)))
+				AND Right(k) = Right(o) + Left(Left(o))
+			)
+		](CP(CP(nat, nat), nat))
+}
+
+function NaturalMultiplication(0){
+	definition: Separate[:(k): [r](IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) -> k @ r)](CP(CP(nat, nat), nat))
+}
+
+function *(2){
+	definition(a, b): NaturalMultiplication . OP(a, b)
+	strength: 2
+}
+
+theorem natural_multiplication_successor_subset : [r](IsRelation(r, CP(nat, nat), nat) -> r # NaturalMultiplicationSuccessor(r)) {
+	element r from goal
+	IsRelation(r, CP(nat, nat), nat) | assumption
+	element o from goal
+	o @ r | assumption
+	  @ CP(CP(nat, nat), nat) | is_relation
+	  @ Separate[:(k): k @ r OR (Right(Left(k)) = 0 AND Right(k) = 0) OR {o}(o @ r AND Left(Left(k)) = Left(Left(o)) AND Right(Left(k)) = S(Right(Left(o))) AND Right(k) = Right(o) + Left(Left(o)))](CP(CP(nat, nat), nat)) | axiom_of_separation
+	  @ NaturalMultiplicationSuccessor(r) | definition					
+}
+
+theorem natural_multiplication_sub_relation : [r](IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) -> NaturalMultiplication # r){
+	element r from goal
+	IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) | assumption
+	element o from goal
+	o @ NaturalMultiplication | assumption
+	  @ Separate[:(k): [r](IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) -> k @ r)](CP(CP(nat, nat), nat)) | definition
+	  @ r | axiom_of_separation
+}
+
+theorem natural_multiplication_mul_zero : [a](a @ nat -> OP(OP(a, 0), 0) @ NaturalMultiplication) {
+	element a from goal
+	a @ nat | assumption
+
+	lemma : OP(OP(a, 0), 0) @ CP(CP(nat, nat), nat) {
+		0 @ nat | zero_is_nat
+		OP(a, 0) @ CP(nat, nat) | op_in_cp
+		OP(OP(a, 0), 0) @ CP(CP(nat, nat), nat) | op_in_cp
+	}
+
+	lemma : [r](IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) -> OP(OP(a, 0), 0) @ r) {
+		element r from goal
+		IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) | assumption
+
+		lemma : OP(OP(a, 0), 0) @ NaturalMultiplicationSuccessor(r) {
+			lemma : Right(Left(OP(OP(a, 0), 0))) = 0 {
+				Right(Left(OP(OP(a, 0), 0))) = Right(OP(a, 0)) | left_op
+				                             = 0 | right_op
+			}
+
+			Right(OP(OP(a, 0), 0)) = 0 | right_op
+
+			OP(OP(a, 0), 0) @ Separate[:(k): k @ r OR (Right(Left(k)) = 0 AND Right(k) = 0) OR {o}(o @ r AND Left(Left(k)) = Left(Left(o)) AND Right(Left(k)) = S(Right(Left(o))) AND Right(k) = Right(o) + Left(Left(o)))](CP(CP(nat, nat), nat)) | axiom_of_separation
+			                @ NaturalMultiplicationSuccessor(r) | definition
+		}
+
+		OP(OP(a, 0), 0) @ r | substitution
+	}
+
+	OP(OP(a, 0), 0) @ Separate[:(k): [r](IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) -> k @ r)](CP(CP(nat, nat), nat)) | axiom_of_separation
+	                @ NaturalMultiplication | definition
+}
+
+theorem natural_multiplication_mul_succ : [a](a @ nat -> [b](b @ nat -> [c](c @ nat -> OP(OP(a, b), c) @ NaturalMultiplication -> OP(OP(a, S(b)), c + a) @ NaturalMultiplication))) {
+	element a from goal
+	a @ nat | assumption
+	element b from goal
+	b @ nat | assumption
+	element c from goal
+	c @ nat | assumption
+	OP(OP(a, b), c) @ NaturalMultiplication | assumption
+
+	lemma : OP(OP(a, S(b)), c + a) @ CP(CP(nat, nat), nat) {
+		S(b) @ nat | nat_succ
+		OP(a, S(b)) @ CP(nat, nat) | op_in_cp
+		c + a @ nat | add_is_nat
+		OP(OP(a, S(b)), c + a) @ CP(CP(nat, nat), nat) | op_in_cp
+	}
+
+	lemma : [r](IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) -> OP(OP(a, S(b)), c + a) @ r) {
+		element r from goal
+		IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) | assumption
+
+		lemma : OP(OP(a, S(b)), c + a) @ NaturalMultiplicationSuccessor(r) {
+			lemma : {o}(o @ r AND Left(Left(OP(OP(a, S(b)), c + a))) = Left(Left(o)) AND Right(Left(OP(OP(a, S(b)), c + a))) = S(Right(Left(o))) AND Right(OP(OP(a, S(b)), c + a)) = Right(o) + Left(Left(o))) {
+				use OP(OP(a, b), c)
+
+				NaturalMultiplication # r | natural_multiplication_sub_relation
+				OP(OP(a, b), c) @ r | in_superset
+
+				Left(Left(OP(OP(a, S(b)), c + a))) = Left(OP(a, S(b))) | left_op
+				                                   = a | left_op
+				                                   = Left(OP(a, b)) | left_op
+				                                   = Left(Left(OP(OP(a, b), c))) | left_op			
+
+				Right(Left(OP(OP(a, S(b)), c + a))) = Right(OP(a, S(b))) | left_op
+				                                    = S(b) | right_op
+				                                    = S(Right(OP(a, b))) | right_op
+				                                    = S(Right(Left(OP(OP(a, b), c)))) | left_op
+
+				Right(OP(OP(a, S(b)), c + a)) = c + a | right_op
+				                              = c + Left(OP(a, b)) | left_op
+				                              = c + Left(Left(OP(OP(a, b), c))) | left_op
+				                              = Right(OP(OP(a, b), c))  + Left(Left(OP(OP(a, b), c))) | right_op
+
+
+			}
+
+			OP(OP(a, S(b)), c + a) @ Separate[:(k): k @ r OR (Right(Left(k)) = 0 AND Right(k) = 0) OR {o}(o @ r AND Left(Left(k)) = Left(Left(o)) AND Right(Left(k)) = S(Right(Left(o))) AND Right(k) = Right(o) + Left(Left(o)))](CP(CP(nat, nat), nat)) | axiom_of_separation
+			                       @ NaturalMultiplicationSuccessor(r) | definition	
+		}
+
+		OP(OP(a, S(b)), c + a) @ r | substitution
+	}
+
+	OP(OP(a, S(b)), c + a) @ Separate[:(k): [r](IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) -> k @ r)](CP(CP(nat, nat), nat)) | axiom_of_separation
+	                       @ NaturalMultiplication | definition				
+}
+
+theorem natural_multiplication_is_function : IsFunction(NaturalMultiplication, CP(nat, nat), nat) {
+	IsRelation(Separate[:(k): [r](IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) -> k @ r)](CP(CP(nat, nat), nat)), CP(nat, nat), nat) | separation_is_relation
+	IsRelation(NaturalMultiplication, CP(nat, nat), nat) | definition
+
+	lemma : IsSerial(NaturalMultiplication, CP(nat, nat), nat) {
+		lemma : [o](o @ CP(nat, nat) -> {y}(OP(o, y) @ NaturalMultiplication)) {
+			lemma lema : [a](a @ nat -> [b](b @ nat -> OP(a, b) @ Domain(NaturalMultiplication))) {
+				element a from goal
+				a @ nat | assumption
+
+				OP(OP(a, 0), 0) @ NaturalMultiplication | natural_multiplication_mul_zero
+				OP(a, 0) @ Domain(NaturalMultiplication) | left_op_in_domain
+
+				lemma : [b](b @ nat -> OP(a, b) @ Domain(NaturalMultiplication) -> OP(a, S(b)) @ Domain(NaturalMultiplication)) {
+					element b from goal
+					b @ nat | assumption
+					OP(a, b) @ Domain(NaturalMultiplication) | assumption
+					element c from {c}(OP(OP(a, b), c) @ NaturalMultiplication) | in_domain
+					OP(OP(a, b), c) @ CP(CP(nat, nat), nat) | is_relation
+					c @ nat | op_in_cp
+
+					OP(OP(a, S(b)), c + a) @ NaturalMultiplication | natural_multiplication_mul_succ
+					OP(a, S(b)) @ Domain(NaturalMultiplication) | left_op_in_domain
+				}
+			
+				| nat_induction
+			}
+		
+			element o from goal
+			o @ CP(nat, nat) | assumption
+			Left(o) @ nat AND Right(o) @ nat AND IsOP(o) | in_cp
+			OP(Left(o), Right(o)) @ Domain(NaturalMultiplication) | lema
+			o @ Domain(NaturalMultiplication) | op_left_right
+			{y}(OP(o, y) @ NaturalMultiplication) | in_domain
+		}
+
+		| is_serial
+	}
+
+	lemma : IsFunctional(NaturalMultiplication, CP(nat, nat), nat) {
+		lemma : [o][c][d](OP(o, c) @ NaturalMultiplication AND OP(o, d) @ NaturalMultiplication -> c = d) {
+			lemma lema : [a](a @ nat -> [b](b @ nat -> [c][d](OP(OP(a, b), c) @ NaturalMultiplication AND OP(OP(a, b), d) @ NaturalMultiplication -> c = d))) {
+				element a from goal
+				a @ nat | assumption
+
+				lemma lema : [b](b @ nat -> {r}(IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) AND [c][d](OP(OP(a, b), c) @ r AND OP(OP(a, b), d) @ r -> c = d))) {
+					
+					lemma : {r}(IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) AND [c][d](OP(OP(a, 0), c) @ r AND OP(OP(a, 0), d) @ r -> c = d)){
+						function r {
+							definition: Separate[:(k): [e](k = OP(OP(a, 0), e) -> e = 0)](CP(CP(nat, nat), nat))
+						}
+						use r
+
+						IsRelation(Separate[:(k): [e](k = OP(OP(a, 0), e) -> e = 0)](CP(CP(nat, nat), nat)), CP(nat, nat), nat) | separation_is_relation
+						IsRelation(r, CP(nat, nat), nat) | definition
+
+						lemma : r = NaturalMultiplicationSuccessor(r) {
+							r # NaturalMultiplicationSuccessor(r) | natural_multiplication_successor_subset
+
+							lemma : NaturalMultiplicationSuccessor(r) # r {
+								element p from goal
+								p @ NaturalMultiplicationSuccessor(r) | assumption
+								  @ Separate[:(k): k @ r OR (Right(Left(k)) = 0 AND Right(k) = 0) OR {o}(o @ r AND Left(Left(k)) = Left(Left(o)) AND Right(Left(k)) = S(Right(Left(o))) AND Right(k) = Right(o) + Left(Left(o)))](CP(CP(nat, nat), nat)) | definition
+								  @ CP(CP(nat, nat), nat) | axiom_of_separation
+
+								p @ r OR (Right(Left(p)) = 0 AND Right(p) = 0) OR {o}(o @ r AND Left(Left(p)) = Left(Left(o)) AND Right(Left(p)) = S(Right(Left(o))) AND Right(p) = Right(o) + Left(Left(o))) | axiom_of_separation
+								
+								lemma : Right(Left(p)) = 0 AND Right(p) = 0 -> p @ r {
+									Right(Left(p)) = 0 AND Right(p) = 0 | assumption
+
+									lemma : [e](p = OP(OP(a, 0), e) -> e = 0) {
+										element e from goal
+										e = Right(OP(OP(a, 0), e)) | right_op
+										  = Right(p) | assumption
+										  = 0 | substitution
+									}
+
+									p @ Separate[:(k): [e](k = OP(OP(a, 0), e) -> e = 0)](CP(CP(nat, nat), nat)) | axiom_of_separation
+									  @ r | definition
+								}
+
+								lemma : {o}(o @ r AND Left(Left(p)) = Left(Left(o)) AND Right(Left(p)) = S(Right(Left(o))) AND Right(p) = Right(o) + Left(Left(o))) -> p @ r {
+									element o from {o}(o @ r AND Left(Left(p)) = Left(Left(o)) AND Right(Left(p)) = S(Right(Left(o))) AND Right(p) = Right(o) + Left(Left(o))) | assumption
+
+									lemma : [e](p = OP(OP(a, 0), e) -> e = 0) {
+										element e from goal
+										0 = Right(OP(a, 0)) | right_op
+										  = Right(Left(OP(OP(a, 0), e))) | left_op
+										  = Right(Left(p)) | assumption
+										  = S(Right(Left(o))) | substitution
+										False | succ_not_zero
+										e = 0 | explosion
+									}
+
+									p @ Separate[:(k): [e](k = OP(OP(a, 0), e) -> e = 0)](CP(CP(nat, nat), nat)) | axiom_of_separation
+									  @ r | definition
+								}
+
+								p @ r | reduce_or_three : [p @ r, Right(Left(p)) = 0 AND Right(p) = 0, {o}(o @ r AND Left(Left(p)) = Left(Left(o)) AND Right(Left(p)) = S(Right(Left(o))) AND Right(p) = Right(o) + Left(Left(o)))]
+							}
+
+							r = NaturalMultiplicationSuccessor(r) | double_inclusion
+						}
+
+						lemma : [c][d](OP(OP(a, 0), c) @ r AND OP(OP(a, 0), d) @ r -> c = d) {
+							element c, d from goal
+							OP(OP(a, 0), c) @ r AND OP(OP(a, 0), d) @ r | assumption
+							
+							OP(OP(a, 0), c) @ Separate[:(k): [e](k = OP(OP(a, 0), e) -> e = 0)](CP(CP(nat, nat), nat)) | definition
+							OP(OP(a, 0), d) @ Separate[:(k): [e](k = OP(OP(a, 0), e) -> e = 0)](CP(CP(nat, nat), nat)) | definition
+
+							c = 0 | axiom_of_separation
+							  = d | axiom_of_separation
+						}
+					}
+
+					lemma : [b](b @ nat -> {r}(IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) AND [c][d](OP(OP(a, b), c) @ r AND OP(OP(a, b), d) @ r -> c = d)) -> {r}(IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) AND ([c][d](OP(OP(a, S(b)), c) @ r AND OP(OP(a, S(b)), d) @ r -> c = d)))) {
+						element b from goal
+						b @ nat | assumption
+						OP(a, b) @ CP(nat, nat) | op_in_cp
+
+						element s from {s}(IsRelation(s, CP(nat, nat), nat) AND s = NaturalMultiplicationSuccessor(s) AND [c][d](OP(OP(a, b), c) @ s AND OP(OP(a, b), d) @ s -> c = d)) | assumption
+						NaturalMultiplication # s | natural_multiplication_sub_relation
+
+						element y from {y}(OP(OP(a, b), y) @ NaturalMultiplication) | is_serial
+						OP(OP(a, b), y) @ s | in_superset
+
+						function r {
+							definition: Separate[:(k): [e](k = OP(OP(a, S(b)), e) -> e = y + a)](s)
+						}
+						use r
+
+						Separate[:(k): [e](k = OP(OP(a, S(b)), e) -> e = y + a)](s) # s | separation_is_subset
+						                                                          r # s | definition
+
+						lemma : IsRelation(r, CP(nat, nat), nat) {
+							Separate[:(k): k @ s OR (Right(Left(k)) = 0 AND Right(k) = 0) OR {o}(o @ s AND Left(Left(k)) = Left(Left(o)) AND Right(Left(k)) = S(Right(Left(o))) AND Right(k) = Right(o) + Left(Left(o)))](CP(CP(nat, nat), nat)) # CP(CP(nat, nat), nat) | separation_is_subset
+						
+							r # NaturalMultiplicationSuccessor(s) | substitution
+						  	  # Separate[:(k): k @ s OR (Right(Left(k)) = 0 AND Right(k) = 0) OR {o}(o @ s AND Left(Left(k)) = Left(Left(o)) AND Right(Left(k)) = S(Right(Left(o))) AND Right(k) = Right(o) + Left(Left(o)))](CP(CP(nat, nat), nat)) | definition
+							  # CP(CP(nat, nat), nat) | subset_transitive
+							IsRelation(r, CP(nat, nat), nat) | is_relation
+						}
+
+						lemma : r = NaturalMultiplicationSuccessor(r) {
+							r # NaturalMultiplicationSuccessor(r) | natural_multiplication_successor_subset
+
+							lemma : NaturalMultiplicationSuccessor(r) # r {
+								element p from goal
+								p @ NaturalMultiplicationSuccessor(r) | assumption
+								  @ Separate[:(k): k @ r OR (Right(Left(k)) = 0 AND Right(k) = 0) OR {o}(o @ r AND Left(Left(k)) = Left(Left(o)) AND Right(Left(k)) = S(Right(Left(o))) AND Right(k) = Right(o) + Left(Left(o)))](CP(CP(nat, nat), nat)) | definition
+								  @ CP(CP(nat, nat), nat) | axiom_of_separation
+
+								p @ r OR (Right(Left(p)) = 0 AND Right(p) = 0) OR {o}(o @ r AND Left(Left(p)) = Left(Left(o)) AND Right(Left(p)) = S(Right(Left(o))) AND Right(p) = Right(o) + Left(Left(o))) | axiom_of_separation
+
+								lemma : Right(Left(p)) = 0 AND Right(p) = 0 -> p @ r {
+									Right(Left(p)) = 0 AND Right(p) = 0 | assumption
+
+									lemma : [e](p = OP(OP(a, S(b)), e) -> e = y + a) {
+										element e from goal
+
+										0 = Right(Left(p)) | substitution
+										  = Right(Left(OP(OP(a, S(b)), e))) | assumption
+										  = Right(OP(a, S(b))) | left_op
+										  = S(b) | right_op
+										False | succ_not_zero
+										e = y + a | explosion
+									}
+
+									lemma : p @ s {
+										Left(p) @ CP(nat, nat) AND Right(p) @ nat AND IsOP(p) | in_cp
+										Left(Left(p)) @ nat AND Right(Left(p)) @ nat AND IsOP(Left(p)) | in_cp
+
+										                    OP(OP(Left(Left(p)), 0), 0) @ NaturalMultiplication | natural_multiplication_mul_zero
+										             OP(OP(Left(Left(p)), 0), Right(p)) @ NaturalMultiplication | substitution
+										OP(OP(Left(Left(p)), Right(Left(p))), Right(p)) @ NaturalMultiplication | substitution
+										                          OP(Left(p), Right(p)) @ NaturalMultiplication | op_left_right
+										                                              p @ NaturalMultiplication | op_left_right
+								                                                        @ s | in_superset
+									}
+
+									p @ Separate[:(k): [e](k = OP(OP(a, S(b)), e) -> e = y + a)](s) | axiom_of_separation
+									  @ r | definition
+								}
+
+								lemma : {o}(o @ r AND Left(Left(p)) = Left(Left(o)) AND Right(Left(p)) = S(Right(Left(o))) AND Right(p) = Right(o) + Left(Left(o))) -> p @ r {
+									element o from {o}(o @ r AND Left(Left(p)) = Left(Left(o)) AND Right(Left(p)) = S(Right(Left(o))) AND Right(p) = Right(o) + Left(Left(o))) | assumption
+									o @ CP(CP(nat, nat), nat) | is_relation
+									Left(o) @ CP(nat, nat) AND Right(o) @ nat AND IsOP(o) | in_cp
+								
+									lemma : [e](p = OP(OP(a, S(b)), e) -> e = y + a) {
+										element e from goal
+										p = OP(OP(a, S(b)), e) | assumption
+
+										Left(Left(o)) = Left(Left(p)) | substitution
+										              = Left(Left(OP(OP(a, S(b)), e))) | substitution
+										              = Left(OP(a, S(b))) | left_op
+										              = a | left_op
+
+										S(Right(Left(o))) = Right(Left(p)) | substitution
+										                  = Right(Left(OP(OP(a, S(b)), e))) | substitution
+										                  = Right(OP(a, S(b))) | left_op
+										                  = S(b) | right_op
+										Right(Left(o)) = b | succ_inj
+
+										IsOP(Left(o)) | in_cp
+
+										                                              o @ s | in_superset
+										                          OP(Left(o), Right(o)) @ s | op_left_right
+										OP(OP(Left(Left(o)), Right(Left(o))), Right(o)) @ s | op_left_right
+										                         OP(OP(a, b), Right(o)) @ s | substitution
+
+										Right(o) = y | truths
+
+										
+										Left(o) = OP(Left(Left(o)), Right(Left(o))) | op_left_right
+										        = OP(a, b) | substitution
+
+										e = Right(OP(OP(a, S(b)), e)) | right_op
+										  = Right(p) | substitution
+										  = Right(o) + Left(Left(o)) | truths
+										  = y + a | substitution
+									}
+
+									lemma : p @ s {
+										o @ s | in_superset
+										{o}(o @ s AND Left(Left(p)) = Left(Left(o)) AND Right(Left(p)) = S(Right(Left(o))) AND Right(p) = Right(o) + Left(Left(o))) | example
+										p @ Separate[:(k): k @ s OR (Right(Left(k)) = 0 AND Right(k) = 0) OR {o}(o @ s AND Left(Left(k)) = Left(Left(o)) AND Right(Left(k)) = S(Right(Left(o))) AND Right(k) = Right(o) + Left(Left(o)))](CP(CP(nat, nat), nat)) | axiom_of_separation
+										  @ NaturalMultiplicationSuccessor(s) | definition
+										  @ s | substitution
+									}
+
+									p @ Separate[:(k): [e](k = OP(OP(a, S(b)), e) -> e = y + a)](s) | axiom_of_separation
+									  @ r | definition
+								}
+
+								p @ r | reduce_or_three : [p @ r, Right(Left(p)) = 0 AND Right(p) = 0, {o}(o @ r AND Left(Left(p)) = Left(Left(o)) AND Right(Left(p)) = S(Right(Left(o))) AND Right(p) = Right(o) + Left(Left(o)))]
+							}
+
+							r = NaturalMultiplicationSuccessor(r) | double_inclusion
+						}
+
+						lemma : [c][d](OP(OP(a, S(b)), c) @ r AND OP(OP(a, S(b)), d) @ r -> c = d) {
+							element c, d from goal
+							OP(OP(a, S(b)), c) @ r AND OP(OP(a, S(b)), d) @ r | assumption
+
+							OP(OP(a, S(b)), c) @ Separate[:(k): [e](k = OP(OP(a, S(b)), e) -> e = y + a)](s) | definition
+							OP(OP(a, S(b)), d) @ Separate[:(k): [e](k = OP(OP(a, S(b)), e) -> e = y + a)](s) | definition
+						
+							c = y + a | axiom_of_separation
+							  = d | axiom_of_separation
+						}
+					}
+
+					| nat_induction
+				}
+
+				element b from goal
+				b @ nat | assumption
+				element r from {r}(IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) AND [c][d](OP(OP(a, b), c) @ r AND OP(OP(a, b), d) @ r -> c = d)) | lema
+
+				element c, d from goal
+				OP(OP(a, b), c) @ NaturalMultiplication AND OP(OP(a, b), d) @ NaturalMultiplication | assumption
+
+				OP(OP(a, b), c) @ Separate[:(k): [r](IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) -> k @ r)](CP(CP(nat, nat), nat)) | definition
+				                @ r | axiom_of_separation
+				OP(OP(a, b), d) @ Separate[:(k): [r](IsRelation(r, CP(nat, nat), nat) AND r = NaturalMultiplicationSuccessor(r) -> k @ r)](CP(CP(nat, nat), nat)) | definition
+				                @ r | axiom_of_separation
+				c = d | truths
+			}
+
+			element o, c, d from goal
+			OP(o, c) @ NaturalMultiplication AND OP(o, d) @ NaturalMultiplication | assumption
+
+			o @ Domain(NaturalMultiplication) | left_op_in_domain
+			  @ CP(nat, nat) | is_relation_domain_range_subset
+			Left(o) @ nat AND Right(o) @ nat AND IsOP(o) | in_cp
+
+			OP(OP(Left(o), Right(o)), c) @ NaturalMultiplication | op_left_right
+			OP(OP(Left(o), Right(o)), d) @ NaturalMultiplication | op_left_right
+			c = d | lema
+		}
+
+		| is_functional
+	}
+}
+
+theorem mul_is_nat : [a](a @ nat -> [b](b @ nat -> a * b @ nat)) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+
+	IsFunction(NaturalMultiplication, CP(nat, nat), nat) | natural_multiplication_is_function
+
+	OP(a, b) @ CP(nat, nat) | op_in_cp
+
+	NaturalMultiplication . OP(a, b) @ nat | is_function_map
+	a * b @ nat | definition
+}
+
+theorem nat_mul_zero : [a](a @ nat -> a * 0 = 0) {
+	element a from goal
+	a @ nat | assumption
+
+	0 @ nat | zero_is_nat
+
+	IsFunction(NaturalMultiplication, CP(nat, nat), nat) | natural_multiplication_is_function
+
+	OP(OP(a, 0), 0) @ NaturalMultiplication | natural_multiplication_mul_zero
+	
+	0 = NaturalMultiplication . OP(a, 0) | is_function_ops
+	  = a * 0 | definition
+}
+
+theorem nat_mul_succ : [a](a @ nat -> [b](b @ nat -> a * S(b) = a * b + a)) {
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	b @ nat | assumption
+	S(b) @ nat | nat_succ
+
+	OP(a, b) @ CP(nat, nat) | op_in_cp
+
+	IsFunction(NaturalMultiplication, CP(nat, nat), nat) | natural_multiplication_is_function
+
+	NaturalMultiplication . OP(a, b) @ nat | is_function_map
+	OP(OP(a, b), NaturalMultiplication . OP(a, b)) @ NaturalMultiplication | is_function_ops
+	OP(OP(a, S(b)), NaturalMultiplication . OP(a, b) + a) @ NaturalMultiplication | natural_multiplication_mul_succ
+
+	a * S(b) = NaturalMultiplication . OP(a, S(b)) | definition
+	         = NaturalMultiplication . OP(a, b) + a | is_function_ops
+	         = a * b + a | definition
+}

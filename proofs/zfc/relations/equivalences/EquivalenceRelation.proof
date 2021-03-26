@@ -1,0 +1,63 @@
+import zfc.axioms.*
+import zfc.relations.relations.*
+import zfc.relations.functions.*
+
+predicate Equiv(3) {
+	definition(r, x, y): OP(x, y) @ r
+	theorem: equiv_op
+}
+
+predicate IsReflexive(2){
+	definition(r, a): IsRelation(r, a, a) AND [x](x @ a -> Equiv(r, x, x))
+	theorem: is_reflexive
+}
+
+predicate IsSymmetric(2){
+	definition(r, a): IsRelation(r, a, a) AND [x][y](Equiv(r, x, y) -> Equiv(r, y, x))
+	theorem: is_symmetric
+}
+
+predicate IsTransitive(2){
+	definition(r, a): IsRelation(r, a, a) AND [x][y][z](Equiv(r, x, y) AND Equiv(r, y, z) -> Equiv(r, x, z))
+	theorem: is_transitive
+}
+
+predicate IsEquivalenceRelation(2){
+	sugar(r, a): IsRelation(r, a, a) AND IsReflexive(r, a) AND IsSymmetric(r, a) AND IsTransitive(r, a)
+}
+
+theorem equiv_op_in_set : [r][a][x][y](IsEquivalenceRelation(r, a) AND Equiv(r, x, y) -> x @ a AND y @ a) {
+	element r, a, x, y from goal
+	IsEquivalenceRelation(r, a) AND Equiv(r, x, y) | assumption
+	OP(x, y) @ r | equiv_op
+	x @ a AND y @ a | op_in_relation
+}
+/*
+theorem equivalence_relations_are_total : [r][a](IsEquivalenceRelation(r, a) -> IsSerial(r, a, a) AND IsSurjective(r, a, a)) {
+	element r, a from goal
+	IsEquivalenceRelation(r, a) | assumption
+
+	lemma : IsSerial(r, a, a) {
+		lemma : [x](x @ a -> {y}(OP(x, y) @ r) {
+			element x from goal
+			x @ a | assumption
+			Equiv(r, x, x) | is_reflexive
+			OP(x, x) @ r | equiv_op
+			use x
+		}
+
+		IsSerial(r, a, a) | is_serial
+	}
+
+	lemma : IsSurjective(r, a, a) {
+		lemma : [y](y @ a -> {x}(OP(x, y) @ r) {
+			element y from goal
+			y @ a | assumption
+			Equiv(r, y, y) | is_reflexive
+			OP(y, y) @ r | equiv_op
+			use y
+		}
+
+		IsSurjective(r, a, a) | is_surjective
+	}
+}
