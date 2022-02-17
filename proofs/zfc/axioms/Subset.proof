@@ -9,7 +9,7 @@ transparent predicate |0| SubsetSymbol(a, b): Subset(a, b)
 transparent predicate # from SubsetSymbol
 
 
-theorem is_subset : [a][b](([x][x @ a] x @ b) -> a # b) {
+theorem is_subset : [a][b](([x @ a] x @ b) -> a # b) {
 	element a, b from goal
 	a # b | assumption
 }
