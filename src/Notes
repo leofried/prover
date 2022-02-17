@@ -1,0 +1,29 @@
+FEATURES:
+	operator importing system (throw if we try to use operators that arent imported) coupled with theorem importing
+	AND / OR associativity
+	Inline sugar type things
+	temp (indexed!) element etc creation within for loops
+	
+Medium Term:
+	Patterns / Meta-programming (closure arguments, element introductions)
+	Libraries
+	Documentation
+	Tutorial
+	Journal Article
+
+Long Term:
+	Make Faster
+	Configure Warning Severity (publics, finals, casts, throws, etc)
+	JavaDoc
+	Other types of logic
+	IDE (errors, proof api [axiom tracking], unused axioms, lines, autocomplete, helper, etc.)
+	GUI
+	More characters than ASCII
+	
+	
+New:
+	Better validity setup (read/store multiple strains)
+	autocode for {ElementOf, ElementOfSymbol, @ from ElementOfSymbol} (or at least double for the first 2)
+	lemma-type functions/predicates that dissapear after the file is over (must be transparent)
+	make every for all have a default ([x](x = y -> P(y))
+	better for loop tech

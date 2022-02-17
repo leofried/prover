@@ -1,11 +1,13 @@
 package prover.utility.utilities;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 import prover.structure.regular.entity.Entity;
@@ -22,7 +24,7 @@ public abstract class NewCollection extends Utility {
 		else throw new AssertionError();
 	}
 	
-	
+
 	
 	
 	public static <S, T> Pair<S, T> pair(S left, T right){
@@ -48,6 +50,14 @@ public abstract class NewCollection extends Utility {
 		list.add(object2);
 		return list;
 	}
+	
+	public static <T> List<T> list(T object1, T object2, T object3){
+		List<T> list = list();
+		list.add(object1);
+		list.add(object2);
+		list.add(object3);
+		return list;
+	}
 
 	public static <T> List<T> list(Collection<? extends T> list){
 		return new ArrayList<T>(list);
@@ -56,6 +66,13 @@ public abstract class NewCollection extends Utility {
 	public static <T> List<T> list(Collection<? extends T> collection, T element){
 		List<T> list = list(collection);
 		list.add(element);
+		return list;
+	}
+	
+	public static <T> List<T> list(Collection<? extends T> collection, T element1, T element2){
+		List<T> list = list(collection);
+		list.add(element1);
+		list.add(element2);
 		return list;
 	}
 	
@@ -75,11 +92,6 @@ public abstract class NewCollection extends Utility {
 		List<T> list = list(collection1);
 		list.addAll(collection2);
 		list.addAll(collection3);
-		return list;
-	}
-	
-	public static <T> List<T> drop(List<T> list){
-		list.remove(0);
 		return list;
 	}
 
@@ -113,6 +125,13 @@ public abstract class NewCollection extends Utility {
 		return set;
 	}
 	
+	public static <T> Set<T> set(Collection<? extends T> collection, T element1, T element2){
+		Set<T> set = set(collection);
+		set.add(element1);
+		set.add(element2);
+		return set;
+	}
+	
 	public static <T> Set<T> set(T element, Collection<? extends T> collection){
 		return set(collection, element);
 	}
@@ -125,7 +144,6 @@ public abstract class NewCollection extends Utility {
 	
 	
 	
-
 	public static <S, T> Map<S, T> map(Map<? extends S, ? extends T> map){
 		return new HashMap<S, T>(map);
 	}
@@ -146,6 +164,10 @@ public abstract class NewCollection extends Utility {
 			map.put(keys.get(i), values.get(i));
 		}
 		return map;
+	}
+	
+	public static <T> Queue<T> queue() {
+		return new ArrayDeque<T>();
 	}
 	
 	
@@ -196,5 +218,5 @@ public abstract class NewCollection extends Utility {
 		if(set == null) return NewCollection.set();
 		else return set;
 	}
-	
+
 }

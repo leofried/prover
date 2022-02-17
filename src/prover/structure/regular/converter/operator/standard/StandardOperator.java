@@ -7,14 +7,14 @@ import prover.structure.regular.converter.operator.Operator;
 import prover.structure.regular.entity.Entity;
 import prover.structure.regular.entity.element.Element;
 import prover.structure.regular.entity.proposition.Proposition;
-import prover.structure.regular.entity.proposition.predicate.PredicateProposition;
+import prover.structure.regular.entity.proposition.other.PredicateProposition;
 import prover.utility.utilities.NewCollection;
 import prover.utility.utilities.PlatonicArguments;
 
 public abstract class StandardOperator<E extends Entity<E>> extends Operator<E> {
 	
-	public StandardOperator(String name, PlatonicArguments arguments, Class<E> klass) {
-		super(name, arguments, klass);
+	public StandardOperator(String name, PlatonicArguments arguments, Class<E> klass, Integer strength) {
+		super(name, arguments, klass, strength);
 	}
 	
 	@Override

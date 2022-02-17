@@ -6,44 +6,42 @@ import prover.error.syntax.syntaxes.UnexpectedTokenError;
 import prover.instruction.sentence.Sentence;
 import prover.instruction.sentence.goal.proof.proofs.NamedLemmaSentence;
 import prover.instruction.sentence.goal.proof.proofs.UnnamedLemmaSentence;
-import prover.reader.Reader;
 import prover.reader.readers.Lexer;
+import prover.reader.readers.Validator;
 import prover.state.base.bases.TheoremBase;
 import prover.state.space.Namespace;
-import prover.structure.regular.entity.element.Element;
 import prover.structure.regular.entity.proposition.Proposition;
 import prover.utility.utilities.Constants;
 
-public class StatementSentence extends Sentence<TheoremBase, Boolean> {
+public class StatementSentence extends Sentence<TheoremBase, Integer> {
 
 	Sentence<TheoremBase, ?> sentence;
 
-	public StatementSentence(Lexer lex, Namespace space, boolean requireTruth) throws SyntaxError {
-		super(lex, space, requireTruth);
+	public StatementSentence(Lexer lex, Namespace space, Validator valid, int restriction) throws SyntaxError {
+		super(lex, space, valid, restriction);
 	}
 	
-	protected void init(Lexer lex, Namespace space, Boolean requireTruth) throws SyntaxError {		
-		if(lex.check("lemma")) {
-			if(lex.peek().equals(Constants.DECLARATION_SEPARATOR))					sentence = new UnnamedLemmaSentence(lex, space);
-			else if(requireTruth)													throw new UnexpectedTokenError(lex);
-			else 																	sentence = new NamedLemmaSentence(lex, space);
+	protected void compile(Lexer lex, Namespace space, Validator valid, Integer restriction) throws SyntaxError {		
+		if(lex.check(Constants.LEMMA)) {
+			     if(lex.peek().equals(Constants.DECLARATION_SEPARATOR))		sentence = new UnnamedLemmaSentence(lex, space, valid);
+			else if(restriction <= 0)                                   	sentence = new NamedLemmaSentence<TheoremBase>(lex, space, valid);
+			else                                                        	throw new UnexpectedTokenError(lex);
 		}
-		else if(!requireTruth && lex.check("use")) 									sentence = new UseSentence(lex, space);
-		else if(!requireTruth && lex.check("predicate")) 							sentence = new OperatorSentence<TheoremBase, Proposition>(lex, space, Proposition.class);
-		else if(!requireTruth && lex.check("function")) 							sentence = new OperatorSentence<TheoremBase, Element>(lex, space, Element.class);
-		else if(!requireTruth && lex.check("element"))								sentence = new ElementSentence(lex, space);
+		else if(restriction <= 1 && lex.check(Constants.FOR))		   		sentence = new LoopSentence(lex, space, valid);
+		else if(restriction <= 0 && lex.check(Constants.ELEMENT))			sentence = new ElementSentence(lex, space, valid);
+		else if(restriction <= 0 && (lex.peek().equals(Constants.PREDICATE)
+								 || lex.peek().equals(Constants.FUNCTION)))	sentence = OperatorSentence.factory(lex, space, valid, true);
 		else {
-																					sentence = new TruthSentence(lex, space);
-																					return;
+			                                                            	sentence = new TruthSentence(lex, space, valid);
+			                                                            	return;
 		}
 		
 		space.clearFill();
 	}
 
 	@Override
-	public Proposition execute(TheoremBase base) throws LogicError {
-		if(Reader.DEBUG) System.out.println(location());
-		return sentence.execute(base);
+	public Proposition run(TheoremBase base, Validator valid) throws LogicError {
+		return sentence.run(base, valid);
 	}
 
 }

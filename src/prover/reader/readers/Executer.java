@@ -1,84 +1,90 @@
 package prover.reader.readers;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.util.List;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 
 import prover.error.logic.LogicError;
 import prover.error.syntax.SyntaxError;
-import prover.error.syntax.SyntaxError.StringType;
 import prover.error.syntax.syntaxes.CircularReferenceError;
-import prover.error.syntax.syntaxes.NoSuchNameError;
 import prover.instruction.sentence.other.FileSentence;
 import prover.reader.Reader;
 import prover.state.base.bases.FileBase;
 import prover.state.space.Namespace;
-import prover.utility.utilities.Constants;
+import prover.utility.utilities.FileType;
+import prover.utility.utilities.Logger;
 import prover.utility.utilities.NewCollection;
 
 public class Executer extends Reader {
 
-	private Map<String, Namespace> map;
-	private List<FileSentence> list;
+	private Map<String, Namespace> spaces;
+	private Map<String, FileSentence> sentences;
+	private Map<String, FileBase> bases;
 
 	public Executer() {
-		map = NewCollection.map();
-		list = NewCollection.list();
+		spaces = NewCollection.map();
+		sentences = NewCollection.map();
+		bases = NewCollection.map();
 	}
 
-	public void compile(Lexer lex, String fileName) throws SyntaxError {
-		map.put(fileName, null);
-		Namespace space = new Namespace();
-		list.add(new FileSentence(new Lexer(fileName, lex), space, this));
-		map.put(fileName, space);
-	}
-
-	public void run() throws LogicError {
-		for(FileSentence file : list) {
-			file.execute(new FileBase());
-		}
-	}
-
-	public void readImport(Lexer lex, Namespace space) throws SyntaxError {		
-		String importName = "";
-		for(String str : lex.next().split("\\" + Constants.FOLDER_LANG_SEPARATOR)) {
-			importName += str;
-			importName += Constants.FOLDER_SYSTEM_SEPARATOR;
-		}
-		importName = importName.substring(0, importName.length() - 1);
-		
-		if(importName.endsWith(Constants.FOLDER_SYSTEM_SEPARATOR + Constants.FOLDER_ALL)) {
-			importName = importName.substring(0, importName.length() - 2);
+	public Namespace compile(Lexer lex, String fileName) throws SyntaxError {
+		if(spaces.containsKey(fileName)) {
+			if(spaces.get(fileName) == null) {
+				throw new CircularReferenceError(lex, FileType.append(fileName));
+			}
 		} else {
-			importName += Constants.FILE_EXTENTION;
+			spaces.put(fileName, null);
+			Namespace space = new Namespace(fileName);
+			Lexer lexer = new Lexer(fileName, lex, FileType.PROOF);
+			sentences.put(fileName, new FileSentence(lexer, space, this, fileName));
+			spaces.put(fileName, space);
+
+			Logger.log("Complied " + FileType.append(fileName));
 		}
 
-		for(String fileName : getFiles(lex, new File(Constants.FILE_LOCATION + importName), importName)) {
-			if(map.containsKey(fileName)) {
-				if(map.get(fileName) == null) {
-					throw new CircularReferenceError(lex, fileName);
-				}
-			}else {
-				this.compile(lex, fileName);
+		return spaces.get(fileName);
+	}
+
+	public FileBase run(String fileName) throws LogicError {
+		if(!bases.containsKey(fileName)) {
+			FileBase base = new FileBase(fileName);
+			sentences.get(fileName).run(base, null);
+			bases.put(fileName, base);
+		}
+
+		try {
+			File devFile = FileType.VALID_PROOF.getFile(fileName);
+			devFile.getParentFile().mkdirs();
+			FileWriter writer = new FileWriter(devFile);
+			BufferedReader br = new BufferedReader(new FileReader(FileType.PROOF.getFile(fileName)));
+
+			String str;
+			while((str = br.readLine()) != null) {
+				writer.write(str + "\n");
 			}
 
-			space.importSpace(lex, map.get(fileName), new String());
+			br.close();
+			writer.close();
+			
+			devFile = FileType.VALID_SPACE.getFile(fileName);
+			devFile.getParentFile().mkdirs();
+			writer = new FileWriter(devFile);
+			writer.write(sentences.get(fileName).importedSpace());
+			writer.close();
+			
+			devFile = FileType.VALID_BASE.getFile(fileName);
+			devFile.getParentFile().mkdirs();
+			writer = new FileWriter(devFile);
+			writer.write(sentences.get(fileName).importedBase());
+			writer.close();
+		} catch (IOException e) {
+			throw new AssertionError("File reading issue... try running again.");
 		}
-	}
 
-	private static Set<String> getFiles(Lexer lex, File file, String path) throws NoSuchNameError {		
-		if(file.isDirectory()) {
-			Set<String> set = NewCollection.set();
-			for(File fileEntry : file.listFiles()) {
-				set.addAll(getFiles(lex, fileEntry, path + Constants.FOLDER_SYSTEM_SEPARATOR + fileEntry.getName()));
-			}
-			return set;
-		}else if(file.exists()) {
-			return NewCollection.set(path);
-		} else {
-			throw new NoSuchNameError(lex, path, StringType.FILE);
-		}
+		return bases.get(fileName);
 	}
 
 }

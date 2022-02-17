@@ -1,7 +1,6 @@
 package prover.structure.regular.entity.element;
 
 import java.util.List;
-import java.util.Set;
 
 import prover.structure.Structure;
 import prover.structure.regular.converter.definition.Definition;
@@ -12,9 +11,6 @@ import prover.utility.interfaces.OperatorEntity;
 import prover.utility.utilities.NewCollection;
 import prover.utility.utilities.TestArguments;
 
-/**
- * {@code Element} is an abstract class representing a single element in the mathematical universe.
- */
 public class Element extends Entity<Element> implements OperatorEntity<Element> {
 	
 	public Element(Operator<Element> operator) {
@@ -22,11 +18,11 @@ public class Element extends Entity<Element> implements OperatorEntity<Element> 
 	}
 	
 	public Element(Operator<Element> operator, List<Definition<Proposition>> predicates, List<Definition<Element>> functions, List<Element> elements) {
-		super(new TestArguments(), NewCollection.list(operator, NewCollection.list(predicates, functions, elements)));
+		super(TestArguments.EMPTY, NewCollection.list(operator, NewCollection.list(predicates, functions, elements)));
 	}
 	
 	private Element(List<Structure> subs) {
-		super(new TestArguments(), subs);
+		super(TestArguments.EMPTY, subs);
 	}
 	 
 	@Override
@@ -37,11 +33,6 @@ public class Element extends Entity<Element> implements OperatorEntity<Element> 
 	@Override
 	public List<Structure> getSubsHelper() {
 		return getSubstructures();
-	}
-	
-	@Override
-	public Set<Definition<?>> getAllDefinitionsHelper() {
-		return NewCollection.set(new Definition<Element>(this));
 	}
 	
 	@Override

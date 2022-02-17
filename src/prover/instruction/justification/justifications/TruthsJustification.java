@@ -1,6 +1,6 @@
 package prover.instruction.justification.justifications;
 
-import java.util.Set;
+import java.util.List;
 
 import prover.instruction.justification.Justification;
 import prover.state.base.bases.TheoremBase;
@@ -10,22 +10,15 @@ import prover.utility.utilities.Pair;
 
 public class TruthsJustification extends Justification {
 
-	private static TruthsJustification instance = null;
-
-	public static TruthsJustification getInstance() {
-		if(instance == null) instance = new TruthsJustification();
-		return instance;
-	}
-
-	private TruthsJustification() {}
+	public TruthsJustification() {}
 
 	@Override
-	public Set<Pair<Proposition, Proposition>> getTruths(String loc, TheoremBase base, Proposition prop) {
+	public List<Pair<Proposition, Pair<Proposition, Integer>>> getTruths(String loc, TheoremBase base, Proposition prop) {
 		if(prop.isTrue(base)) return null;
 
-		Set<Pair<Proposition, Proposition>> truths = NewCollection.set();
+		List<Pair<Proposition, Pair<Proposition, Integer>>> truths = NewCollection.list();
 		for(Proposition truth : base.getTruths()) {
-			truths.add(NewCollection.pair(truth, base.getGoal()));
+			truths.add(NewCollection.pair(truth, NewCollection.pair(base.getGoal(), 0)));
 		}
 		return truths;
 	}

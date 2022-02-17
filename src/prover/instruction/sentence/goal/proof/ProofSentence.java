@@ -7,6 +7,7 @@ import prover.error.syntax.SyntaxError;
 import prover.instruction.sentence.goal.GoalSentence;
 import prover.instruction.sentence.other.StatementSentence;
 import prover.reader.readers.Lexer;
+import prover.reader.readers.Validator;
 import prover.state.base.KnowledgeBase;
 import prover.state.base.bases.TheoremBase;
 import prover.state.space.Namespace;
@@ -17,9 +18,10 @@ import prover.utility.utilities.NewCollection;
 public abstract class ProofSentence<B extends KnowledgeBase> extends GoalSentence<B> {
 
 	private List<StatementSentence> sentences;
+	private boolean onContract;
 
-	public ProofSentence(Lexer lex, Namespace space, boolean requireName) throws SyntaxError {
-		super(lex, space, requireName);
+	public ProofSentence(Lexer lex, Namespace space, Validator valid, boolean requireName) throws SyntaxError {
+		super(lex, space, valid, requireName);
 
 		sentences = NewCollection.list();
 
@@ -28,23 +30,27 @@ public abstract class ProofSentence<B extends KnowledgeBase> extends GoalSentenc
 			if(lex.check(Constants.BLOCKS.right)) {
 				break;
 			} else {
-				sentences.add(new StatementSentence(lex, getNewSpace(), false));
+				sentences.add(new StatementSentence(lex, getNewSpace(), valid, 0));
 			}
 		}
+		
+		onContract = lex.onContract();
 	}
 
 	@Override
-	public Proposition executeHelper(B base) throws LogicError {
-		TheoremBase theoremBase = new TheoremBase(base, getName(), getGoal());
-
-		for(StatementSentence sentence : sentences) {
-			sentence.execute(theoremBase);
+	public Proposition run(B base, Validator valid) throws LogicError {		
+		if(!onContract || !valid.isValid()) {
+			TheoremBase theoremBase = new TheoremBase(base, getName(), getGoal());
+	
+			for(StatementSentence sentence : sentences) {
+				sentence.run(theoremBase, valid);
+			}
+	
+			theoremBase.resolve(location());
 		}
-
-		theoremBase.resolve(location());
 		
-		return uponResolution(base);
+		return uponResolution(base, onContract && valid.isValid());
 	}
 
-	protected abstract Proposition uponResolution(B base);
+	protected abstract Proposition uponResolution(B base, boolean onContract);
 }

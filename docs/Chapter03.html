@@ -1,0 +1,167 @@
+<html>
+<head><link rel="stylesheet" href="style.css"></head>
+<body>
+
+<h1>Chapter 03: Substitution</h1>
+
+Once again, we will look at an English-langauge proof and translate it into <pt>ProofTree</pt>. This time, it will be a proof that if two numbers are the same and one of them is an integer, then the other one is rational. Let's look at the deconstructed proof.
+
+	<block>
+	The following are properties that numbers can have:
+	    Integer
+	    Rational
+
+	We will accept the following as true:
+	    (1) Every integer is rational.
+
+	We will now prove that if two numbers are the same and one of them is an integer, then the other one is rational:
+	    Consider two arbitrary numbers x and y.
+	    Assume that x is an integer, and that x and and y are the same number.
+	    By substitution, y is also an intger.
+	    Thus by (1), y is rational.
+
+	</block>
+
+Let's translate.<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	The following are properties that numbers can have:
+	    Integer
+	    Rational
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+
+	<id>opaque predicate</id> I(x)
+	<id>opaque predicate</id> R(x)
+	</cl>
+	</row>
+
+Just like in the last chapters we define two new <id>predicates</id>. However, unlike in previous chapters, these predicates have an <i>arity</i> of one. This means that rather than simply being true or false (like the predicates we've seen before, which had arity zero), they can be true or false depending on a single input. We indicate that these predicates have arity one with the parentheses, like you might indicate a function <i>f(x)</i> in calculus.<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	We will accept the following as true:
+	     (1) Every integer is rational.
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+
+	<id>axiom</id> int_is_rat <sp>:</sp> [x](I(x) <op>-></op> R(x))
+	</cl>
+	</row>
+
+<cd>[x]</cd> reads "<i>for all</i> <cd>x</cd>," and means "the following statement is true for every number, and the variable <cd>x</cd> will be used as a placeholder." Thus in total, this <id>axiom</id> reads "<i>for all</i> <cd>x</cd>, <cd>x</cd> is an integer implies <cd>x</cd> is rational," and means that every integer is rational.<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	We will now prove that if two numbers are the same and
+	one of them is an integer, then the other one is rational:
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+	<id>theorem</id> int_rat_swap <sp>:</sp> [x][y](x = y <op>AND</op> I(x) <op>-></op> R(y)) {
+
+	</cl>
+	</row>
+
+You can nest <i>for all</i> quantifiers, so this expresses the idea that for any two integers <cd>x</cd> and <cd>y</cd>, the following statement is true. The <op>AND</op> operator simply means that the statments on both sides of the <op>AND</op> are true. Note that in <pt>ProofTree's</pt> order of operations, <op>AND</op> has stronger precedence than the implication operator, so <cd>A <op>AND</op> B <op>-></op> C</cd> means <cd>(A <op>AND</op> B) <op>-></op> C</cd>.<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	    Consider two arbitrary numbers x and y.
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+	    <id>element</id> x, y <sp>from</sp> <ju>goal</ju>
+	</cl>
+	</row>
+
+Pretty self-explanatory. In order to prove <id>theorems</id> that have <i>for all</i> quantifiers in them, we need a way of considering arbitrary elements. We do this by beginning the line with the <id>element</id> identifier, listing the names of the arbitrary <id>element(s)</id> to create, and then concluding the line with <sp>from</sp> <ju>goal</ju>. (<sp>from</sp> <ju>goal</ju> refers to the fact that the <id>element(s)</id> being created are used to prove the <ju>goal</ju> of this proof. In the future, we will learn other places we can generate <id>element(s)</id> from.)<br>
+<br>
+If the theorem has two <i>for all</i> quantifiers in a row, you can chain them into one line by separating the variables with a comma like we did above. Note that the newly created variables don't need to have the same name as those in the thereom decleration -- <pt>ProofTree</pt> will keep track of any changes you make -- but for readability, you should avoid changing them.<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	    Assume that x is an integer,
+	    and that x and and y are the same number.
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+	    x = y <op>AND</op> I(x) <sp>|</sp> <ju>assumption</ju>
+	    
+	</cl>
+	</row>
+
+This is an assumption, just like last chapter.<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	    By substitution, y is also an intger.
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+	    I(y) <sp>|</sp> <ju>substitution</ju>
+	</cl>
+	</row>
+
+Like <ju>assumption</ju>, <ju>substution</ju> is a special justification. It is used in cases where we know two objects are equal. If we know two objects are equal, and something about one of those objects, we can use <ju>substitution</ju> to know that same thing about the other object.<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	    Thus by (1), y is rational.
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+	    R(y) <sp>|</sp> int_is_rat
+	</cl>
+	</row>
+
+We apply the <id>axiom</id> <cd>int_is_rat</cd> in the same way that we've applied other <id>axioms</id>. Even though <cd>int_is_rat</cd> appears to be talking about <cd>x</cd> while our proof is about <cd>y</cd>, remember that the <i>for all</i> quantifier means that <cd>int_is_rat</cd> is talking about every number -- <cd>x</cd> is just a placeholder -- and so it can be applied to <cd>y</cd>.<br>
+<br>
+Putting it all together:<br>
+
+	<block>
+	<id>opaque predicate</id> I(x)
+	<id>opaque predicate</id> R(x)
+
+	<id>axiom</id> int_is_rat <sp>:</sp> [x](I(x) <op>-></op> R(x))
+
+	<id>theorem</id> int_rat_swap <sp>:</sp> [x][y](x = y <op>AND</op> I(x) <op>-></op> R(y)) {
+	    element x, y from goal
+	    x = y <op>AND</op> I(x) <sp>|</sp> <ju>assumption</ju>
+	    I(y) <sp>|</sp> <ju>substitution</ju>
+	    R(y) <sp>|</sp> int_is_rat
+	}
+	</block>
+
+Finally, run the <pt>ProofTree</pt> program to confirm that your proof is valid.<br>
+
+	<block>
+	Complied Main.proof
+	Compilied at 98 milliseconds
+	Proof of practice_succeed is valid!
+	Completed at 104 milliseconds
+	</block>
