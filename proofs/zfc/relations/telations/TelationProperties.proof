@@ -1,0 +1,89 @@
+import zfc {
+	axioms
+	relations {
+		relations
+		functions
+		telations.Telation
+	}
+}
+
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+transparent predicate R from Related
+transparent predicate T from Telated
+
+transparent predicate IsFunctionalTelation(r, a): IsTelation(r, a) AND IsFunctional(r, CP(a, a), a)
+
+transparent predicate IsSerialTelation(r, a)    : IsTelation(r, a) AND IsSerial(r, CP(a, a), a)
+
+theorem telation_is_functional : [r][a](IsTelation(r, a) -> ([x @ a][y @ a][w][z](T(r, x, y, w) AND T(r, x, y, z) -> w = z) <-> IsFunctionalTelation(r, a))) {
+	element r, a from goal
+	IsTelation(r, a) | assumption
+
+	lemma : [x @ a][y @ a][w][z](T(r, x, y, w) AND T(r, x, y, z) -> w = z) -> IsFunctionalTelation(r, a) {
+		lemma ass : [x @ a][y @ a][w][z](T(r, x, y, w) AND T(r, x, y, z) -> w = z) {| assumption}
+
+		lemma : IsFunctional(r, CP(a, a), a) {
+			lemma : [o][w][z](R(r, o, w) AND R(r, o, z) -> w = z) {
+				element o, w, z from goal
+				R(r, o, w) AND R(r, o, z) | assumption
+				T(r, Left(o), Right(o), w) | is_telated
+				T(r, Left(o), Right(o), z) | is_telated
+
+				Left(o) @ a | sin_in_bound
+				Right(o) @ a | mid_in_bound
+				w = z | ass
+			}
+
+			| is_functional
+		}
+	}
+
+	lemma : IsFunctionalTelation(r, a) -> [x @ a][y @ a][w][z](T(r, x, y, w) AND T(r, x, y, z) -> w = z) {
+		IsFunctionalTelation(r, a) | assumption
+		element x from goal x @ a | assumption
+		element y from goal y @ a | assumption
+		element w, z from goal
+		T(r, x, y, w) AND T(r, x, y, z) | assumption
+		R(r, OP(x, y), w) | op_is_telated
+		R(r, OP(x, y), z) | op_is_telated
+		w = z | is_functional
+	}	
+}
+
+theorem telation_is_serial : [r][a](IsTelation(r, a) -> ([x @ a][y @ a]{z} T(r, x, y, z) <-> IsSerialTelation(r, a))) {
+	element r, a from goal
+	IsTelation(r, a) | assumption
+
+	lemma : [x @ a][y @ a]{z} T(r, x, y, z) -> IsSerialTelation(r, a) {
+		lemma ass : [x @ a][y @ a]{z} T(r, x, y, z) {| assumption}
+
+		lemma : IsSerial(r, CP(a, a), a) {
+			lemma : CP(a, a) # Domain(r) {
+				element o from goal
+				o @ CP(a, a) | assumption
+				
+				Left(o) @ a | left_in_cp
+				Right(o) @ a | right_in_cp
+
+				element z from {z} T(r, Left(o), Right(o), z) | ass
+				R(r, o, z) | is_telated
+				o @ Domain(r) | left_in_domain
+			}
+
+			| is_serial
+		}
+	}
+
+	lemma : IsSerialTelation(r, a) -> [x @ a][y @ a]{z} T(r, x, y, z) {
+		IsSerialTelation(r, a) | assumption
+
+		element x from goal x @ a | assumption
+		element y from goal y @ a | assumption
+		OP(x, y) @ CP(a, a) | op_in_cp
+		         @ Domain(r) | is_serial
+
+		element z from {z} R(r, OP(x, y), z) | left_in_domain
+		T(r, x, y, z) | op_is_telated
+	}	
+}

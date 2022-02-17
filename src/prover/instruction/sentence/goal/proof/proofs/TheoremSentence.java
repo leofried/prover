@@ -3,24 +3,29 @@ package prover.instruction.sentence.goal.proof.proofs;
 import prover.error.syntax.SyntaxError;
 import prover.instruction.sentence.goal.proof.ProofSentence;
 import prover.reader.readers.Lexer;
-import prover.state.base.KnowledgeBase;
+import prover.reader.readers.Validator;
+import prover.state.base.bases.FileBase;
 import prover.state.space.Namespace;
 import prover.structure.regular.entity.proposition.Proposition;
+import prover.utility.utilities.Logger;
 
-public class TheoremSentence<B extends KnowledgeBase> extends ProofSentence<B> {
+public class TheoremSentence extends ProofSentence<FileBase> {
 
-	public TheoremSentence(Lexer lex, Namespace space) throws SyntaxError {
-		super(lex, space, false);
+	public TheoremSentence(Lexer lex, Namespace space, Validator valid) throws SyntaxError {
+		super(lex, space, valid, false);
 	}
 
 	@Override
-	protected Proposition uponResolution(B base) {
+	protected Proposition uponResolution(FileBase base, boolean onContract) {
 		if(!getName().isEmpty()) {
-			System.out.println("Proof of " + getName() + " is valid!");
+			Logger.log("Proof of " + getName() + " is valid!");
 		} else {
-			System.out.println("Proof is valid!");
+			Logger.log("Proof is valid!");
 		}
 		return null;
 	}
-	
+
+	protected boolean isGlobal() {
+		return true;
+	}
 }

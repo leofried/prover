@@ -1,0 +1,210 @@
+<html>
+<head><link rel="stylesheet" href="style.css"></head>
+<body>
+
+<h1>Chapter 04: One Plus One Is Two</h1>
+
+Let's prove that <cd>1 + 1 = 2</cd>!<br>
+<br>
+Before we can leap right into the proof, though, we need to establish some <id>axioms</id> about the natural numbers. <pt>ProofTree</pt> doesn't come with any information about them preloaded, so we will have to build it all from scratch. Traditionally, <id>axioms</id> are separated into their own file or folder to help us keep track of them, so create a new file named <cd>Axioms.proof</cd> in the same folder as your main file. We'll add a series of <id>axioms</id> and <id>functions</id> to this folder before we write our proof.<br>
+
+	<block>
+	<id>opaque function</id> 0
+	</block>
+
+The first thing we need to do is create the number <cd>0</cd>. To do this, we use the <id>function</id> identifier, which creates a new <id>function</id> named "<cd>0</cd>." In order to create a constant (like the number <cd>0</cd>), we create a <id>function</id> with no arguments.<br>
+<br>
+Like with <id>predicates</id>, the <id>opaque</id> identifier means that we don't (yet) know anything about our newly created <id>function</id>.<br>
+
+	<block>
+	<id>opaque function</id> S(a)
+	</block>
+
+Next, we'll create the successor <id>function</id> <cd>S</cd>. This is a <id>function</id> that will map a given number to the number after it. To indicate that this a traditional <id>function</id> that has one arguments, we include a placeholder argument <cd>a</cd>.<br>
+<br>
+You might be wondering how <pt>ProofTree</pt> knows that <cd>S</cd> maps each number to the next one, instead of say, mapping each number to itself, given that we have identified it as <id>opaque</id>. This is a good point -- right now, <pt>ProofTree</pt> doesn't know exactly what we want the successer function to do. We will have to clarify using <id>axioms</id>.<br>
+
+	<block>
+	<id>opaque function</id> 1
+	<id>axiom</id> one_is_succ_zero <sp>:</sp> 1 = S(0)
+	</block>
+
+We create a new constant <cd>1</cd>, add then an <id>axiom</id> saying that <cd>1</cd> is the successor of <cd>0</cd>.<br>
+
+	<block>
+	<id>opaque function</id> 2
+	<id>axiom</id> two_is_succ_one <sp>:</sp> 2 = S(1)
+	</block>
+
+We do the same for <cd>2</cd>.<br>
+
+	<block>
+	<id>opaque function</id> <sp>|</sp>1<sp>|</sp> +(a, b)
+	</block>
+
+We once again create a new <id>function</id>, addition. We indicate that addition takes two arguments by following it with two placeholder arguments. Also note that the <cd>+</cd> is preceded by <sp>|</sp>1<sp>|</sp>. This so that <pt>ProofTree</pt> can properly parse order of operations. Addition is the weakest operation, which is we indicate with the <cd>1</cd> flanked by pipes.<br>
+<br>
+Like the successor function <cd>S</cd>, addition is <id>opaque</id> and thus needs <id>axioms</id> to clarify. It turns out that the behavior of addition on the natural numbers can be completely characterized by two <id>axioms</id>.<br>
+
+	<block>
+	<id>axiom</id> add_zero <sp>:</sp> [a] a + 0 = a
+	</block>
+
+The first simply states that for every natural number <cd>a</cd>, <cd>a + 0 = a</cd>.
+
+	<block>
+	<id>axiom</id> add_succ <sp>:</sp> [a][b] a + S(b) = S(a + b)
+	</block>
+
+The second states that the successor operation respects addition. That is, you can apply the successor operation before or after adding two natural numbers and the answer will be the same.<br>
+<br>
+All together, your <cd>Axioms.proof</cd> file should look like this:<br>
+
+	<block>
+	<id>opaque function</id> 0
+
+	<id>opaque function</id> S(a)
+
+	<id>opaque function</id> 1
+	<id>axiom</id> one_is_succ_zero <sp>:</sp> 1 = S(0)
+
+	<id>opaque function</id> 2
+	<id>axiom</id> two_is_succ_one <sp>:</sp> 2 = S(1)
+
+	<id>opaque function</id> <sp>|</sp>1<sp>|</sp> +(a, b)
+
+	<id>axiom</id> add_zero <sp>:</sp> [a] a + 0 = a
+	<id>axiom</id> add_succ <sp>:</sp> [a][b] a + S(b) = S(a + b)
+	</block>
+
+Now we can get to work on this proof that <cd>1 + 1 = 2</cd>! First, try clearing out your <cd>Main.proof</cd> file and running the <pt>ProofTree</pt> program. You should get the following message:<br>
+
+	<block>
+	Complied Main.proof
+	Compilied at 55 milliseconds
+	Completed at 61 milliseconds
+	</block>
+
+We haven't proved anything yet, so <pt>ProofTree</pt> has nothing for us! Let's change that. Copy the following proof into your <cd>Main.proof</cd> file, and then we'll break it down line by line.<br>
+
+	<block>
+	<id>import</id> Axioms
+
+	<id>theorem</id> one_plus_one_is_two <sp>:</sp> 1 + 1 = 2 {
+		1 + 1 = 1 + S(0) <sp>|</sp> one_is_succ_zero
+		      = S(1 + 0) <sp>|</sp> add_succ
+		      = S(1) <sp>|</sp> add_zero
+		      = 2 <sp>|</sp> two_is_succ_one
+	}
+	</block>
+
+We start by <id>importing</id> our <cd>Axiom.proof</cd>. This allows us to use the <id>functions</id> and <id>axioms</id> from that file during proofs in this one.<br>
+
+	<block>
+	<id>theorem</id> one_plus_one_is_two <sp>:</sp> 1 + 1 = 2 {
+	</block>
+
+We begin a new proof that <cd>1 + 1 = 2</cd>.
+
+	<block>
+	1 + 1 = 1 + S(0) <sp>|</sp> one_is_succ_zero
+	</block>
+
+We start by asserting that <cd>1 + 1 = 1 + S(0)</cd> on the basis of the <cd>one_is_succ_zero</cd> <id>axiom</id>, which asserts that <cd>1 = S(0)</cd>.<br>
+
+	<block>
+	      = S(1 + 0) <sp>|</sp> add_succ
+	</block>
+
+On our next line, we completly leave off the left hand side of the equality -- <pt>ProofTree</pt> will automatically fill it in with the right hand side of the equality on the above line. Using the <cd>add_succ</cd> <id>axiom</id>, we assert that <cd>1 + S(0) = S(1 + 0)</cd>.<br>
+
+	<block>
+	      = S(1) <sp>|</sp> add_zero
+	</block>
+
+<cd>add_zero</cd> tells us that <cd>1 + 0 = 0</cd>, so <cd>S(1 + 0)</cd> must equal <cd>S(1)</cd>.<br>
+
+	<block>
+	      = 2 <sp>|</sp> two_is_succ_one
+	</block>
+
+Finally, we use <cd>two_is_succ_one</cd> to complete the proof. Running the <pt>ProofTree</pt> program, it tells us:
+
+	<block>
+	Complied Axioms.proof
+	Complied Main.proof
+	Compilied at 70 milliseconds
+	Proof of one_plus_one_is_two is valid!
+	Completed at 89 milliseconds
+	</block>
+
+For homework, see if you can complete the following proofs:
+
+	<block>
+	<id>import</id> Axioms
+
+	<id>theorem</id> one_plus_one_is_two <sp>:</sp> 1 + 1 = 2 {
+		1 + 1 = 1 + S(0) <sp>|</sp> one_is_succ_zero
+		      = S(1 + 0) <sp>|</sp> add_succ
+		      = S(1) <sp>|</sp> add_zero
+		      = 2 <sp>|</sp> two_is_succ_one
+	}
+
+	<id>theorem</id> two_is_succ_succ_zero <sp>:</sp> 2 = S(S(0)) {
+		
+
+	}
+
+	<cm>
+	//This is comment
+	//Anything following two slashes will be ignored by the ProofTree program.
+	//It's useful for communicating important info to anyone reading your proof.
+	//Or for for hints!
+	//Since you've already proved that 1 + 1 = 2, you can cite the theorem
+	//one_plus_one_is_two in the same way you would cite an axiom!
+	</cm>
+
+	<id>theorem</id> <sp>:</sp> (1 + 0) + 1 = 2 + 0 {
+		
+
+
+	}
+	</block>
+<p style="page-break-after: always;">&nbsp;</p>
+Solutions:<br>
+
+	<block>
+	<id>import</id> Axioms
+
+	<id>theorem</id> one_plus_one_is_two <sp>:</sp> 1 + 1 = 2 {
+		1 + 1 = 1 + S(0) <sp>|</sp> one_is_succ_zero
+		      = S(1 + 0) <sp>|</sp> add_succ
+		      = S(1) <sp>|</sp> add_zero
+		      = 2 <sp>|</sp> two_is_succ_one
+	}
+
+	<id>theorem</id> two_is_succ_succ_zero <sp>:</sp> 2 = S(S(0)) {
+		2 = S(1) <sp>|</sp> two_is_succ_one
+		  = S(S(0)) <sp>|</sp> one_is_succ_zero
+	}
+
+	<cm>
+	//This is comment
+	//Anything following two slashes will be ignored by the ProofTree program.
+	//It's useful for communicating important info to anyone reading your proof.
+	//Or for for hints!
+	//Since you've already proved that 1 + 1 = 2, you can cite the theorem
+	//one_plus_one_is_two in the same way you would cite an axiom!
+	</cm>
+
+	<id>theorem</id> <sp>:</sp> (1 + 0) + 1 = 2 + 0 {
+		(1 + 0) + 1 = 1 + 1 <sp>|</sp> add_zero
+		            = 2 <sp>|</sp> one_plus_one_is_two
+		            = 2 + 0 <sp>|</sp> add_zero
+	}
+	</block>
+
+
+
+</body>
+</html>

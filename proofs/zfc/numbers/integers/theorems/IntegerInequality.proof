@@ -1,0 +1,308 @@
+/*import zfc.axioms.*
+import zfc.numbers.naturals.*
+import zfc.numbers.integers.Integers
+import zfc.numbers.integers.axioms.*
+import zfc.numbers.integers.theorems.IntegerAddition
+import zfc.numbers.integers.theorems.IntegerMultiplication
+
+function 0 from EmptySet
+function 1 from 1n
+function + from +n+
+function * from *n*
+function ++ from +z+
+function ** from *z*
+predicate <= from NaturalInequalitySymbol
+predicate << from IntegerInequalitySymbol
+
+theorem int_le_refl : [x @ int][y @ int](x = y -> x << y) {
+	element x from goal x @ int | assumption
+	element a, b from {a @ nat}{b @ nat} x = Int(a, b) | int_nat
+
+	element y from goal y @ int | assumption
+	element c, d from {c @ nat}{d @ nat} y = Int(c, d) | int_nat
+
+	a + d @ nat | add_is_nat
+	b + c @ nat | add_is_nat
+
+	x = y | assumption
+	a + d = b + c | int_equiv
+	a + d <= b + c | nat_le_refl
+
+	| int_le
+}
+
+theorem int_le_antisymm : [x @ int][y @ int](x << y AND y << x -> x = y) {
+	element x from goal x @ int | assumption
+	element a, b from {a @ nat}{b @ nat} x = Int(a, b) | int_nat
+
+	element y from goal y @ int | assumption
+	element c, d from {c @ nat}{d @ nat} y = Int(c, d) | int_nat
+
+	a + d @ nat | add_is_nat
+	b + c @ nat | add_is_nat
+
+	x << y AND y << x | assumption
+
+	a + d <= b + c | int_le
+
+	c + b <= d + a | int_le
+	b + c <= d + a | nat_add_comm
+	b + c <= a + d | nat_add_comm
+
+	a + d = b + c | nat_le_antisymm
+
+	Int(a, b) = Int(c, d) | int_equiv
+}
+
+theorem int_le_trans : [x @ int][y @ int][z @ int](x << y AND y << z -> x << z) {
+	element x from goal x @ int | assumption
+	element a, b from {a @ nat}{b @ nat} x = Int(a, b) | int_nat
+
+	element y from goal y @ int | assumption
+	element c, d from {c @ nat}{d @ nat} y = Int(c, d) | int_nat
+
+	element z from goal z @ int | assumption
+	element e, f from {e @ nat}{f @ nat} z = Int(e, f) | int_nat
+
+	a + d @ nat | add_is_nat
+	b + c @ nat | add_is_nat
+	d + e @ nat | add_is_nat
+	b + e @ nat | add_is_nat
+	a + f @ nat | add_is_nat
+	c + f @ nat | add_is_nat
+	d + e @ nat | add_is_nat
+	(a + d) + f @ nat | add_is_nat
+	(b + c) + f @ nat | add_is_nat
+	b + (d + e) @ nat | add_is_nat
+	(a + f) + d @ nat | add_is_nat
+	(b + e) + d @ nat | add_is_nat
+
+	x << y AND y << z | assumption
+
+	a + d <= b + c | int_le
+	(a + d) + f <= (b + c) + f | nat_le_resp_add_right
+	c + f <= d + e | int_le
+	b + (c + f) <= b + (d + e) | nat_le_resp_add_left
+	(b + c) + f <= b + (d + e) | nat_add_assoc
+
+	(a + d) + f <= b + (d + e) | nat_le_trans
+	(a + f) + d <= b + (d + e) | nat_add_paren_comm_right
+	(a + f) + d <= b + (e + d) | nat_add_comm
+	(a + f) + d <= (b + e) + d | nat_add_assoc
+	a + f <= b + e | nat_le_cancel_add_right
+
+	| int_le
+}
+
+theorem int_le_connected : [x @ int][y @ int](x << y OR y << x) {
+	element x from goal x @ int | assumption
+	element a, b from {a @ nat}{b @ nat} x = Int(a, b) | int_nat
+
+	element y from goal y @ int | assumption
+	element c, d from {c @ nat}{d @ nat} y = Int(c, d) | int_nat
+
+	a + d @ nat | add_is_nat
+	b + c @ nat | add_is_nat
+
+	NOT x << y | assumption
+	NOT a + d <= b + c | int_le
+	b + c <= a + d | nat_le_connected
+	c + b <= a + d | nat_add_comm
+	c + b <= d + a | nat_add_comm
+
+	| int_le
+}
+
+theorem int_le_resp_add_left : [x @ int][y @ int][z @ int](x << y -> z ++ x << z ++ y) {
+	element x from goal x @ int | assumption
+	element a, b from {a @ nat}{b @ nat} x = Int(a, b) | int_nat
+
+	element y from goal y @ int | assumption
+	element c, d from {c @ nat}{d @ nat} y = Int(c, d) | int_nat
+
+	element z from goal z @ int | assumption
+	element e, f from {e @ nat}{f @ nat} z = Int(e, f) | int_nat
+
+	a + d @ nat | add_is_nat
+	b + c @ nat | add_is_nat
+	e + f @ nat | add_is_nat
+	e + a @ nat | add_is_nat
+	f + b @ nat | add_is_nat
+	e + c @ nat | add_is_nat
+	f + d @ nat | add_is_nat
+
+	z ++ x = Int(e + a, f + b) | int_add
+	z ++ y = Int(e + c, f + d) | int_add
+
+	                x << y                 | assumption
+	           a + d  <=            b + c  | int_le
+	(e + f) + (a + d) <= (e + f) + (b + c) | nat_le_resp_add_left
+	(e + a) + (f + d) <= (e + f) + (b + c) | nat_paren_add_paren_comm
+	(e + a) + (f + d) <= (e + f) + (c + b) | nat_add_comm
+	(e + a) + (f + d) <= (e + c) + (f + b) | nat_paren_add_paren_comm
+	(e + a) + (f + d) <= (f + b) + (e + c) | nat_add_comm
+
+	| int_le
+}
+
+theorem int_le_resp_add_right : [x @ int][y @ int][z @ int](x << y -> x ++ z << y ++ z) {
+	element x from goal x @ int | assumption
+	element y from goal y @ int | assumption
+	element z from goal z @ int | assumption
+
+	     x << y      | assumption
+	z ++ x << z ++ y | int_le_resp_add_left
+	x ++ z << z ++ y | int_add_comm
+	x ++ z << y ++ z | int_add_comm
+}
+
+theorem int_le_cancel_add_left : [x @ int][y @ int][z @ int](z ++ x << z ++ y -> x << y) {
+	element x from goal x @ int | assumption
+	element a, b from {a @ nat}{b @ nat} x = Int(a, b) | int_nat
+
+	element y from goal y @ int | assumption
+	element c, d from {c @ nat}{d @ nat} y = Int(c, d) | int_nat
+
+	element z from goal z @ int | assumption
+	element e, f from {e @ nat}{f @ nat} z = Int(e, f) | int_nat
+
+	e + a @ nat | add_is_nat
+	f + b @ nat | add_is_nat
+	e + c @ nat | add_is_nat
+	f + d @ nat | add_is_nat
+	a + d @ nat | add_is_nat
+	c + b @ nat | add_is_nat
+	b + c @ nat | add_is_nat
+	a + (f + d) @ nat | add_is_nat
+	c + (f + b) @ nat | add_is_nat
+
+	           z ++ x << z ++ y            | assumption
+	Int(e + a, f + b) << z ++ y            | int_add
+	Int(e + a, f + b) << Int(e + c, f + d) | int_add
+	(e + a) + (f + d) <= (f + b) + (e + c) | int_le
+	(e + a) + (f + d) <= (e + c) + (f + b) | nat_add_comm
+	e + (a + (f + d)) <= (e + c) + (f + b) | nat_add_assoc
+	e + (a + (f + d)) <= e + (c + (f + b)) | nat_add_assoc
+	     a + (f + d)  <=      c + (f + b)  | nat_le_cancel_add_left
+         f + (a + d)  <=      c + (f + b)  | nat_add_paren_comm_left
+         f + (a + d)  <=      f + (c + b)  | nat_add_paren_comm_left
+              a + d   <=           c + b   | nat_le_cancel_add_left
+              a + d   <=           b + c   | nat_add_comm
+                    x << y                 | int_le
+}
+
+theorem int_le_cancel_add_right : [x @ int][y @ int][z @ int](x ++ z << y ++ z -> x << y) {
+	element x from goal x @ int | assumption
+	element y from goal y @ int | assumption
+	element z from goal z @ int | assumption	
+	
+	x ++ z << y ++ z | assumption
+	x ++ z << z ++ y | int_add_comm
+	z ++ x << z ++ y | int_add_comm
+	     x << y      | int_le_cancel_add_left
+}
+
+theorem int_le_resp_mul_left : [x @ int][y @ int][z @ int](0z << z -> x << y -> z ** x << z ** y) {
+	element x from goal x @ int | assumption
+	element a, b from {a @ nat}{b @ nat} x = Int(a, b) | int_nat
+
+	element y from goal y @ int | assumption
+	element c, d from {c @ nat}{d @ nat} y = Int(c, d) | int_nat
+
+	element z from goal z @ int | assumption
+	element e, f from {e @ nat}{f @ nat} z = Int(e, f) | int_nat
+
+	0z << z | assumption
+
+	lemma : f <= e {
+		0 @ nat | zero_is_nat
+		0z = Int(0, 0) | int_is_zero
+		0 + f <= 0 + e | int_le
+		    f <= 0 + e | nat_zero_add
+		    f <= e     | nat_zero_add
+	}
+
+	element g from {g @ nat} f + g = e | nat_le
+	                         g + f = e | nat_add_comm
+
+
+	a + d @ nat | add_is_nat
+	b + c @ nat | add_is_nat
+
+	f * (a + d) @ nat | mul_is_nat
+	f * (b + c) @ nat | mul_is_nat
+	g * (a + d) @ nat | mul_is_nat
+	g * (b + c) @ nat | mul_is_nat
+
+	f * (a + d) + g * (a + d) @ nat | add_is_nat
+	f * (a + d) + g * (b + c) @ nat | add_is_nat
+
+	e * a @ nat | mul_is_nat
+	e * b @ nat | mul_is_nat
+	e * c @ nat | mul_is_nat
+	e * d @ nat | mul_is_nat
+	f * a @ nat | mul_is_nat
+	f * b @ nat | mul_is_nat
+	f * c @ nat | mul_is_nat
+	f * d @ nat | mul_is_nat
+
+	e * b + e * c @ nat | add_is_nat
+	f * a + f * d @ nat | add_is_nat
+	e * a + f * b @ nat | add_is_nat
+	e * b + f * a @ nat | add_is_nat
+	e * c + f * d @ nat | add_is_nat
+	e * d + f * c @ nat | add_is_nat
+
+	x << y | assumption
+	a + d <= b + c  | int_le
+	g * (a + d) <= g * (b + c) | nat_le_resp_mul_left
+	f * (a + d) + g * (a + d) <= f * (a + d) + g * (b + c) | nat_le_resp_add_left
+	(f * (a + d) + g * (a + d)) + f * (b + c) <= (f * (a + d) + g * (b + c)) + f * (b + c) | nat_le_resp_add_right
+	(f + g) * (a + d) + f * (b + c) <= (f * (a + d) + g * (b + c)) + f * (b + c) | nat_add_mul
+	(f + g) * (a + d) + f * (b + c) <= f * (a + d) + (g * (b + c) + f * (b + c)) | nat_add_assoc
+	(f + g) * (a + d) + f * (b + c) <= f * (a + d) + (g + f) * (b + c) | nat_add_mul
+	e * (a + d) + f * (b + c) <= f * (a + d) + e * (b + c) | substitution
+	(e * a + e * d) + f * (b + c) <= f * (a + d) + e * (b + c) | nat_mul_add
+	(e * a + e * d) + (f * b + f * c) <= f * (a + d) + e * (b + c) | nat_mul_add
+	(e * a + e * d) + (f * b + f * c) <= (f * a + f * d) + e * (b + c) | nat_mul_add
+	(e * a + e * d) + (f * b + f * c) <= (f * a + f * d) + (e * b + e * c) | nat_mul_add
+	(e * a + f * b) + (e * d + f * c) <= (f * a + f * d) + (e * b + e * c) | nat_paren_add_paren_comm
+	(e * a + f * b) + (e * d + f * c) <= (e * b + e * c) + (f * a + f * d) | nat_add_comm
+	(e * a + f * b) + (e * d + f * c) <= (e * b + f * a) + (e * c + f * d) | nat_paren_add_paren_comm
+	Int(e * a + f * b, e * b + f * a) << Int(e * c + f * d, e * d + f * c) | int_le
+	Int(e, f) ** Int(a, b) << Int(e * c + f * d, e * d + f * c) | int_mul
+	Int(e, f) ** Int(a, b) << Int(e, f) ** Int(c, d) | int_mul
+	| substitution
+}
+
+theorem int_le_resp_mul_right : [x @ int][y @ int][z @ int](0z << z -> x << y -> x ** z << y ** z) {
+	element x from goal x @ int | assumption
+	element y from goal y @ int | assumption
+	element z from goal z @ int | assumption
+
+	    0z << z      | assumption
+	     x << y      | assumption
+	z ** x << z ** y | int_le_resp_mul_left
+	x ** z << z ** y | int_mul_comm
+	x ** z << y ** z | int_mul_comm	
+}
+
+theorem int_le_cancel_mul_left : [x @ int][y @ int][z @ int](z ** x << z ** y -> x << y) {
+	| sorry
+}
+
+theorem int_le_cancel_mul_right : [x @ int][y @ int][z @ int](x ** z << y ** z -> x << y) {
+	| sorry
+}
+
+theorem int_zero_le_one : 0z << 1z {
+	0 @ nat | zero_is_nat
+	1 @ nat | one_is_nat
+
+	0 <= 1 | nat_zero_le
+	0 + 0 <= 0 + 1 | nat_le_resp_add_left
+
+	Int(0, 0) << Int(1, 0) | int_le
+	0z << Int(1, 0) | int_is_zero
+	0z << 1z | int_is_one
+}

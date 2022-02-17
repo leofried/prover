@@ -1,5 +1,8 @@
-predicate @(2) {
-	strength: 0
-}
+
+opaque predicate ElementOf(a, b)
+
+transparent predicate |0| ElementOfSymbol(a, b): ElementOf(a, b)
+
+transparent predicate @ from ElementOfSymbol
 
 axiom axiom_of_extensionality : [a][b]([x](x @ a <-> x @ b) -> a = b)

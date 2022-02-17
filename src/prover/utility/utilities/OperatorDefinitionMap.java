@@ -2,7 +2,6 @@ package prover.utility.utilities;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import prover.structure.regular.converter.definition.Definition;
@@ -13,13 +12,12 @@ import prover.utility.Utility;
 
 public class OperatorDefinitionMap extends Utility {
 	
-
 	public static OperatorDefinitionMap combineMaps(OperatorDefinitionMap mapOne, OperatorDefinitionMap mapTwo){
 		if(mapOne == null || mapTwo == null) return null;
 
 		OperatorDefinitionMap ret = new OperatorDefinitionMap(mapOne);
 		for(Operator<?> op : mapTwo.keySet()) {
-			if(!ret.containsKey(op)) ret.map.put(op, mapTwo.get(op));
+			if(!ret.containsKey(op)) ret.put((Operator<Element>) op, (Definition<Element>) mapTwo.get(op));
 			else if(ret.get(op).equals(mapTwo.get(op))) continue;
 			else return null;
 		}
@@ -48,8 +46,7 @@ public class OperatorDefinitionMap extends Utility {
 	}
 	
 	public <E extends Entity<E>> OperatorDefinitionMap(Operator<E> operator, Definition<E> definition){
-		this();
-		put(operator, definition);
+		this(NewCollection.list(operator), NewCollection.list(definition));
 	}
 	
 	public <E extends Entity<E>> OperatorDefinitionMap(List<Operator<E>> operators, List<Definition<E>> definitions){
@@ -59,16 +56,30 @@ public class OperatorDefinitionMap extends Utility {
 		}
 	}
 	
-	public OperatorDefinitionMap(Map<Operator<Element>, Operator<Element>> operators) {
+	public <E extends Entity<E>> OperatorDefinitionMap(TestArguments operators, TestArguments definitions) {
 		this();
-		for(Entry<Operator<Element>, Operator<Element>> entry : operators.entrySet()) {
-			map.put(entry.getKey(), new Definition<Element>(entry.getValue()));
+		
+		for(int i=0; i<operators.getArguments().getPredicates().size(); i++) {
+			put(operators.getPredicates().get(i), definitions.getPredicateDefinitions().get(i));
+		}
+		
+		for(int i=0; i<operators.getArguments().getFunctions().size(); i++) {
+			put(operators.getFunctions().get(i), definitions.getFunctionDefinitions().get(i));
+		}
+		
+		for(int i=0; i<operators.getArguments().getElements(); i++) {
+			put(operators.getElements().get(i), definitions.getElementDefinitions().get(i));
 		}
 	}
 	
 	public OperatorDefinitionMap(OperatorDefinitionMap map) {
 		this();
 		putAll(map);
+	}
+
+	public OperatorDefinitionMap(OperatorDefinitionMap map1, OperatorDefinitionMap map2) {
+		this(map1);
+		putAll(map2);
 	}
 
 	public <E extends Entity<E>> void put(Operator<E> operator, Definition<E> definition){
@@ -94,7 +105,7 @@ public class OperatorDefinitionMap extends Utility {
 	public Set<Operator<?>> keySet(){
 		return map.keySet();
 	}
-		
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) return true;

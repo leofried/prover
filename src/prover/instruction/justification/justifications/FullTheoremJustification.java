@@ -1,7 +1,6 @@
 package prover.instruction.justification.justifications;
 
 import java.util.List;
-import java.util.Set;
 
 import prover.instruction.justification.Justification;
 import prover.state.base.bases.TheoremBase;
@@ -24,7 +23,7 @@ public class FullTheoremJustification extends Justification {
 	}
 
 	@Override
-	public Set<Pair<Proposition, Proposition>> getTruths(String loc, TheoremBase state, Proposition prop) {
-		return NewCollection.set(NewCollection.pair(theorem.convert(predicates, functions), state.getGoal()));
+	public List<Pair<Proposition, Pair<Proposition, Integer>>> getTruths(String loc, TheoremBase base, Proposition prop) {
+		return NewCollection.list(NewCollection.pair(base.sugar(theorem.convert(predicates, functions)), NewCollection.pair(base.getGoal(), 0)));
 	}
 }

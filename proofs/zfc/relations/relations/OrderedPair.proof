@@ -1,56 +1,47 @@
-import zfc.axioms.*
+import zfc.axioms
 
-function OP(2) {
-	definition(a, b): Pair(Singleton(a), Pair(a, b))
-}
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
 
-function Left(1){
-	definition(o) : Union(Separate[:(k): Singleton(k) @ o](Union(o)))
-}
+opaque function OP(a, b): Pair(Singleton(a), Pair(a, b))
 
-function Right(1){
-	definition(o) : Union(Separate[:(k): o = OP(Left(o), k)](Union(o)))
-}
+opaque function Left(o): Object[:(k): Singleton(k) @ o](Union(o))
 
-predicate IsOP(1){
-	definition(o) : {a}{b} o = OP(a, b)
-}
+opaque function Right(o): Object[:(k): o = OP(Left(o), k)](Union(o))
 
 theorem op_inj : [a][b][c][d](OP(a, b) = OP(c, d) -> a = c AND b = d) {
 	element a, b, c, d from goal
 	
 	OP(a, b) = OP(c, d) | assumption
 
-	lemma : Singleton(a) = Singleton(c) {
-		lemma : Singleton(a) = Singleton(c) OR Singleton(a) = Pair(c, d) {
-			Singleton(a) @ Pair(Singleton(a), Pair(a, b)) | axiom_of_pairing
-			             @ OP(a, b) | definition
-			             @ OP(c, d) | substitution
-			             @ Pair(Singleton(c), Pair(c, d)) | definition
+	lemma : a = c {
+		lemma : Singleton(a) = Singleton(c) {
+			lemma : Singleton(a) = Singleton(c) OR Singleton(a) = Pair(c, d) {
+				Singleton(a) @ OP(a, b) | axiom_of_pairing
+				             @ OP(c, d) | substitution
 
-			Singleton(a) = Singleton(c) OR Singleton(a) = Pair(c, d) | axiom_of_pairing
+				Singleton(a) = Singleton(c) OR Singleton(a) = Pair(c, d) | axiom_of_pairing
+			}
+
+			lemma : Singleton(a) = Pair(c, d) -> Singleton(a) = Singleton(c) {
+				Singleton(a) = Pair(c, d) | assumption
+							 = Singleton(c) | pair_eq_singleton
+			}
+
+			| simple_cases : [Singleton(a) = Pair(c, d), Singleton(a) = Singleton(c)]
 		}
 
-		lemma : Singleton(a) = Pair(c, d) -> Singleton(a) = Singleton(c) {
-			Singleton(a) = Pair(c, d) | assumption
-						 = Singleton(c) | pair_eq_singleton
-		}
-
-		Singleton(a) = Singleton(c) | reduce_or_two : [Singleton(a) = Pair(c, d), Singleton(a) = Singleton(c)]
+		| singleton_inj
 	}
 
-	a = c | singleton_inj
-
 	lemma : b = d {
-		Pair(Singleton(a), Pair(a, b)) = OP(a, b) | definition
-		                               = OP(c, d) | truths
-		                               = Pair(Singleton(c), Pair(c, d)) | definition
+		Pair(Singleton(a), Pair(a, b)) = Pair(Singleton(c), Pair(c, d)) | substitution
 		                               = Pair(Singleton(a), Pair(c, d)) | substitution
 
 		Pair(a, b) = Pair(c, d) | pair_inj_right
 		           = Pair(a, d) | substitution
 
-		b = d | pair_inj_right
+		| pair_inj_right
 	}
 }
 
@@ -68,7 +59,7 @@ theorem union_op : [a][b](Union(OP(a, b)) = Pair(a, b)) {
 			x @ Pair(a, b) | axiom_of_pairing
 		} 
 
-		x @ Pair(a, b) | reduce_or_two : [x @ Singleton(a), x @ Pair(a, b)]
+		| simple_cases : [x @ Singleton(a), x @ Pair(a, b)]
 	}
 
 	lemma : Pair(a, b) # SimpleUnion(Singleton(a), Pair(a, b)) {
@@ -88,141 +79,61 @@ theorem union_op : [a][b](Union(OP(a, b)) = Pair(a, b)) {
 			x @ SimpleUnion(Singleton(a), Pair(a, b)) | assumption
 		}
 
-		x @ SimpleUnion(Singleton(a), Pair(a, b)) | cases : [x = a, x = b, x @ SimpleUnion(Singleton(a), Pair(a, b))]
+		| cases : [x = a, x = b, x @ SimpleUnion(Singleton(a), Pair(a, b))]
 	}
 
-	Union(OP(a, b)) = Union(Pair(Singleton(a), Pair(a, b))) | definition
-	                = SimpleUnion(Singleton(a), Pair(a, b)) | simple_union_definition
+	Union(OP(a, b)) = SimpleUnion(Singleton(a), Pair(a, b)) | simple_union_definition
 	                = Pair(a, b) | double_inclusion
 }
 
 theorem left_op : [a][b](Left(OP(a, b)) = a) {
 	element a, b from goal
 
-	lemma lema : Separate[:(k): Singleton(k) @ OP(a, b)](Union(OP(a, b))) = Singleton(a) {
-		lemma : Separate[:(k): Singleton(k) @ OP(a, b)](Union(OP(a, b))) # Singleton(a) {
-			element x from goal
-			x @ Separate[:(k): Singleton(k) @ OP(a, b)](Union(OP(a, b))) | assumption
-			Singleton(x) @ OP(a, b) | axiom_of_separation
-			             @ Pair(Singleton(a), Pair(a, b)) | definition
-			Singleton(x) = Singleton(a) OR Singleton(x) = Pair(a, b) | axiom_of_pairing
-
-			lemma : Singleton(x) = Singleton(a) -> x @ Singleton(a) {
-				x @ Singleton(x) | in_singleton
-				  @ Singleton(a) | assumption
-			}
-
-			lemma : Singleton(x) = Pair(a, b) -> x @ Singleton(a) {
-				Singleton(x) = Pair(a, b) | assumption
-				x @ Singleton(x) | in_singleton
-				  @ Singleton(a) | pair_eq_singleton
-			}
-
-			x @ Singleton(a) | cases : [Singleton(x) = Singleton(a), Singleton(x) = Pair(a, b), x @ Singleton(a)]
-		}
-		
-		lemma : Singleton(a) # Separate[:(k): Singleton(k) @ OP(a, b)](Union(OP(a, b))) {
-			element x from goal
-			x @ Singleton(a) | assumption
-			x = a | in_singleton
-
-			lemma : Singleton(x) @ OP(a, b) {
-				Singleton(x) @ Pair(Singleton(x), Pair(a, b)) | axiom_of_pairing
-				             @ Pair(Singleton(a), Pair(a, b)) | substitution
-				             @ OP(a, b) | definition
-			}
-
-			lemma : x @ Union(OP(a, b)) {
-				x @ Pair(x, b) | axiom_of_pairing
-				  @ Pair(a, b) | substitution
-				  @ Union(OP(a, b)) | union_op
-			}
-
-			x @ Separate[:(k): Singleton(k) @ OP(a, b)](Union(OP(a, b))) | axiom_of_separation
-		}
-
-		Separate[:(k): Singleton(k) @ OP(a, b)](Union(OP(a, b))) = Singleton(a) | double_inclusion
+	lemma : a @ Union(OP(a, b)) {
+		a @ Pair(a, b) | axiom_of_pairing
+		  @ Union(OP(a, b)) | union_op
 	}
 
-	Left(OP(a, b)) = Union(Separate[:(k): Singleton(k) @ OP(a, b)](Union(OP(a, b)))) | definition
-	               = Union(Singleton(a)) | lema
-	               = a | union_singleton
+	Singleton(a) @ OP(a, b) |  axiom_of_pairing
+
+	lemma : [x @ Union(OP(a, b))](Singleton(x) @ OP(a, b) -> x = a) {
+		element x from goal
+		x @ Union(OP(a, b)) | assumption
+		Singleton(x) @ OP(a, b) | assumption
+		Singleton(x) = Singleton(a) OR Singleton(x) = Pair(a, b) | axiom_of_pairing
+
+		lemma : Singleton(x) = Singleton(a) -> x = a {
+			Singleton(x) = Singleton(a) | assumption
+			x = a | singleton_inj
+		}
+
+		lemma : Singleton(x) = Pair(a, b) -> x = a {
+			Singleton(x) = Pair(a, b) | assumption
+			x = a | pair_eq_singleton
+		}
+
+		x = a | cases : [Singleton(x) = Singleton(a), Singleton(x) = Pair(a, b), x = a]
+	}
+
+	| is_object
 }
 
 theorem right_op : [a][b](Right(OP(a, b)) = b) {
 	element a, b from goal
 
-	lemma lema : Separate[:(k): OP(a, b) = OP(Left(OP(a, b)), k)](Union(OP(a, b))) = Singleton(b) {
-		lemma : Separate[:(k): OP(a, b) = OP(Left(OP(a, b)), k)](Union(OP(a, b))) # Singleton(b) {
-			element x from goal
-			x @ Separate[:(k): OP(a, b) = OP(Left(OP(a, b)), k)](Union(OP(a, b))) | assumption
-			OP(a, b) = OP(Left(OP(a, b)), x) | axiom_of_separation
-			b = x | op_inj
-			x @ Singleton(b) | in_singleton
-		}
-		
-		lemma : Singleton(b) # Separate[:(k): OP(a, b) = OP(Left(OP(a, b)), k)](Union(OP(a, b))) {
-			element x from goal
-			x @ Singleton(b) | assumption
-			x = b | in_singleton
-
-			lemma : OP(a, b) = OP(Left(OP(a, b)), x) {
-				OP(a, b) = OP(a, x) | substitution
-				         = OP(Left(OP(a, b)), x) | left_op
-			}
-
-			lemma : x @ Union(OP(a, b)) {
-				x @ Pair(a, x) | axiom_of_pairing
-				  @ Pair(a, b) | substitution
-				  @ Union(OP(a, b)) | union_op
-			}
-
-			x @ Separate[:(k): OP(a, b) = OP(Left(OP(a, b)), k)](Union(OP(a, b))) | axiom_of_separation
-		}
-
-		Separate[:(k): OP(a, b) = OP(Left(OP(a, b)), k)](Union(OP(a, b))) = Singleton(b) | double_inclusion
+	lemma : b @ Union(OP(a, b)) {
+		b @ Pair(a, b) | axiom_of_pairing
+		  @ Union(OP(a, b)) | union_op
 	}
 
-	Right(OP(a, b)) = Union(Separate[:(k): OP(a, b) = OP(Left(OP(a, b)), k)](Union(OP(a, b)))) | definition
-	                = Union(Singleton(b)) | lema
-	                = b | union_singleton
-}
+	OP(a, b) = OP(Left(OP(a, b)), b)  | left_op
 
-theorem op_is_op : [a][b](IsOP(OP(a, b))) {
-	element a from goal
-	element b from goal
-
-	lemma : {x}{y} OP(a, b) = OP(x, y) {
-		use a
-		use b
+	lemma : [x @ Union(OP(a, b))](OP(a, b) = OP(Left(OP(a, b)), x) -> x = b) {
+		element x from goal
+		x @ Union(OP(a, b)) | assumption
+		OP(a, b) = OP(Left(OP(a, b)), x) | assumption
+		x = b | op_inj
 	}
 
-	IsOP(OP(a, b)) | definition
-}
-
-theorem op_left_right : [o](IsOP(o) <-> o = OP(Left(o), Right(o))) {
-	element o from goal
-
-	lemma : IsOP(o) -> o = OP(Left(o), Right(o)) {
-		IsOP(o) | assumption
-		element a, b from {a}{b} o = OP(a, b) | definition
-
-		o = OP(a, b) | truths
-		  = OP(Left(OP(a, b)), b) | left_op
-		  = OP(Left(OP(a, b)), Right(OP(a, b))) | right_op
-		  = OP(Left(o), Right(o)) | substitution
-	}
-
-	lemma : o = OP(Left(o), Right(o)) -> IsOP(o) {
-		o = OP(Left(o), Right(o)) | assumption
-		IsOP(OP(Left(o), Right(o))) | op_is_op
-		IsOP(o) | substitution
-	}
-}
-
-theorem is_op_union : [o](IsOP(o) -> Union(o) = Pair(Left(o), Right(o))){
-	element o from goal
-	IsOP(o) | assumption
-	Union(o) = Union(OP(Left(o), Right(o))) | op_left_right
-	         = Pair(Left(o), Right(o)) | union_op
+	| is_object
 }

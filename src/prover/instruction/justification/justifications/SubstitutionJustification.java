@@ -1,51 +1,39 @@
 package prover.instruction.justification.justifications;
 
+import java.util.List;
 import java.util.Set;
 
-import prover.error.logic.logics.AmbiguousDefinitionError;
 import prover.error.logic.logics.GoalManipulationError;
 import prover.instruction.justification.Justification;
 import prover.state.base.bases.TheoremBase;
 import prover.structure.regular.entity.Entity;
 import prover.structure.regular.entity.proposition.Proposition;
-import prover.structure.regular.entity.proposition.binary.flippable.equality.EqualityProposition;
+import prover.structure.regular.entity.proposition.binary.equality.EqualityProposition;
 import prover.utility.utilities.NewCollection;
 import prover.utility.utilities.Pair;
 
 public class SubstitutionJustification extends Justification {
 
-	private static SubstitutionJustification instance = null;
-
-	public static SubstitutionJustification getInstance() {
-		if(instance == null) instance = new SubstitutionJustification();
-		return instance;
-	}
-
-	private SubstitutionJustification() {}
+	public SubstitutionJustification() {}
 
 	@Override
-	public Set<Pair<Proposition, Proposition>> getTruths(String loc, TheoremBase base, Proposition prop) throws GoalManipulationError, AmbiguousDefinitionError {
-		for(Proposition truth : base.getTruthsAndEqualities()) {
-			if(areSubstitutable(base, prop, truth)) return null;
-		}
-
-	/*	if(prop.getSubstitutionPairs() != null) {	BAD
-			boolean reduced = true;
-			for(Pair<Element, Element> pair : prop.getSubstitutionPairs()) {
-				if(!areSubstitutable(base, pair.left, pair.right)) reduced = false;
+	public List<Pair<Proposition, Pair<Proposition, Integer>>> getTruths(String loc, TheoremBase base, Proposition prop) throws GoalManipulationError {
+		for(Proposition subProp : prop.deconstruct()) {
+			boolean found = false;
+			for(Proposition truth : base.getTruthsAndEqualities()) {
+				if(areSubstitutable(base, subProp, truth)) found = true;
 			}
-			if(reduced) return null;
+			if(!found) return NewCollection.list();
 		}
-	*/
-
-		return NewCollection.set();
+	
+		return null;
 	}
 
 	private static <E extends Entity<E>> boolean areSubstitutable(TheoremBase base, Entity<E> one, Entity<E> two) {
 		for(Set<EqualityProposition> set : NewCollection.nullToEmpty(one.getDifferenceEqualityPlural(two))) {
 			boolean reduced = true;
 			for(EqualityProposition eq : set) {
-				if(!base.getEqualitySet(eq.getLeft()).contains(eq.getRight())){
+				if(!base.areEqual(eq)) {
 					reduced = false;
 				}
 			}

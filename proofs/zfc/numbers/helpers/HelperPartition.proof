@@ -1,7 +1,3 @@
-import zfc.relations.relations.OrderedPair
-import zfc.relations.equivalences.*
+import zfc.relations
 
-predicate IsHelperPartition{(2)}(3) {
-	definition{P}(p, r, a): p = Partition(r) AND [x][y](P(x, y) = Part(r, OP(x, y)))
-	theorem: is_helper_partition
-}
+opaque predicate IsHelperPartition{P(2)}(p, r): p = Partition(r) AND [x][y](P(x, y) = Cart(r, x, y)) | is_helper_partition

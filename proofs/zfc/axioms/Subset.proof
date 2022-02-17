@@ -1,8 +1,17 @@
 import zfc.axioms.Extensionality
 
-predicate #(2) {
-	strength: 0
-	sugar(a, b): [x](x @ a -> x @ b)
+transparent predicate @ from ElementOfSymbol
+
+transparent predicate Subset(a, b): [x @ a] x @ b
+
+transparent predicate |0| SubsetSymbol(a, b): Subset(a, b)
+
+transparent predicate # from SubsetSymbol
+
+
+theorem is_subset : [a][b](([x @ a] x @ b) -> a # b) {
+	element a, b from goal
+	a # b | assumption
 }
 
 theorem double_inclusion : [a][b](a # b AND b # a -> a = b) {
@@ -18,7 +27,7 @@ theorem double_inclusion : [a][b](a # b AND b # a -> a = b) {
 	a = b | axiom_of_extensionality
 }
 
-theorem subset_reflexive : [a][b](a = b -> a # b) {
+theorem subset_reflexive : [a] [b = a] a # b {
 	element a, b from goal
 	a = b | assumption
 
@@ -41,32 +50,4 @@ theorem in_superset : [a][b][c](a @ b AND b # c -> a @ c){
 	element a, b, c from goal
 	a @ b AND b # c | assumption
 	a @ c | truths
-}
-
-theorem uniqueness_helper [P(2)] : [a]{b}[x](x @ b <-> P(a, x)) -> [a]{b}([x](x @ b <-> P(a, x)) AND [c]([x](x @ c <-> P(a, x)) -> b = c)) {
-	[a]{b}[x](x @ b <-> P(a, x)) | assumption
-	element a from goal
-	element b from {b}[x](x @ b <-> P(a, x)) | truths
-	use b
-
-	lemma : [c]([x](x @ c <-> P(a, x)) -> b = c) {
-		element c from goal
-		[x](x @ c <-> P(a, x)) | assumption
-
-		lemma : b # c {
-			element x from goal
-			x @ b | assumption
-			P(a, x) | truths
-			x @ c | truths
-		}
-
-		lemma : c # b {
-			element x from goal
-			x @ c | assumption
-			P(a, x) | truths
-			x @ b | truths
-		}
-
-		b = c | double_inclusion
-	}
 }

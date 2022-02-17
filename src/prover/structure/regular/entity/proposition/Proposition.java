@@ -5,13 +5,11 @@ import java.util.Set;
 
 import prover.state.base.bases.TheoremBase;
 import prover.structure.Structure;
-import prover.structure.regular.converter.definition.Definition;
-import prover.structure.regular.converter.operator.Operator;
-import prover.structure.regular.converter.operator.standard.test.TestOperator;
+import prover.structure.regular.converter.operator.standard.standards.TestOperator;
 import prover.structure.regular.entity.Entity;
 import prover.structure.regular.entity.element.Element;
-import prover.structure.regular.entity.proposition.binary.flippable.junction.junctions.ConjunctionProposition;
-import prover.structure.regular.entity.proposition.binary.implication.ImplicationProposition;
+import prover.structure.regular.entity.proposition.binary.junction.junctions.ConjunctionProposition;
+import prover.structure.regular.entity.proposition.binary.junction.junctions.DisjunctionProposition;
 import prover.utility.utilities.NewCollection;
 import prover.utility.utilities.OperatorDefinitionMap;
 import prover.utility.utilities.Pair;
@@ -19,34 +17,48 @@ import prover.utility.utilities.TestArguments;
 
 public abstract class Proposition extends Entity<Proposition> {
 
-	public static final Proposition FALSE = Operator.FALSE.convert();
-	public static final Proposition TRUE  = Operator.TRUE .convert();
+	public static final boolean SMART_LEARN = true;
+
+	public static Proposition implies(Proposition a, Proposition b) {
+		return new DisjunctionProposition(a.not(), b);
+	}
 
 	public static Proposition iff(Proposition a, Proposition b) {
-		return new ConjunctionProposition(new ImplicationProposition(a, b), new ImplicationProposition(b, a));
+		return new ConjunctionProposition(implies(a, b), implies(b, a));
 	}
+
+	public static Set<OperatorDefinitionMap> learn(Proposition ant, Proposition con, Set<TestOperator<?>> testOperators, TheoremBase base, Set<Proposition> targets){
+		if(!SMART_LEARN) return OperatorDefinitionMap.combineMaps(ant.not().getSetOfMapsThatMakeTrue(base, testOperators), con.getSetOfMapsThatProve(base, testOperators, targets));
+
+		Set<OperatorDefinitionMap> set = NewCollection.set();
+		for(OperatorDefinitionMap conMap : con.getSetOfMapsThatProve(base, testOperators, targets)) {
+			Proposition newAnt = ant.substituteOperators(conMap);
+			for(OperatorDefinitionMap antMap : newAnt.getSetOfMapsThatMakeTrue(base, testOperators)) {
+				set.add(OperatorDefinitionMap.combineMaps(conMap, antMap));
+			}
+		}
+
+		return set;
+	}
+
+
+
 
 	public Proposition(TestArguments arguments, List<Structure> subs) {
 		super(arguments, subs);
 	}
-	
-	public final Proposition not() {
-		return new ImplicationProposition(this, FALSE);
-	}
 
-	@Override
-	public final Set<Definition<?>> getAllDefinitionsHelper() {		
-		Set<Definition<?>> set = NewCollection.set(new Definition<Proposition>(this));
-		set.addAll(getAllDefinitionsHelperHelper());
-		return set;
-	}	
-	
-	protected Set<Definition<Proposition>> getAllDefinitionsHelperHelper(){
-		return NewCollection.set();
-	}
+	public abstract Proposition not();
+
+
+
 
 	public Set<Proposition> deconstruct(){
 		return NewCollection.set(this);
+	}
+
+	public List<Pair<Proposition, Proposition>> getAssumptionList() {
+		return NewCollection.list();
 	}
 
 	public Proposition applyElementUniversal(Element element) {
@@ -56,50 +68,53 @@ public abstract class Proposition extends Entity<Proposition> {
 	public Proposition applyElementExistential(Element element) {
 		return null;
 	}
-	
-	public Set<Pair<Proposition, Proposition>> getAssumptionSet(){
-		return null;
-	}
-	
-	
-	
-	
+
+
 	public final boolean isTrue(TheoremBase base) {
-		return !getSetOfMapsThatMakeTrue(NewCollection.set(), base).isEmpty();
+		return !getSetOfMapsThatMakeTrue(base, NewCollection.set()).isEmpty();
 	}
+
+	public final Set<OperatorDefinitionMap> getSetOfMapsThatMakeTrue(TheoremBase base, Set<TestOperator<?>> testOperators){
+		Set<OperatorDefinitionMap> setOfMaps = NewCollection.set(new OperatorDefinitionMap());
+
+		for(Proposition prop : deconstruct()) {
+			Set<OperatorDefinitionMap> miniSetOfMaps = NewCollection.set();
+			for(Proposition truth : base.getTruthsAndEqualities()) {
+				miniSetOfMaps.addAll(prop.assignTestOperators(truth, testOperators));
+			}
 	
-	public final Set<OperatorDefinitionMap> getSetOfMapsThatMakeTrue(Set<TestOperator<?>> testOperators, TheoremBase base){
-		Set<OperatorDefinitionMap> setOfMaps = NewCollection.set();
-		
-		for(Proposition truth : base.getTruthsAndEqualities()) {
-			setOfMaps.addAll(assignTestOperators(truth, testOperators));
+			miniSetOfMaps.addAll(prop.getSetOfMapsThatMakeTrueDeep(base, testOperators));
+			setOfMaps = OperatorDefinitionMap.combineMaps(setOfMaps, miniSetOfMaps);
 		}
-		
-		setOfMaps.addAll(getSetOfMapsThatMakeTrueDeep(testOperators, base));
 		return setOfMaps;
 	}
-	
-	protected Set<OperatorDefinitionMap> getSetOfMapsThatMakeTrueDeep(Set<TestOperator<?>> testOperators, TheoremBase base) {
+
+	protected Set<OperatorDefinitionMap> getSetOfMapsThatMakeTrueDeep(TheoremBase base, Set<TestOperator<?>> testOperators) {
 		return NewCollection.set();
 	}
+
 	
-	public final boolean doesThisProve(TheoremBase base, Set<Proposition> targets) {
-		return !getSetOfMapsThatProve(NewCollection.set(), base, targets).isEmpty();
+	public final Boolean doesThisProve(TheoremBase base, Set<Proposition> targets) {		
+		return !getSetOfMapsThatProve(base, NewCollection.set(), targets).isEmpty();
 	}
-	
-	public final Set<OperatorDefinitionMap> getSetOfMapsThatProve(Set<TestOperator<?>> testOperators, TheoremBase base, Set<Proposition> targets) {
+
+	public final Set<OperatorDefinitionMap> getSetOfMapsThatProve(TheoremBase base, Set<TestOperator<?>> testOperators, Set<Proposition> targets) {
 		Set<OperatorDefinitionMap> setOfMaps = NewCollection.set();
-		
+
 		for(Proposition target : targets) {
 			setOfMaps.addAll(assignTestOperators(target, testOperators));
 		}
 		
-		setOfMaps.addAll(getSetOfMapsThatProveDeep(testOperators, base, targets));
+		for(Pair<Proposition, Proposition> pair : getAssumptionList()) {
+			setOfMaps.addAll(learn(pair.left, pair.right, testOperators, base, targets));
+		}
+
+		setOfMaps.addAll(getSetOfMapsThatProveDeep(base, testOperators, targets));
 		return setOfMaps;
 	}
 
-	protected Set<OperatorDefinitionMap> getSetOfMapsThatProveDeep(Set<TestOperator<?>> testOperators, TheoremBase base, Set<Proposition> targets) {
+	protected Set<OperatorDefinitionMap> getSetOfMapsThatProveDeep(TheoremBase base, Set<TestOperator<?>> testOperators, Set<Proposition> targets) {
 		return NewCollection.set();
 	}
-	
+
 }

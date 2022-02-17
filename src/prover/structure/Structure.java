@@ -4,18 +4,15 @@ import java.util.Map;
 import java.util.Set;
 
 import prover.structure.regular.converter.definition.Definition;
-import prover.structure.regular.converter.operator.standard.test.TestOperator;
-import prover.structure.regular.converter.operator.standard.test.element.TestElement;
+import prover.structure.regular.converter.operator.standard.standards.TestOperator;
 import prover.structure.regular.entity.element.Element;
-import prover.structure.regular.entity.proposition.binary.flippable.equality.EqualityProposition;
+import prover.structure.regular.entity.proposition.binary.equality.EqualityProposition;
 import prover.utility.utilities.NewCollection;
 import prover.utility.utilities.OperatorDefinitionMap;
 
 public abstract class Structure {	
 	
 	public abstract String getName();
-	
-	public abstract Set<TestElement> getContainedTestElements();
 	
 	public abstract Set<TestOperator<?>> getContainedTestOperators();
 	

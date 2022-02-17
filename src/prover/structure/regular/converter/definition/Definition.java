@@ -1,7 +1,6 @@
 package prover.structure.regular.converter.definition;
 
 import java.util.List;
-import java.util.Set;
 
 import prover.structure.Structure;
 import prover.structure.regular.converter.Converter;
@@ -17,7 +16,7 @@ import prover.utility.utilities.TestArguments;
 public class Definition<E extends Entity<E>> extends Converter<Definition<E>, E> {
 	
 	public Definition(E entity) {
-		this(new TestArguments(), entity);
+		this(TestArguments.EMPTY, entity);
 	}
 	
 	public Definition(TestArguments tests, E entity) {
@@ -25,13 +24,14 @@ public class Definition<E extends Entity<E>> extends Converter<Definition<E>, E>
 	}
 	
 	
-	public Definition(List<Operator<Proposition>> predicates, List<Operator<Element>> functions, E entity) {
-		this(predicates, functions, new TestArguments(new PlatonicArguments(predicates, functions)), entity);
+	public Definition(List<Operator<Proposition>> predicates, List<Operator<Element>> functions, List<Operator<Element>> elements, E entity) {
+		this(predicates, functions, elements, new TestArguments(new PlatonicArguments(predicates, functions, elements.size())), entity);
 	}
 	
-	private Definition(List<Operator<Proposition>> predicates, List<Operator<Element>> functions, TestArguments arguments, E entity) {
+	private Definition(List<Operator<Proposition>> predicates, List<Operator<Element>> functions, List<Operator<Element>> elements, TestArguments arguments, E entity) {
 		super(arguments, entity.substituteOperators(new OperatorDefinitionMap(predicates, arguments.getPredicateDefinitions()))
-							   .substituteOperators(new OperatorDefinitionMap(functions,  arguments.getFunctionDefinitions())));
+							   .substituteOperators(new OperatorDefinitionMap(functions,  arguments.getFunctionDefinitions()))
+							   .substituteOperators(new OperatorDefinitionMap(elements,   arguments.getElementDefinitions())));
 	}
 
 	
@@ -51,9 +51,6 @@ public class Definition<E extends Entity<E>> extends Converter<Definition<E>, E>
 	@Override
 	public final Class<E> getConverterClass(){
 		return NewCollection.chooseEntityType((Class<E>) getSubstructures().get(0).getClass(), (Class<E>) Proposition.class, (Class<E>) Element.class);
-		/*
-		 * type erasure lol
-		 */
 	}
 	
 	@Override
@@ -66,24 +63,23 @@ public class Definition<E extends Entity<E>> extends Converter<Definition<E>, E>
 		return ((E) getSubstructures().get(0))
 				.substituteOperators(new OperatorDefinitionMap(NewCollection.list(getTests().getPredicates()), predicates))
 				.substituteOperators(new OperatorDefinitionMap(NewCollection.list(getTests().getFunctions()), functions))
-				.substituteOperators(new OperatorDefinitionMap(NewCollection.list(getTests().getElements()), convertHelper(elements)));
+				.substituteOperators(new OperatorDefinitionMap(NewCollection.list(getTests().getElements()), convertDefintionHelper(elements)));
 	}
 	
-	private static List<Definition<Element>> convertHelper(List<Element> elements) {
+	private static List<Definition<Element>> convertDefintionHelper(List<Element> elements) {
 		List<Definition<Element>> defs = NewCollection.list();
 		for(Element element : elements) {
-			defs.add(new Definition<Element>(new TestArguments(), element));
+			defs.add(new Definition<Element>(TestArguments.EMPTY, element));
 		}
 		return defs;
-	}
-	
-	@Override
-	public Set<Definition<?>> getAllDefinitionsHelper() {
-		return NewCollection.set(this);
 	}
 
 	@Override
 	public String toString() {
-		return getArguments() + " " + getTests() +  " : " + getSubstructures().get(0); 
+		return getTests().toString() + getSubstructures().get(0).toString();
+	}
+	
+	public String toDevString(String theoremName) {
+		return theoremName + " " + getTests().toTheoremString() + " " + getSubstructures().get(0).toString();
 	}
 }

@@ -1,0 +1,12 @@
+import zfc.axioms {
+	Extensionality
+	EmptySet
+}
+
+
+transparent predicate @ from ElementOfSymbol
+transparent function  0 from EmptySet
+
+opaque function Choice(x)
+
+axiom axiom_of_choice : [x != 0] Choice(x) @ x

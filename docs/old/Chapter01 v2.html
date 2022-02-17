@@ -1,0 +1,131 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<h1>Chapter 01: Welcome to ProofTree</h1>
+
+		<p>
+			Here's what ProofTree is
+		</p><p>
+			Here's how to setup ProofTree
+		</p><p>
+			<pt>ProofTree</pt> is a tool to help you write proofs. A proof is a rigourus argument aimed at asserting the truth of a specific statement. For example, the following a proof that the porch is wet.
+		</p><p>
+	<block>
+	If its rains, the porch will be wet.
+	It is raining.
+	Therefore, the porch is wet.
+	</block>
+		</p><p>
+			<pt>ProofTree</pt> proofs are centered around the idea of a proposition. A proposition is simply a precise mathematical statement -- it need not be true. For example, "It is raining" is a proposition, as is "every real number is greater than <cd>7</cd>." The statement, "<cd>x = 7</cd>" is not a proposition, unless we have previoisly specificed what <cd>x</cd> is refering to (for example, "if <cd>x</cd> is an integer greater than <cd>8</cd> but less than <cd>6</cd>, then <cd>x = 7</cd>" is a valid proposition).
+		</p><p>
+			In addition to proposition, <pt>ProofTree</pt> also use <id>preidcates</id>. A <id>predicate</id> is a way of creating new proposition. For example, the equals sign <cd>=</cd> is a <id>predicate</id> that maps two objects <cd>a</cd> and <cd>b</cd> to the proposition <cd>a = b</cd>. You could also have a <id>predicate</id> that maps zero objects to a proposition. For example, <op>True</op> and <op>False</op> are such <id>predicates</id>, that map to the propositions of the same name.</id> Let's create three new predicates.
+		</p><p>
+	<block>
+	<id>opqaue predicate</id> A
+	<id>opqaue predicate</id> B
+	<id>opqaue predicate</id> C
+	</block>
+		</p><p>
+			The <id>opqaue</id> identifier simply means that we don't yet know anything about <id>predicates</id> <cd>A, B,</cd> or <cd>C</cd>.
+		</p><p>
+			In our proof the the porch is wet, we introduced two proposition without justifications ("If it rains, the porch will be wet", and "It is raining"). If we want to introduce assertions such as these in <pt>ProofTree</pt>, we have to use an <id>axiom</id>. An <id>axiom</id> is simply a proposition that we will accept as <op>True</op>. Let's create some <id>axioms</id> using our newly created <id>predicates</id>.
+		</p><p>
+	<block>
+	<id>axiom</id> a_is_true <sp>:</sp> A
+	</block>
+		</p><p>
+			Every <id>axiom</id> has a name, like <cd>a_is_true</cd>, and a proposition that we are asserting is <op>True</op>, like <cd>A</cd>.
+		</p><p>
+			Next, we will create two more <id>axioms</id>, but these axioms will be implications. An implication is a special kind of proposition that express the idea of propostion <cd>A</cd> being <op>True</op> necessarily implying that proposition <cd>B</cd> is <op>True</op>. For example, "If its rains, the porch will be wet" is an implication. Implications in <pt>ProofTree</pt> use the <op>-></op> symbol. We will now create two more <id>axioms</id>, both implications.
+		</p><p>
+	<block>
+	<id>axiom</id> a_implies_b <sp>:</sp> A <op>-></op> B
+	<id>axiom</id> b_implies_c <sp>:</sp> B <op>-></op> C
+	</block>
+		</p><p>
+			In our proof that the porch is wet, we did something really nifty. We took a simple assertion ("It is raining"), and an implication ("If it rains, the porch will be wet"), and combined them to assert a new proposition ("the porch is wet"). This is called modus ponens. More generally, anytime we have <cd>A</cd> and <cd>A <op>-></op> B</cd>, we can use modus ponens to find <cd>B</cd>.
+		</p><p>
+			Let's prove some theorems
+		</p><p>
+
+	</body>
+</html>
+
+
+
+
+	<id>axiom</id> a_implies_b <sp>:</sp> A <op>-></op> B
+	<id>axiom</id> b_implies_c <sp>:</sp> B <op>-></op> C
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+		<h1>Chapter 01: Natural Deduction</h1>
+
+		<p>
+			<pt>ProofTree</pt> is two different systems that work together. First, it is a formal syntax for writing proofs of mathematical statements. Second, it is a program that verifies that proofs written in this syntax are valid. These two systems work together to make up <pt>ProofTree</pt><sp>:</sp> users write proofs using the <pt>ProofTree</pt> syntax, and then the <pt>ProofTree</pt> program confirms that these proofs are valid. This guide serves to enable you to write proofs using the <pt>ProofTree</pt> syntax, while also cultivating an understanding of how the <pt>ProofTree</pt> program confirms that validates your proofs.
+		</p><p>
+			To start, open a new file (Notebook is fine, but you can download and use SublimeText if you want to be fancy) and name it Main.proof. This is where you will write your <pt>ProofTree</pt> proofs, and where the <pt>ProofTree</pt> program will look to verify your proofs.
+		</p><p>
+			<pt>ProofTree</pt> proofs are centered around the idea of a proposition. A proposition is simply a precise mathematical statement -- it need not be true. For example, "every integer is either odd or even" is a proposition, as is "every real number is greater than <cd>7</cd>." The statement, "<cd>x = 7</cd>" is not a proposition, unless we have previoisly specificed what <cd>x</cd> is refering to (for example, "if <cd>x</cd> is an integer greater than <cd>8</cd> but less than <cd>6</cd>, then <cd>x = 7</cd>" is a valid proposition).
+		</p><p>
+			Without any direction, the <pt>ProofTree</pt> system starts with no information about the mathematical universe we reside in. It has no notion of numbers, sets, functions, or anything else. In some ways, this imbues it with great power, as we can use <pt>ProofTree</pt> to develop any mathematical system we might desire. However, it also means that we have to put in the work to devleop these systems.
+		</p><p>
+			Let's start by creating a new <id>predicate</id>. A <id>predicate</id> is a function that maps a number of objects to a proposition. For example, the equals sign <cd>=</cd> is a <id>predicate</id> that maps two objects <cd>a</cd> and <cd>b</cd> to the proposition <cd>a = b</cd>. You could also have a <id>predicate</id> that maps zero objects to a proposition. For example, <op>True</op> and <op>False</op> are such <id>predicates</id>, that map to the propositions of the same name.</id> We'll create a new <id>predicate</id> with the name <cd>P</cd>.
+		</p><p>
+	<block>
+	<id>opqaue predicate</id> P
+	</block>
+		</p><p>
+			The <id>opqaue</id> identifier simply means that we don't yet know anything about the <id>predicate</id> <cd>P</cd>.
+		</p><p>
+			Now we will prove a very simple theorem about <cd>P</cd><sp>:</sp> <cd>P <op>-></op> P</cd> (that is, if we know <cd>P</cd> is <op>True</op>, then we know <cd>P</cd> is <op>True</op>).
+		</p><p>
+	<block>
+	<id>opqaue predicate</id> P
+
+	<id>theorem</id> p_imples_p <sp>:</sp> P <op>-></op> P {
+		P <sp>|</sp> <ju>assumption</ju>
+	}
+	</block>
+		</p><p>
+			The <id>theorem</id> identifier indicates that what follows is the decleration and proof of a new theorem. We first indicate the name of the theorem (<cd>p_implies_p</cd>), followed by the colon, and then finally by the proposition that we are trying to prove (<cd>P <op>-></op> P</cd>). We then use an opening curly brace to indicate that our proof is beginning, and will use a closing curly brace once our proof is complete.
+		</p><p>
+			The most common way to prove an implication (that is, a theorem of the form <cd>A <op>-></op> B</cd>, or in our case  <cd>P <op>-></op> P</cd>) is to assume that the first half (the antecedent) is <op>True</op>, and then use this information to prove the second half of the implication (the consequent). This is a process known as natural deduction. In order to carry out a natural deduction proof in <pt>ProofTree</pt>, we need to understand the concept of the "goal" of a proof.
+		</p><p>
+			Every <pt>ProofTree</pt> proof has a goal. When you begin the proof, the goal is just the proposition listed in the <id>theorem</id> decleration. However, the goal might change over the course of the proof. For example, in a natural deduction proof, the goal would start as an implication (let's say, <cd>A <op>-></op> B</cd>). After we assume that <cd>A</cd> is <op>True</op>, the goal becomes just to prove <cd>B</cd>. You don't need to indicate the new goal anywhere in your proof -- the <pt>ProofTree</pt> program will automatically recognize that you are carrying our natural deduction and will change the goal accordingly. At the end of the proof, we just need to make sure that the goal is <op>True</op>.
+		</p><p>
+			We carry out natural deduction in our proof with the following line<sp>:</sp>
+		</p><p>
+	<block>
+	P <sp>|</sp> <ju>assumption</ju>
+	</block>
+		</p><p>	
+			The <ju>assumption</ju> keyword (called a justification) means "assume that <cd>P</cd> is <op>True</op> according to natural deduction, and change the goal accordingly." Thus, the <pt>ProofTree</pt> program will change the goal of the proof from <cd>P <op>-></op> P</cd> to just <cd>P</cd>.
+		</p><p>
+			But we just assumed that <cd>P</cd> was <op>True</op>! This means that our proof is complete, and we end our proof with a closing curly brace.
+		</p><p>
+			To confirm that our proof is valid, we run the <pt>ProofTree</pt> program. You should receive the following message (your speeds may very)<sp>:</sp>
+		</p><p>
+	<block>
+	Complied Main.proof
+	Compilied at 64 milliseconds
+	Proof of p_imples_p is valid!
+	Completed at 69 milliseconds
+	</block>
+		</p><p>
+			Congrats! You have proven your first theorem in <pt>ProofTree</pt>. In the ensuing chapters you will learn about other proof techniques, how to use theorems you've already proved, how to talk about numbers, and more. Welcome to <pt>ProofTree</pt>!
+		</p>
+	</body>
+</html>

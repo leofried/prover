@@ -1,13 +1,17 @@
-import zfc.axioms.Extensionality
-import zfc.axioms.Power
-import zfc.axioms.Propositions
-import zfc.axioms.Simple
-import zfc.axioms.Subset
-import zfc.axioms.Union
+import zfc.axioms {
+	Extensionality
+	Propositions
+	Subset
+}
 
-function 0
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
 
-axiom axiom_of_empty_set : [a] NOT a @ 0
+opaque function EmptySet
+
+transparent function 0 from EmptySet
+
+axiom axiom_of_empty_set : [x] NOT x @ 0
 
 theorem empty_set_subset : [a](0 # a){
 	element a, x from goal
@@ -16,110 +20,31 @@ theorem empty_set_subset : [a](0 # a){
 	| explosion
 }
 
-theorem subset_empty_set : [a](a # 0 -> a = 0){
+theorem subset_empty_set : [a # 0] a = 0 {
 	element a from goal
 	a # 0 | assumption
 	0 # a | empty_set_subset
 	| double_inclusion
 }
 
-theorem empty_set_is_empty : [a](a = 0 -> [x] NOT x @ a) {
+theorem empty_set : [a](a = 0 <-> [x] NOT x @ a) {
 	element a from goal
-	a = 0 | assumption
-	element x from goal
-	x @ a | assumption
-	  @ 0 | substitution
-	| axiom_of_empty_set
-}
 
-theorem empty_is_empty_set : [a]([x] NOT x @ a -> a = 0) {
-	element a from goal
-	[x] NOT x @ a | assumption
-
-	lemma : a # 0 {
-		element x from goal
-		x @ a | assumption
-		False | truths
-		| explosion
+	lemma : a = 0 -> [x] NOT x @ a {
+		[x] NOT x @ 0 | axiom_of_empty_set
+		[x] NOT x @ a | assumption
 	}
 
-	a = 0 | subset_empty_set
-}
+	lemma : [x] NOT x @ a -> a = 0 {
+		[x] NOT x @ a | assumption
 
-theorem not_empty_set_is_not_empty : [a](a != 0 -> {x} x @ a) {
-	element a from goal
-	a != 0 | assumption
-	NOT {x} x @ a | contradiction
-	[x] NOT x @ a | not_exists
-	a = 0  | empty_is_empty_set
-	False | truths
-}
+		lemma : a # 0 {
+			element x from goal
+			x @ a | assumption
+			False | truths
+			| explosion
+		}
 
-theorem not_empty_is_not_empty_set : [a][x](x @ a -> a != 0){
-	element a, x from goal
-	x @ a | assumption
-	NOT x @ 0 | axiom_of_empty_set
-	NOT x @ a | assumption
-	False | truths
-}
-
-theorem empty_set_in_power_set : [a] 0 @ Power(a) {
-	element a from goal
-	0 # a | empty_set_subset
-	0 @ Power(a) | axiom_of_power
-}
-
-theorem union_empty_set : Union(0) = 0 {
-	lemma : [x] NOT x @ Union(0) {
-		element x from goal
-		x @ Union(0) | assumption
-		element y from {y} (x @ y AND y @ 0) | axiom_of_union
-		False | axiom_of_empty_set
+		| subset_empty_set
 	}
-
-	Union(0) = 0 | empty_is_empty_set
-}
-
-theorem simple_union_empty_set_left : [a] SimpleUnion(0, a) = a {
-	element a from goal
-
-	lemma : SimpleUnion(0, a) # a {
-		element x from goal
-		x @ SimpleUnion(0, a) | assumption
-		NOT x @ 0 | axiom_of_empty_set
-		x @ a | in_simple_union
-	}
-
-	lemma : a # SimpleUnion(0, a) {
-		element x from goal
-		x @ a | assumption
-		x @ SimpleUnion(0, a) | in_simple_union
-	}
-
-	SimpleUnion(0, a) = a | double_inclusion
-}
-
-theorem simple_union_empty_set_right : [a] SimpleUnion(a, 0) = a {
-	element a from goal
-	SimpleUnion(a, 0) = SimpleUnion(0, a) | simple_union_symmetric
-	                  = a | simple_union_empty_set_left
-}
-
-theorem simple_intersection_empty_set_left : [a] SimpleIntersection(0, a) = 0 {
-	element a from goal
-
-	lemma : [x]( NOT x @ SimpleIntersection(0, a)) {
-		element x from goal
-		x @ SimpleIntersection(0, a) | assumption
-		x @ 0 | in_simple_intersection
-		False | axiom_of_empty_set
-	}
-
-	SimpleIntersection(0, a) = 0 | empty_is_empty_set
-}
-
-theorem simple_intersection_empty_set_right : [a] SimpleIntersection(a, 0) = 0 {
-	element a from goal
-	SimpleIntersection(a, 0) = SimpleIntersection(0, a) | simple_intersection_symmetric
-	                         = 0 | simple_intersection_empty_set_left
 }

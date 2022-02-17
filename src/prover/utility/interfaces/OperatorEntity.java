@@ -15,7 +15,7 @@ import prover.utility.utilities.OperatorDefinitionMap;
 public interface OperatorEntity<E extends Entity<E>> {
 
 	public List<Structure> getSubsHelper();
-	
+
 	public default Operator<E> getOperator() {
 		return (Operator<E>) getSubsHelper().get(0);
 	}
@@ -55,17 +55,21 @@ public interface OperatorEntity<E extends Entity<E>> {
 	}
 
 	public default String toStringHelper() {
-		String str = getOperator().toString();
-		if(getPredicates().size() != 0) str += Constants.PREDICATES.left + getPredicates().toString().substring(1, getPredicates().toString().length() - 1) + Constants.PREDICATES.right;
-		if(getFunctions() .size() != 0) str += Constants.FUNCTIONS .left + getFunctions ().toString().substring(1, getFunctions ().toString().length() - 1) + Constants.FUNCTIONS .right;
-		if(getElements().size() != 0) {
-			str += Constants.ELEMENTS.left;
-			for(Element e : getElements()) {
-				str += e.toString() + Constants.COMMA +  " ";
+		if(getOperator().getStrength() != null) {
+			return Constants.ELEMENTS.left + getElements().get(0) + Constants.SPACE + getOperator() + Constants.SPACE + getElements().get(1) + Constants.ELEMENTS.right;
+		} else {
+			String str = getOperator().toString();
+			if(getPredicates().size() != 0) str += Constants.PREDICATES.left + getPredicates().toString().substring(1, getPredicates().toString().length() - 1) + Constants.PREDICATES.right;
+			if(getFunctions() .size() != 0) str += Constants.FUNCTIONS .left + getFunctions ().toString().substring(1, getFunctions ().toString().length() - 1) + Constants.FUNCTIONS .right;
+			if(getElements().size() != 0) {
+				str += Constants.ELEMENTS.left;
+				for(Element e : getElements()) {
+					str += e.toString() + Constants.COMMA + Constants.SPACE;
+				}
+				str = str.substring(0, str.length() - 2) + Constants.ELEMENTS.right;
 			}
-			str = str.substring(0, str.length() - 2) + Constants.ELEMENTS.right;
+			return str;
 		}
-		return str;
 	}
 
 }

@@ -12,7 +12,7 @@ import prover.utility.utilities.TestArguments;
 public abstract class BinaryProposition<E extends Entity<E>> extends Proposition {
 
 	public BinaryProposition(E left, E right) {
-		super(new TestArguments(), NewCollection.list(left, right));
+		super(TestArguments.EMPTY, NewCollection.list(left, right));
 	}
 	
 	public final E getLeft() {
@@ -33,7 +33,7 @@ public abstract class BinaryProposition<E extends Entity<E>> extends Proposition
 
 	@Override
 	public final String toString() {
-		return Constants.PARENS.left + getLeft() + " " + stringName() + " " + getRight() + Constants.PARENS.right;
+		return Constants.PARENS.left + getLeft() + Constants.SPACE + stringName() + Constants.SPACE + getRight() + Constants.PARENS.right;
 	}
 
 	protected abstract String stringName();

@@ -1,0 +1,154 @@
+import zfc {
+	axioms
+	relations {
+		relations
+		homogeneous.Properties
+	}
+}
+
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+transparent function  0 from EmptySet
+transparent predicate R from Related
+
+transparent predicate IsEquivalenceRelation(r, a): IsReflexiveRelation(r, a) AND IsSymmetricRelation(r, a) AND IsTransitiveRelation(r, a)
+
+opaque function Part(r, x): Separate[:(k): R(r, x, k)](Range(r))
+
+opaque function Partition(r): Separate[:(k): {x @ Domain(r)} k = Part(r, x)](Power(Domain(r)))
+
+lemma equivalence_relation_is_total : [r][a](IsEquivalenceRelation(r, a) -> Domain(r) = a AND Range(r) = a) {
+	element r, a from goal
+	IsEquivalenceRelation(r, a) | assumption
+
+	lemma : Domain(r) = a {
+		Domain(r) # a | domain_subset
+
+		lemma : a # Domain(r) {
+			element x from goal
+			x @ a | assumption
+			R(r, x, x) | is_reflexive
+			x @ Domain(r) | left_in_domain
+		}
+
+		| double_inclusion
+	}
+
+	lemma : Range(r) = a {
+		Range(r) # a | range_subset
+
+		lemma : a # Range(r) {
+			element y from goal
+			y @ a | assumption
+			R(r, y, y) | is_reflexive
+			y @ Range(r) | right_in_range
+		}
+
+		| double_inclusion
+	}
+}
+
+theorem part_eq : [r][a](IsEquivalenceRelation(r, a) -> [x][y](R(r, x, y) <-> x @ a AND Part(r, x) = Part(r, y))) {
+	element r, a from goal
+	IsEquivalenceRelation(r, a) | assumption
+	element x, y from goal
+
+	lemma : R(r, x, y) -> x @ a AND Part(r, x) = Part(r, y) {
+		R(r, x, y) | assumption
+		x @ a | left_in_bound
+		y @ a |right_in_bound
+
+		lemma : Part(r, x) = Part(r, y) {
+			lemma : Part(r, y) # Part(r, x) {
+				element z from goal
+				z @ Part(r, y) | assumption
+				  @ Range(r) | axiom_of_separation
+				  @ a | range_subset
+
+				R(r, y, z) | axiom_of_separation
+				R(r, x, z) | is_transitive
+
+				z @ Part(r, x) | axiom_of_separation
+			}
+
+			R(r, y, x) | is_symmetric
+
+			lemma : Part(r, x) # Part(r, y) {
+				element z from goal
+				z @ Part(r, x) | assumption
+				  @ Range(r) | axiom_of_separation
+				  @ a | range_subset
+
+				R(r, x, z) | axiom_of_separation
+				R(r, y, z) | is_transitive
+
+				z @ Part(r, y) | axiom_of_separation
+			}
+
+			| double_inclusion
+		}
+	}
+
+	lemma : x @ a AND Part(r, x) = Part(r, y) -> R(r, x, y) {
+		x @ a AND Part(r, x) = Part(r, y) | assumption
+
+		R(r, x, x) | is_reflexive
+		x @ Range(r) | equivalence_relation_is_total
+		  @ Part(r, x) | axiom_of_separation
+		  @ Part(r, y) | substitution
+
+		R(r, y, x) | axiom_of_separation
+		y @ a | left_in_bound
+		R(r, x, y) | is_symmetric
+	}
+}
+
+theorem in_partition : [r][a](IsEquivalenceRelation(r, a) -> [p](p @ Partition(r) <-> {x @ a} p = Part(r, x))) {
+	element r, a from goal
+	IsEquivalenceRelation(r, a) | assumption
+	element p from goal
+
+	lemma : p @ Partition(r) -> {x @ a} p = Part(r, x) {
+		p @ Partition(r) | assumption
+		element x from {x @ Domain(r)} p = Part(r, x) | axiom_of_separation
+		x @ a | domain_subset
+	}
+
+	lemma : {x @ a} p = Part(r, x) -> p @ Partition(r) {
+		element x from {x @ a} p = Part(r, x) | assumption
+		x @ Domain(r) | equivalence_relation_is_total
+
+        Part(r, x) # Range(r) | separation_is_subset
+        Part(r, x) # a | equivalence_relation_is_total
+                 p # a | substitution
+                   # Domain(r) | equivalence_relation_is_total
+                   @ Power(Domain(r)) | axiom_of_power
+                   @ Partition(r) | axiom_of_separation
+	}
+}
+
+theorem choice_part : [r][a](IsEquivalenceRelation(r, a) -> [x @ a](R(r, x, Choice(Part(r, x))))) {
+	element r, a from goal
+	IsEquivalenceRelation(r, a) | assumption
+	element x from goal
+	x @ a | assumption
+
+	R(r, x, x) | is_reflexive
+	x @ Range(r) | right_in_range
+	  @ Part(r, x) | axiom_of_separation
+	Part(r, x) != 0 | empty_set
+
+	Choice(Part(r, x)) @ Part(r, x) | axiom_of_choice
+	R(r, x, Choice(Part(r, x))) | axiom_of_separation
+}
+
+theorem choice_in_partition : [r][a](IsEquivalenceRelation(r, a) -> [p @ Partition(r)] Choice(p) @ a) {
+	element r, a from goal
+	IsEquivalenceRelation(r, a) | assumption
+	element p from goal
+	p @ Partition(r) | assumption
+	element x from {x @ a} p = Part(r, x) | in_partition
+	R(r, x, Choice(Part(r, x))) | choice_part
+	Choice(Part(r, x)) @ a | right_in_bound
+	Choice(p) @ a | substitution
+}

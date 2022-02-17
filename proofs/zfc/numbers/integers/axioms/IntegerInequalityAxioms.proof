@@ -1,0 +1,93 @@
+/*import zfc.axioms.*
+import zfc.relations.*
+import zfc.numbers.helpers.*
+import zfc.numbers.naturals.*
+import zfc.numbers.integers.Integers
+
+predicate R from Related
+function . from MapSymbol
+function + from +n+
+predicate <= from NaturalInequalitySymbol
+
+predicate IntegerInequalityL(a, b, c, d):: a + d <= b + c
+
+function IntegerInequality : HelperRelation[IntegerInequalityL]{Int}(int, nat, nat)
+
+predicate :0: IntegerInequalitySymbol (a, b):: R(IntegerInequality, a, b)
+predicate << from IntegerInequalitySymbol
+
+theorem integer_inequality_is_helper_relation : IsHelperRelation[IntegerInequalityL]{Int}(int, IntegerEquivalenceRelation, nat, nat) {
+	IsEquivalenceRelation(IntegerEquivalenceRelation, CP(nat, nat)) | integers_are_equivalence_relation
+
+	IsHelperPartition{Int}(int, IntegerEquivalenceRelation) | integers_are_helper_partition
+
+	lemma : IsHelperRelationWellDefined[IntegerInequalityL](IntegerEquivalenceRelation, nat, nat) {
+		lemma : [s @ CP(nat, nat)][t @ CP(nat, nat)][u @ CP(nat, nat)][v @ CP(nat, nat)](R(IntegerEquivalenceRelation, s, u) AND R(IntegerEquivalenceRelation, t, v) -> (HelperRelationSugar[IntegerInequalityL](s, t) <-> HelperRelationSugar[IntegerInequalityL](u, v))) {
+			element s from goal s @ CP(nat, nat) | assumption
+			element t from goal t @ CP(nat, nat) | assumption
+			element u from goal u @ CP(nat, nat) | assumption
+			element v from goal v @ CP(nat, nat) | assumption
+
+			R(IntegerEquivalenceRelation, s, u) AND R(IntegerEquivalenceRelation, t, v) | assumption
+
+			function a:: Left (s)
+			function b:: Right(s)
+			function c:: Left (t)
+			function d:: Right(t)
+			function e:: Left (u)
+			function f:: Right(u)
+			function g:: Left (v)
+			function h:: Right(v)
+
+			a @ nat AND b @ nat | in_cp
+			c @ nat AND d @ nat | in_cp
+			e @ nat AND f @ nat | in_cp
+			g @ nat AND h @ nat | in_cp
+
+			a + d @ nat | add_is_nat
+			b + c @ nat | add_is_nat
+			e + h @ nat | add_is_nat
+			f + g @ nat | add_is_nat
+
+			lemma : HelperRelationSugar[IntegerInequalityL](s, t) -> HelperRelationSugar[IntegerInequalityL](u, v) {
+				 a + d            <=  b + c            | assumption
+				(a + d) + (f + g) <= (b + c) + (f + g) | nat_le_resp_add_right
+				(a + f) + (d + g) <= (b + c) + (f + g) | nat_paren_add_paren_comm
+				(b + e) + (d + g) <= (b + c) + (f + g) | integers_are_equivalent
+				(b + e) + (c + h) <= (b + c) + (f + g) | integers_are_equivalent
+				(b + c) + (e + h) <= (b + c) + (f + g) | nat_paren_add_paren_comm
+				           e + h  <=            f + g  | nat_le_cancel_add_left
+			}
+
+			lemma : HelperRelationSugar[IntegerInequalityL](u, v) -> HelperRelationSugar[IntegerInequalityL](s, t) {
+				           e + h  <=            f + g  | assumption
+				(b + c) + (e + h) <= (b + c) + (f + g) | nat_le_resp_add_left
+				(b + e) + (c + h) <= (b + c) + (f + g) | nat_paren_add_paren_comm
+				(b + e) + (d + g) <= (b + c) + (f + g) | integers_are_equivalent
+				(a + f) + (d + g) <= (b + c) + (f + g) | integers_are_equivalent
+				(a + d) + (f + g) <= (b + c) + (f + g) | nat_paren_add_paren_comm
+				 a + d            <=  b + c            | nat_le_cancel_add_right
+			}
+		}
+	
+		| is_helper_relation_well_defined
+	}
+}
+
+theorem integer_inequality_is_relation : IsRelation(IntegerInequality, int, int) {
+	IsHelperRelation[IntegerInequalityL]{Int}(int, IntegerEquivalenceRelation, nat, nat) | integer_inequality_is_helper_relation
+	| helper_relation
+}
+
+theorem int_le : [x][y][a @ nat][b @ nat][c @ nat][d @ nat](x = Int(a, b) AND y = Int(c, d) -> (x << y <-> a + d <= b + c)) {
+	element x, y from goal
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption
+	element c from goal c @ nat | assumption
+	element d from goal d @ nat | assumption
+
+	x = Int(a, b) AND y = Int(c, d) | assumption
+	IsHelperRelation[IntegerInequalityL]{Int}(int, IntegerEquivalenceRelation, nat, nat) | integer_inequality_is_helper_relation
+	Int(a, b) << Int(c, d) <-> a + d <= b + c | helper_relation
+	| substitution
+}

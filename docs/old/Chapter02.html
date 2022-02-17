@@ -1,0 +1,198 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+
+		<h1>Chapter 02: Modus Ponens</h1>
+		<p>
+			Copy the following <pt>ProofTree</pt> file into Main.proof, and then we'll take a look at exactly what's going on.
+		</p><p>
+	<block>
+	<id>opaque predicate</id> P
+	<id>opaque predicate</id> Q
+	<id>opaque predicate</id> R
+
+	<id>theorem</id> hilberts_third_axiom_of_logic <sp>:</sp> (P <op>-></op> Q <op>-></op> R) <op>-></op> (P <op>-></op> Q) <op>-></op> (P <op>-></op> R) {
+		P <op>-></op> Q <op>-></op> R <sp>|</sp> <ju>assumption</ju>
+		P <op>-></op> Q <sp>|</sp> <ju>assumption</ju>
+		P <sp>|</sp> <ju>assumption</ju>
+		Q <sp>|</sp> <ju>truths</ju>
+		R <sp>|</sp> <ju>truths</ju>
+	}
+	</block>
+		</p><p>
+			We first create three new <id>predicates</id>: <cd>P, Q,</cd> and <cd>R</cd>. Like in last chapter, they are <id>opaque</id>.
+		</p><p>
+	<block>
+	<id>opaque predicate</id> P
+	<id>opaque predicate</id> Q
+	<id>opaque predicate</id> R
+	</block>
+		</p><p>
+			Next we declare a new theorem.
+		</p><p>
+	<block>
+	<id>theorem</id> hilberts_third_axiom_of_logic <sp>:</sp> (P <op>-></op> Q <op>-></op> R) <op>-></op> (P <op>-></op> Q) <op>-></op> (P <op>-></op> R) {
+	</block>
+		</p><p>
+			Note first that the implication operator <op>-></op> is right-associative. This means that <cd>P <op>-></op> Q <op>-></op> R</cd> is equivalent to <cd>P <op>-></op> (Q <op>-></op> R)</cd>. In english, this is pronounced "<cd>P</cd> implies <cd>Q</cd> implies <cd>R</cd>." If <cd>P</cd> is <op>True</op>, then if <cd>Q</cd> is <op>True</op>, then <cd>R</cd> is also <cd>True</cd>.  This probably different from most operations you are used to, such as subtraction, which is left-associative.
+		</p><p>
+			The theorem we will now prove is sort of like a left-distributive law for implication. It says that if <cd>P</cd> implies that <cd>Q</cd> implies <cd>R</cd>, then <cd>P</cd> implies <cd>Q</cd> implies that <cd>P</cd> implies <cd>R</cd>. We can verify that it is <op>True</op> with a truth table.
+		</p><p>
+	<block>
+	P     Q     R     P <op>-></op> Q    P <op>-></op> R    Q <op>-></op> R    P <op>-></op> Q <op>-></op> R    (P <op>-></op> Q) -> (P <op>-></op> R)    (P <op>-></op> Q <op>-></op> R) <op>-></op> (P <op>-></op> Q) <op>-></op> (P <op>-></op> R)
+	<op>T</op>     <op>T</op>     <op>T</op>       <op>T</op>         <op>T</op>         <op>T</op>            <op>T</op>                  <op>T</op>                                <op>T</op>
+	<op>T</op>     <op>T</op>     <op>F</op>       <op>T</op>         <op>F</op>         <op>F</op>            <op>F</op>                  <op>F</op>                                <op>T</op>
+	<op>T</op>     <op>F</op>     <op>T</op>       <op>F</op>         <op>T</op>         <op>T</op>            <op>T</op>                  <op>T</op>                                <op>T</op>
+	<op>T</op>     <op>F</op>     <op>F</op>       <op>F</op>         <op>F</op>         <op>T</op>            <op>T</op>                  <op>T</op>                                <op>T</op>
+	<op>F</op>     <op>T</op>     <op>T</op>       <op>T</op>         <op>T</op>         <op>T</op>            <op>T</op>                  <op>T</op>                                <op>T</op>
+	<op>F</op>     <op>T</op>     <op>F</op>       <op>T</op>         <op>T</op>         <op>F</op>            <op>T</op>                  <op>T</op>                                <op>T</op>
+	<op>F</op>     <op>F</op>     <op>T</op>       <op>T</op>         <op>T</op>         <op>T</op>            <op>T</op>                  <op>T</op>                                <op>T</op>
+	<op>F</op>     <op>F</op>     <op>F</op>       <op>T</op>         <op>T</op>         <op>T</op>            <op>T</op>                  <op>T</op>                                <op>T</op>
+	</block>
+		</p><p>
+			No matter what the values of <cd>P, Q</cd> and <cd>R</cd> are, the <id>theorem</id> is <op>True</op>.
+		</p><p>
+			Now you might have notice the <id>theorem</id> is named <cd>hilberts_third_axiom_of_logic</cd>, and be wondering why (or how) we are proving an axiom. The answer is that when Hilbert designed his logical system, he prohibited natural deduction. This forced him to take certain theorms as axioms in order to get the same level of power that we have. However, because <pt>ProofTree</pt> uses natural deduction, we don't need any logical axioms, and thus can prove all of Hilbert's axioms as theorem. In fact, we already proved his first axiom in the last chapter.
+		<p></p>
+			Now, let's get on to the proof!
+		</p><p>
+	<block>
+		P <op>-></op> Q <op>-></op> R <sp>|</sp> <ju>assumption</ju>
+		P <op>-></op> Q <sp>|</sp> <ju>assumption</ju>
+		P <sp>|</sp> <ju>assumption</ju>
+	</block>
+		</p><p>
+			We start by assuming everything that we can. At this point, we have <cd>P <op>-></op> Q <op>-></op> R, P <op>-></op> Q</cd>, and <cd>P</cd> as <op>True</op>, and the goal is now just <cd>R.</cd> In order to use these three assertions to prove <cd>R</cd>, we are going to need to learn about a concept called modus ponens.
+		</p><p>
+			Modus ponens is a rule of logic that says if we know that <cd>A</cd> is <op>True</op>, and we know that <cd>A -> B</cd>, then we also have <cd>B</cd> (saying we "have" a proposition is the same as saying that it is <op>True</op>). Hopefully modus ponens is pretty intuitive -- all it's saying is that if we know thing <cd>A</cd> causes thing <cd>B</cd>, then since thing <cd>A</cd> is <op>True</op>, thing <cd>B</cd> must also be <op>True</op>.
+		</p><p>
+			We can quickly apply this to combine two of truths we already have into a third. We have <cd>P <op>-></op> Q</cd> and <cd>P</cd>, so we can use modus ponens to derive <cd>Q</cd>.
+		</p><p>
+	<block>
+		Q <sp>|</sp> <ju>truths</ju>
+	</block>
+		</p><p>
+			The <ju>truths</ju> justification means that we are combining previous truths we've established in this proof to assert the new one. <pt>ProofTree</pt> recognizes that it can use modus ponens to derive <cd>Q</cd> and does so.
+		</p><p>
+			Now we can once again use modus ponens to derive <cd>R</cd>. Do you see how? We assumed <cd>P <op>-></op> Q <op>-></op> R</cd>, and we already found <cd>P</cd> and <cd>Q</cd>, and thus we can use modus ponens to find <cd>R</cd>. 
+		</p><p>
+	<block>
+		R <sp>|</sp> <ju>truths</ju>
+	</block>
+		</p><p>
+			Remember that the goal right now is <cd>R</cd>, so we are done. Run the <pt>ProofTree</pt> program to confirm.
+		</p><p>
+	<block>
+	Complied Main.proof
+	Compilied at 83 milliseconds
+	Proof of hilberts_third_axiom_of_logic is valid!
+	Completed at 89 milliseconds
+	</block>
+		</p><p>
+			A few notes before we move on to the next chapter. Firstly, congrats on mastering modus ponens! Modus ponens is considered by many to be the most imported rule in all of logic. It's an indespensible rule that you will use in almost every proof you write.
+		<p></p>
+			Second, try playing around with the proof some. See what happens if you run the <pt>ProofTree</pt> program after deleting a colon or pipe. Try deleting various steps in the proof, or changing the theorem without changing the proof. If your feeling especially ambitious, you have all the tools to prove the Hilbert's second axiom: <cd>P -> Q -> P</cd> -- give it a try!
+		</p><p>
+			Finally, in many ways natural deduction and modus ponens are two sides of the same coin. Natural deduction is how we prove new implications, while modus ponens is how we use old implications to help us prove new theorems. Together, they allow us to manipulate implications in a very powerful, truth-preserving way, and they make up a key part of the <cd>ProofTree</cd> system.
+		</p><p>
+			With all that said, see you in chapter 3!
+		</p>
+	</body>
+</html>
+
+
+
+<!--	<block>
+	<id>opaque predicate</id> P
+	<id>opaque predicate</id> Q
+
+	<id>axiom</id> p_is_true <sp>:</sp> P
+	<id>axiom</id> p_implies_q <sp>:</sp> P <op>-></op> Q
+
+	<id>theorem</id> q_is_true <sp>:</sp> Q {
+		P <sp>|</sp> p_is_true
+		Q <sp>|</sp> p_implies_q
+	}
+	</block>
+		</p><p>
+			We first create two new <id>predicates</id>: <cd>P</cd> and <cd>Q</cd>. Like in last chapter, they are <id>opaque</id>.
+		</p><p>
+	<block>
+	<id>opaque predicate</id> P
+	<id>opaque predicate</id> Q
+	</block>
+		</p><p>
+			We then establish two <id>axioms</id>. An <id>axiom</id> just like a <id>theorem</id>, except that we don't have to prove it. When we start developing the theory of numbers or sets or other objects, we try to keep axioms to a minimum and prove as much as we can. For now though, we will create new axioms to teach new concepts.
+		</p><p>
+	<block>
+	<id>axiom</id> p_is_true <sp>:</sp> P
+	<id>axiom</id> p_implies_q <sp>:</sp> P <op>-></op> Q
+	</block>
+		</p><p>
+			One such concept, and the namesake of the chapter, is modus ponens. Modus ponens is a rule of logic that says if we know that <cd>A</cd> is <op>True</op>, and we know that <cd>A -> B</cd>, then we also have <cd>B</cd> (saying we "have" a proposition is the same as saying that it is <op>True</op>). Hopefully modus ponens is pretty intuitive -- all it's saying is that if we know thing <cd>A</cd> causes thing <cd>B</cd>, and that since thing <cd>A</cd> is <op>True</op>, thing <cd>B</cd> must also be <op>True</op>.
+		</p><p>
+			Now that we know about modus ponens, we should be able to use our two new axioms, <cd>p_is_true</cd> and <cd>p_implies_q</cd> to prove <cd>Q</cd>.
+		</p><p>
+	<block>
+	<id>theorem</id> q_is_true <sp>:</sp> Q {
+		P <sp>|</sp> p_is_true
+		Q <sp>|</sp> p_implies_q
+	}
+	</block>
+		</p><p>
+			Like in the <id>theorem</id> from last chapter, we start with the <id>theorem</id> identifier, followed by the name of the <id>theorem</id>, then a colon, the proposition we are proving (<cd>Q</cd>), and an opening curly brace. Our proof from last chapter had only one step, but this proof has two steps. Let's break down the steps one by one.
+		</p><p>
+	<block>
+		P <sp>|</sp> p_is_true
+	</block>
+		</p><p>
+			First, we assert <cd>P</cd> is <op>True</op>. Unlike last chapter, where we used the <ju>assumption</ju> justification to justify our assertion, in this line we will use one of the axioms we created: <cd>p_is_true</cd>. Because <cd>p_is_true</cd> tells us that <cd>P</cd> is <op>True</op>, we can use it to simply assert <cd>P</cd>'s truth while proving another theorem. This represents a really powerful tool -- any time you create an axiom or prove a theorem, you can use that axiom or theorem in future proofs.
+		</p><p>
+	<block>
+		Q <sp>|</sp> p_implies_q
+	</block>
+		</p><p>
+			Next we use modus ponens to prove <cd>Q</cd>. The axiom <cd>p_implies_q</cd>, doesn't prove <cd>Q</cd> -- it only proves <cd>P <op>-></op> Q</cd>. However, because we just asserted <cd>P</cd>, <pt>ProofTree</pt> recognizes that modus ponens can be applies to <cd>p_implies_q</cd> to derive <cd>Q</cd>, and so allows you to use <cd>p_implies_q</cd> as a justification for the assertion of <cd>Q</cd>.
+		</p><p>
+			After the closing curly brace signifying the end of the proof, we can once again run the <pt>ProofTree</pt> program to validate our proof.
+		</p><p>
+	<block>
+	Complied Main.proof
+	Compilied at 84 milliseconds
+	Proof of q_is_true is valid!
+	Completed at 93 milliseconds
+	</block>
+		</p><p>
+			A few notes before we move on to the next chapter. Firstly, congrats on mastering modus ponens! Modus ponens is considered by many to be the most imported rule in all of logic. It's an indespensible rule that you will use in almost every proof you write.
+		<p></p>
+			Second, try playing around with the proof some. See what happens if you run the <pt>ProofTree</pt> program after deleting a colon or pipe. Try deleting the second step of the <cd>q_is_true</cd> proof. Now try using only the second step (deleting the first). If your feeling especially ambitious, you have all the tools to prove the theroem <cd>Q -> P</cd> using the axioms we've established -- give it a try!
+		</p><p>
+			Finally, in many ways natural deduction and modus ponens are two sides of the same coin. Natural deduction is how we prove new implications, while modus ponens is how we use old implications to help us prove new theorems. Together, they allow us to manipulate implications in a very powerful, truth-preserving way, and they make up a key part of the <cd>ProofTree</cd> system.
+		</p><p>
+			With all that said, see you in chapter 3!
+		</p>
+	</body>
+</html>
+
+
+
+<!--
+		<id>axiom</id> q_implies_r <sp>:</sp> Q <op>-></op> R
+
+	<id>theorem</id> r_is_true <sp>:</sp> R {
+		Q <sp>|</sp> q_is_true
+		R <sp>|</sp> q_implies_r
+	}
+
+	<id>theorem</id> hilberts_second_axiom_of_logic <sp>:</sp> (P <op>-></op> Q <op>-></op> R) <op>-></op> (P <op>-></op> Q) <op>-></op> P <op>-></op> R {
+		P <op>-></op> Q <op>-></op> R <sp>|</sp> <ju>assumption</ju>
+		P <op>-></op> Q <sp>|</sp> <ju>assumption</ju>
+		P <sp>|</sp> <ju>assumption</ju>
+
+		Q <sp>|</sp> <ju>truths</ju>
+		R <sp>|</sp> <ju>truths</ju>
+	}
+
+-->

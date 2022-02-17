@@ -3,22 +3,18 @@ package prover.utility.utilities;
 import java.util.List;
 import java.util.Objects;
 
-import prover.structure.regular.converter.operator.Operator;
-import prover.structure.regular.converter.operator.standard.test.element.TestElement;
-import prover.structure.regular.entity.element.Element;
-import prover.structure.regular.entity.proposition.Proposition;
 import prover.utility.Utility;
+import prover.utility.interfaces.Argumented;
 
-public class PlatonicArguments extends Utility {
+public class PlatonicArguments extends Utility implements Argumented {
 
-	public static final PlatonicArguments BINARY_PROPOSITION_OPERATOR_ARGUMENTS = new PlatonicArguments(NewCollection.list(new PlatonicArguments(), new PlatonicArguments()), NewCollection.list(), 0);
-	public static final PlatonicArguments  UNARY_PROPOSITION_OPERATOR = new PlatonicArguments(NewCollection.list(new PlatonicArguments()                         ), NewCollection.list(), 0);
+	public static final PlatonicArguments EMPTY = new PlatonicArguments();
 	
 	private List<PlatonicArguments> predicates;
 	private List<PlatonicArguments> functions;
 	private int elements;
 	
-	public PlatonicArguments() {
+	private PlatonicArguments() {
 		this(0);
 	}
 	
@@ -26,28 +22,18 @@ public class PlatonicArguments extends Utility {
 		this(NewCollection.list(), NewCollection.list(), elements);
 	}
 	
-	public PlatonicArguments(List<PlatonicArguments> predicates, List<PlatonicArguments> functions, int elements) {
-		this.predicates = predicates;
-		this.functions = functions;
+	public PlatonicArguments(List<? extends Argumented> predicates, List<? extends Argumented> functions, int elements) {
+		this.predicates = NewCollection.list();
+		for(Argumented predicate : predicates) {
+			this.predicates.add(predicate.getArguments());
+		}
+		
+		this.functions = NewCollection.list();
+		for(Argumented function : functions) {
+			this.functions.add(function.getArguments());
+		}
+		
 		this.elements = elements;
-	}
-	
-	public PlatonicArguments(List<Operator<Proposition>> predicates, List<Operator<Element>> functions) {
-		this(predicates, functions, NewCollection.list());
-	}
-	
-	public PlatonicArguments(List<Operator<Proposition>> realPredicates, List<Operator<Element>> realFunctions,	List<TestElement> realElements) {
-		predicates = NewCollection.list();
-		for(Operator<Proposition> predicate : realPredicates) {
-			predicates.add(predicate.getArguments());
-		}
-		
-		functions = NewCollection.list();
-		for(Operator<Element> function : realFunctions) {
-			functions.add(function.getArguments());
-		}
-		
-		elements = realElements.size();
 	}
 
 	public List<PlatonicArguments> getPredicates(){
@@ -60,6 +46,11 @@ public class PlatonicArguments extends Utility {
 	
 	public int getElements() {
 		return elements;
+	}
+	
+	@Override
+	public PlatonicArguments getArguments() {
+		return this;
 	}
 
 	@Override

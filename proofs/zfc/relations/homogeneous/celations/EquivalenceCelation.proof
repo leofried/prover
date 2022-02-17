@@ -1,0 +1,82 @@
+import zfc {
+	axioms
+	relations {
+		relations
+		homogeneous {
+			Properties
+			EquivalenceRelation
+			celations {
+				Celation
+				CelationProperties
+			}
+		}
+	}
+}
+
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+transparent function  0 from EmptySet
+transparent predicate R from Related
+transparent predicate C from Celated
+
+transparent predicate IsEquivalenceCelation(r, a, b): IsEquivalenceRelation(r, CP(a, b))
+
+opaque function Cart(r, x, y): Part(r, OP(x, y))
+
+theorem cart_eq : [r][a][b](IsEquivalenceCelation(r, a, b) -> [x][y][w][z](C(r, x, y, w, z) <-> x @ a AND y @ b AND Cart(r, x, y) = Cart(r, w, z))) {
+	element r, a, b from goal
+	IsEquivalenceCelation(r, a, b) | assumption
+	element x, y, w, z from goal
+
+	lemma : C(r, x, y, w, z) -> x @ a AND y @ b AND Cart(r, x, y) = Cart(r, w, z) {
+		C(r, x, y, w, z) | assumption
+		R(r, OP(x, y), OP(w, z)) | op_is_celated
+		Cart(r, x, y) = Cart(r, w, z) | part_eq
+
+		x @ a | left_left_in_bound
+		y @ b | left_right_in_bound
+	}
+
+	lemma : x @ a AND y @ b AND Cart(r, x, y) = Cart(r, w, z) -> C(r, x, y, w, z) {
+		x @ a AND y @ b AND Cart(r, x, y) = Cart(r, w, z) | assumption
+		OP(x, y) @ CP(a, b) | op_in_cp
+		R(r, OP(x, y), OP(w, z)) | part_eq
+		C(r, x, y, w, z) | op_is_celated
+	}
+}
+
+theorem in_cartition : [r][a][b](IsEquivalenceCelation(r, a, b) -> [p](p @ Partition(r) <-> {x @ a}{y @ b} p = Cart(r, x, y))) {
+	element r, a, b from goal
+	IsEquivalenceCelation(r, a, b) | assumption
+
+	element p from goal
+
+	lemma : p @ Partition(r) -> {x @ a}{y @ b} p = Cart(r, x, y) {
+		p @ Partition(r) | assumption
+		element o from {o @ CP(a, b)} p = Part(r, o) | in_partition
+		Left(o) @ a | left_in_cp
+		Right(o) @ b | right_in_cp
+		p = Cart(r, Left(o), Right(o)) | op_left_right 
+	}
+
+	lemma : {x @ a}{y @ b} p = Cart(r, x, y) -> p @ Partition(r) {
+		element x, y from {x @ a}{y @ b} p = Cart(r, x, y) | assumption
+		OP(x, y) @ CP(a, b) | op_in_cp
+		p @ Partition(r) | in_partition
+	}
+}
+
+theorem choice_cart : [r][a][b](IsEquivalenceCelation(r, a, b) -> [x @ a][y @ b](C(r, x, y, Left(Choice(Cart(r, x, y))), Right(Choice(Cart(r, x, y)))))) {
+	element r, a, b from goal
+	IsEquivalenceCelation(r, a, b) | assumption
+
+	element x from goal x @ a | assumption
+	element y from goal y @ b | assumption
+	OP(x, y) @ CP(a, b) | op_in_cp
+	Cart(r, x, y) @ Partition(r) | in_cartition
+	Choice(Cart(r, x, y)) @ CP(a, b) | choice_in_partition
+
+	R(r, OP(x, y), Choice(Cart(r, x, y))) | choice_part
+	R(r, OP(x, y), OP(Left(Choice(Cart(r, x, y))), Right(Choice(Cart(r, x, y))))) | op_left_right
+	C(r, x, y, Left(Choice(Cart(r, x, y))), Right(Choice(Cart(r, x, y)))) | op_is_celated
+} 

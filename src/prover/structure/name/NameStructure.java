@@ -5,10 +5,9 @@ import java.util.Set;
 
 import prover.structure.Structure;
 import prover.structure.regular.converter.definition.Definition;
-import prover.structure.regular.converter.operator.standard.test.TestOperator;
-import prover.structure.regular.converter.operator.standard.test.element.TestElement;
+import prover.structure.regular.converter.operator.standard.standards.TestOperator;
 import prover.structure.regular.entity.element.Element;
-import prover.structure.regular.entity.proposition.binary.flippable.equality.EqualityProposition;
+import prover.structure.regular.entity.proposition.binary.equality.EqualityProposition;
 import prover.utility.utilities.NewCollection;
 import prover.utility.utilities.OperatorDefinitionMap;
 
@@ -23,11 +22,6 @@ public class NameStructure extends Structure {
 	@Override
 	public String getName() {
 		return name;
-	}
-	
-	@Override
-	public Set<TestElement> getContainedTestElements() {
-		return NewCollection.set();
 	}
 	
 	@Override
@@ -54,6 +48,8 @@ public class NameStructure extends Structure {
 	public NameStructure substituteOperators(OperatorDefinitionMap map) {
 		return this;
 	}
+	
+
 
 	@Override
 	public Set<OperatorDefinitionMap> assignTestOperators(Structure struct, Set<TestOperator<?>> testOperators, Map<TestOperator<?>, TestOperator<?>> testMap) {

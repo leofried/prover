@@ -1,0 +1,57 @@
+
+body {
+	color: black;
+	font-family: Georgia;
+}
+
+pt {
+	font-family: Georgia;
+	font-weight: bold;
+}
+
+cd {
+	font-family: monospace;
+}
+
+id {
+	font-family: monospace;
+	color: red;
+}
+
+ju {
+	font-family: monospace;
+	color: purple;
+}
+
+op {
+	font-family: monospace;
+	color: brown;
+}
+
+sp {
+	font-family: monospace;
+	color: green;
+}
+
+cm {
+	font-family: monospace;
+	color: grey;
+}
+
+block {
+	font-family: monospace;
+  	display: block;
+    white-space: pre;
+    margin: 1em 0px;
+    background-color: lightgrey;
+}
+
+cl {
+	float: left;
+	width: 50%;
+	font-family: monospace;
+  	display: block;
+    white-space: pre;
+    margin: 1em 0px;
+    background-color: lightgrey;
+}

@@ -1,0 +1,169 @@
+<html>
+<head><link rel="stylesheet" href="style.css"></head>
+<body>
+
+<h1>Chapter 02: Assumption</h1>
+
+Let's take a look at another English-langauge proof and translate it into <pt>ProofTree</pt>.<br>
+
+	<block>
+	If I practice, I'll improve.
+	If I improve, I'll succeed.
+	Therefore, if I practice, I'll succeed.
+	</block>
+
+Once again, there is a lot more going on in this proof then is fully articulated above. Let's break it down.<br>
+
+	<block>
+	The following satements exist (though they are not necesarily true):
+	    I will practice.
+	    I will improve.
+	    I will succeed.
+
+	We will accept the following as true:
+	    (1) If I practice, I'll improve.
+	    (2) If I improve, I'll succeed.
+
+	We will now prove that if I practice, I'll succeed:
+	    First, assume that I will practice.
+	    Then by (1), I will improve.
+	    So by (2), I will succeed.
+
+	    Therefore, if I practice, I'll succeed.
+	</block>
+
+Note that in our proof we assumed that I would practice, seemingly without justification. This is acceptable, however, because we were proving that if I practice, I will succeeed. The way to prove such a statement is to assume that I will practice, and then to use what we know to prove that I will succeed.<br>
+<br>
+Let's translate.<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	The following satements exist (though they are
+	not necesarily true):
+	    I will practice.
+	    I will improve.
+	    I will succeed.
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+
+
+	<id>opaque predicate</id> P
+	<id>opaque predicate</id> I
+	<id>opaque predicate</id> S
+	</cl>
+	</row>
+
+This looks just like last chapter.<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	We will accept the following as true:
+	    (1) If I practice, I'll improve.
+	    (2) If I improve, I'll succeed.
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+
+	<id>axiom</id> practice_improve <sp>:</sp> P <op>-></op> I
+	<id>axiom</id> improve_succeed <sp>:</sp> I <op>-></op> S
+	</cl>
+	</row>
+
+Once again, just like last chapter.<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	We will now prove that if I practice, I'll succeed:
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+	<id>theorem</id> practice_succeed <sp>:</sp> P <op>-></op> S {
+	</cl>
+	</row>
+
+You don't have to name your <id>theorems</id> (we didn't last chapter), but it is good practice to do so. The name of a <id>theorem</id>, like that of an <id>axiom</id>, goes right before the colon.<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	    First, assume that I will practice.
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+	    P <sp>|</sp> <ju>assumption</ju>
+	</cl>
+	</row>
+
+While we don't necessarily know if <cd>P</cd> is true, we still can assume that it is because we are trying to prove that it implies something else. Rather than cite an <id>axiom</id> to justify <cd>P</cd> (because again, it might not even be true), we instead use the <ju>assumption</ju> justification, which is made to help prove implications such as this one.<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	    Then by (1), I will improve.
+	    So by (2), I will succeed.
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+	    I <sp>|</sp> practice_improve
+	    S <sp>|</sp> improve_succeed
+	</cl>
+	</row>
+
+These two lines look just like the lines in last chapter's proof -- a new assertion, and the <id>axiom</id> to justify it. Note <cd>I</cd> and <cd>S</cd> are not necessarily true in a vaccume, but they are true conditional on <cd>P</cd> being true, which is good enough for this proof.<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	    Therefore, if I practice, I'll succeed.
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+	}
+	</cl>
+	</row>
+
+<pt>ProofTree</pt> automatically identifies that we have written a valid proof of <cd>P <op>-></op> S</cd>, and so we can just conclude our proof with a closing curly brace.<br>
+<br>
+Putting it all together:<br>
+
+	<block>
+	<id>opaque predicate</id> P
+	<id>opaque predicate</id> I
+	<id>opaque predicate</id> S
+
+	<id>axiom</id> practice_improve <sp>:</sp> P <op>-></op> I
+	<id>axiom</id> improve_succeed <sp>:</sp> I <op>-></op> S
+
+	<id>theorem</id> practice_succeed <sp>:</sp> P <op>-></op> S {
+	    P <sp>|</sp> <ju>assumption</ju>
+	    I <sp>|</sp> practice_improve
+	    S <sp>|</sp> improve_succeed
+	}
+	</block>
+
+Run the <pt>ProofTree</pt> program to confirm that your proof is valid.<br>
+
+	<block>
+	Complied Main.proof
+	Compilied at 72 milliseconds
+	Proof of practice_succeed is valid!
+	Completed at 79 milliseconds
+	</block>
+</body>
+</html>

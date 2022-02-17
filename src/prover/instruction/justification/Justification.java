@@ -1,13 +1,10 @@
 package prover.instruction.justification;
 
-import java.util.Set;
+import java.util.List;
 
-import prover.error.logic.logics.AmbiguousDefinitionError;
 import prover.error.logic.logics.GoalManipulationError;
 import prover.instruction.Instruction;
 import prover.instruction.justification.justifications.AssumptionJustification;
-import prover.instruction.justification.justifications.ContradictionJustification;
-import prover.instruction.justification.justifications.DefinitionJustification;
 import prover.instruction.justification.justifications.SorryJustification;
 import prover.instruction.justification.justifications.SubstitutionJustification;
 import prover.instruction.justification.justifications.TruthsJustification;
@@ -17,12 +14,10 @@ import prover.utility.utilities.Pair;
 
 public abstract class Justification extends Instruction {
 
-	public static final Justification ASSUMPTION    = AssumptionJustification   .getInstance();
-	public static final Justification CONTRADICTION = ContradictionJustification.getInstance();
-	public static final Justification DEFINITION    = DefinitionJustification   .getInstance();
-	public static final Justification SUBSTITUTION  = SubstitutionJustification .getInstance();
-	public static final Justification TRUTHS        = TruthsJustification       .getInstance();
-	public static final Justification SORRY         = SorryJustification        .getInstance();
+	public static final Justification ASSUMPTION    = new AssumptionJustification();
+	public static final Justification SUBSTITUTION  = new SubstitutionJustification();
+	public static final Justification TRUTHS        = new TruthsJustification();
+	public static final Justification SORRY         = new SorryJustification();
 	
-	public abstract Set<Pair<Proposition, Proposition>> getTruths(String loc, TheoremBase state, Proposition prop) throws GoalManipulationError, AmbiguousDefinitionError;
+	public abstract List<Pair<Proposition, Pair<Proposition, Integer>>> getTruths(String loc, TheoremBase state, Proposition prop) throws GoalManipulationError;
 }

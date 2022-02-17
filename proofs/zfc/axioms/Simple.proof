@@ -1,18 +1,18 @@
-import zfc.axioms.Extensionality
-import zfc.axioms.Pairing
-import zfc.axioms.Propositions
-import zfc.axioms.Separation
-import zfc.axioms.Subset
-import zfc.axioms.Union
-
-function SimpleUnion(2) {
-	definition(a, b): Union(Pair(a, b))
-	theorem: simple_union_definition
+import zfc.axioms {
+	EmptySet
+	Extensionality
+	Pairing
+	Propositions
+	Separation
+	Subset
+	Union
 }
 
-function SimpleIntersection(2) {
-	definition(a, b): Separate[:(k): k @ b](a)
-}
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+transparent function 0 from EmptySet
+
+opaque function SimpleUnion(a, b): Union(Pair(a, b)) | simple_union_definition
 
 theorem in_simple_union : [a][b][x](x @ SimpleUnion(a, b) <-> x @ a OR x @ b){
 	element a, b, x from goal
@@ -32,7 +32,7 @@ theorem in_simple_union : [a][b][x](x @ SimpleUnion(a, b) <-> x @ a OR x @ b){
 			x @ b | assumption
 		}
 
-		x @ a OR x @ b | cases : [c = a, c = b, x @ a OR x @ b]
+		| cases : [c = a, c = b, x @ a OR x @ b]
 	}
 
 	lemma : x @ a OR x @ b -> x @ SimpleUnion(a, b) {
@@ -42,7 +42,7 @@ theorem in_simple_union : [a][b][x](x @ SimpleUnion(a, b) <-> x @ a OR x @ b){
 			x @ a | assumption
 			a @ Pair(a, b) | axiom_of_pairing
 
-			x @ Union(Pair(a, b)) | in_union
+			x @ Union(Pair(a, b)) | axiom_of_union
 			  @ SimpleUnion(a, b) | simple_union_definition
 		}
 
@@ -50,27 +50,11 @@ theorem in_simple_union : [a][b][x](x @ SimpleUnion(a, b) <-> x @ a OR x @ b){
 			x @ b | assumption
 			b @ Pair(a, b) | axiom_of_pairing
 
-			x @ Union(Pair(a, b)) | in_union
+			x @ Union(Pair(a, b)) | axiom_of_union
 			  @ SimpleUnion(a, b) | simple_union_definition
 		}
 
-		x @ SimpleUnion(a, b) | cases : [x @ a, x @ b, x @ SimpleUnion(a, b)]
-	}
-}
-
-theorem in_simple_intersection : [a][b][x](x @ SimpleIntersection(a, b) <-> x @ a AND x @ b){
-	element a, b, x from goal
-
-	lemma : x @ SimpleIntersection(a, b) -> x @ a AND x @ b {
-		x @ SimpleIntersection(a, b) | assumption
-		  @ Separate[:(k): k @ b](a) | definition
-		x @ a AND x @ b | axiom_of_separation
-	}
-
-	lemma : x @ a AND x @ b -> x @ SimpleIntersection(a, b) {
-		x @ a AND x @ b | assumption
-		x @ Separate[:(k): k @ b](a) | axiom_of_separation
-		  @ SimpleIntersection(a, b) | definition
+		| cases : [x @ a, x @ b, x @ SimpleUnion(a, b)]
 	}
 }
 
@@ -80,26 +64,6 @@ theorem simple_union_symmetric : [a][b](SimpleUnion(a, b) = SimpleUnion(b, a)) {
 	SimpleUnion(a, b) = Union(Pair(a, b)) | simple_union_definition
 	                  = Union(Pair(b, a)) | pair_symmetric
 	                  = SimpleUnion(b, a) | simple_union_definition
-}
-
-theorem simple_intersection_symmetric : [a][b](SimpleIntersection(a, b) = SimpleIntersection(b, a)) {
-	element a, b from goal
-
-	lemma : SimpleIntersection(a, b) # SimpleIntersection(b, a) {
-		element x from goal
-		x @ SimpleIntersection(a, b) | assumption
-		x @ a AND x @ b | in_simple_intersection
-		x @ SimpleIntersection(b, a) | in_simple_intersection
-	}
-
-	lemma : SimpleIntersection(b, a) # SimpleIntersection(a, b) {
-		element x from goal
-		x @ SimpleIntersection(b, a) | assumption
-		x @ b AND x @ a | in_simple_intersection
-		x @ SimpleIntersection(a, b) | in_simple_intersection
-	}
-
-	SimpleIntersection(a, b) = SimpleIntersection(b, a) | double_inclusion
 }
 
 theorem left_subset_simple_union : [a][b] a # SimpleUnion(a, b){
@@ -114,58 +78,45 @@ theorem right_subset_simple_union : [a][b] b # SimpleUnion(a, b){
 	  @ SimpleUnion(a, b) | in_simple_union
 }
 
-theorem simple_intersection_subset_left : [a][b] SimpleIntersection(a, b) # a {
-	element a, b, x from goal
-	x @ SimpleIntersection(a, b) | assumption
-	  @ a | in_simple_intersection
+theorem simple_union_subset_eq_left : [a][b # a] SimpleUnion(a, b) = a {
+	element a, b from goal
+	b # a | assumption
+
+	a # SimpleUnion(a, b) | left_subset_simple_union
+
+	lemma : SimpleUnion(a, b) # a {
+		element x from goal
+		x @ SimpleUnion(a, b) | assumption
+		x @ a OR x @ b | in_simple_union
+		x @ b -> x @ a | truths
+		x @ a | simple_cases : [x @ b, x @ a]
+	}
+
+	| double_inclusion
 }
 
-theorem simple_intersection_subset_right : [a][b] SimpleIntersection(a, b) # b {
-	element a, b, x from goal
-	x @ SimpleIntersection(a, b) | assumption
-	  @ b | in_simple_intersection
+theorem simple_union_subset_eq_right : [a][b # a] SimpleUnion(b, a) = a {
+	element a, b from goal
+	b # a | assumption
+
+	a = SimpleUnion(a, b) | simple_union_subset_eq_left
+	  = SimpleUnion(b, a) | simple_union_symmetric 
+}
+
+theorem simple_union_empty_set_left : [a] SimpleUnion(0, a) = a {
+	element a from goal
+	0 # a | empty_set_subset
+	| simple_union_subset_eq_right
+}
+
+theorem simple_union_empty_set_right : [a] SimpleUnion(a, 0) = a {
+	element a from goal
+	0 # a | empty_set_subset
+	| simple_union_subset_eq_left
 }
 
 theorem simple_union_set_eq_set : [a] SimpleUnion(a, a) = a {
 	element a from goal
-
-	lemma : SimpleUnion(a, a) # a {
-	 	element x from goal
-	 	x @ SimpleUnion(a, a) | assumption
-	 	x @ a OR x @ a | in_simple_union
-	 	x @ a | reduce_or_one
-	}
-
-	lemma : a # SimpleUnion(a, a) {
-	 	element x from goal
-	 	x @ a | assumption
-	 	x @ SimpleUnion(a, a) | in_simple_union
-	}
-
-	SimpleUnion(a, a) = a | double_inclusion
-}
-
-theorem simple_intersection_set_eq_set : [a] SimpleIntersection(a, a) = a {
-	element a from goal
-
-	lemma : SimpleIntersection(a, a) # a {
-	 	element x from goal
-	 	x @ SimpleIntersection(a, a) | assumption
-	 	x @ a | in_simple_intersection
-	}
-
-	lemma : a # SimpleIntersection(a, a) {
-	 	element x from goal
-	 	x @ a | assumption
-	 	x @ SimpleIntersection(a, a) | in_simple_intersection
-	}
-
-	SimpleIntersection(a, a) = a | double_inclusion
-}
-
-theorem simple_intersection_subset_simple_union : [a][b](SimpleIntersection(a, b) # SimpleUnion(a, b)) {
-	element a, b, x from goal
-	x @ SimpleIntersection(a, b) | assumption
-	x @ a | in_simple_intersection
-	x @ SimpleUnion(a, b) | in_simple_union
+	a # a | subset_reflexive
+	| simple_union_subset_eq_left
 }

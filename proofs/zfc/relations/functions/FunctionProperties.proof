@@ -1,0 +1,66 @@
+import zfc {
+	axioms
+	relations.relations
+}
+
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+transparent predicate R from Related
+
+opaque predicate IsFunctional(r, a, b): [x][y][z](R(r, x, y) AND R(r, x, z) -> y = z) | is_functional
+
+opaque predicate IsInjective (r, a, b): [x][y][z](R(r, x, z) AND R(r, y, z) -> x = y) | is_injective
+
+opaque predicate IsSerial    (r, a, b): a # Domain(r) | is_serial
+
+opaque predicate IsSurjective(r, a, b): b # Range(r)  | is_surjective
+
+transparent predicate IsFunctionalRelation(r, a, b): IsRelation(r, a, b) AND IsFunctional(r, a, b)
+
+transparent predicate IsInjectiveRelation (r, a, b): IsRelation(r, a, b) AND IsInjective(r, a, b)
+
+transparent predicate IsSerialRelation    (r, a, b): IsRelation(r, a, b) AND IsSerial(r, a, b)
+
+transparent predicate IsSurjectiveRelation(r, a, b): IsRelation(r, a, b) AND IsSurjective(r, a, b)
+
+theorem protect_functional : [r][a][b][c][d](IsFunctionalRelation(r, a, b) -> IsFunctional(r, c, d)) {
+	element r, a, b, c, d from goal
+	IsFunctionalRelation(r, a, b) | assumption
+	[x][y][z](R(r, x, y) AND R(r, x, z) -> y = z) | is_functional
+	| is_functional
+}
+
+theorem protect_injective : [r][a][b][c][d](IsInjectiveRelation(r, a, b) -> IsInjective(r, c, d)) {
+	element r, a, b, c, d from goal
+	IsInjectiveRelation(r, a, b) | assumption
+	[x][y][z](R(r, x, z) AND R(r, y, z) -> x = y) | is_injective
+	| is_injective
+}
+
+theorem protect_serial : [r][a][b][c](IsSerialRelation(r, a, b) -> IsSerial(r, a, c)) {
+	element r, a, b, c from goal
+	IsSerialRelation(r, a, b) | assumption
+	a # Domain(r) | is_serial
+	| is_serial
+}
+
+theorem protect_surjective : [r][a][b][c](IsSurjectiveRelation(r, a, b) -> IsSurjective(r, c, b)) {
+	element r, a, b, c from goal
+	IsSurjectiveRelation(r, a, b) | assumption
+	b # Range(r) | is_surjective
+	| is_surjective
+}
+
+theorem create_serial : [r][a][b](IsRelation(r, a, b) -> IsSerial(r, Domain(r), b)) {
+	element r, a, b from goal
+	IsRelation(r, a, b) | assumption
+	Domain(r) # Domain(r) | subset_reflexive
+	| is_serial
+}
+
+theorem create_surjective : [r][a][b](IsRelation(r, a, b) -> IsSurjective(r, a, Range(r))) {
+	element r, a, b from goal
+	IsRelation(r, a, b) | assumption
+	Range(r) # Range(r) | subset_reflexive
+	| is_surjective
+}

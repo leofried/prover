@@ -1,0 +1,163 @@
+<html>
+<head><link rel="stylesheet" href="style.css"></head>
+<body>
+
+<h1>Chapter 01: Your First Proof</h1>
+
+<pt>ProofTree</pt> is a syntax and system that allows you to write mathematical proofs in a rigorous way, and to confirm that those proofs are valid. What is a proof? A proof is a series of steps that together derive the truth of a specific statement. Consider the following proof that the lawn is wet.<br>
+
+	<block>
+	It is raining.
+	If its rains, the lawn will be wet.
+	Therefore, the lawn is wet.
+	</block>
+
+This proof looks pretty simple. However, nuances of the English langauge are hiding the fact that there is more to the proof than meets the eye. Let's break it down so we can see exactly what's going on.<br>
+
+	<block>
+	The following statements exist (though they are not necessarily true):
+	    It is raining.
+	    The lawn is wet.
+
+	We will accept the following as true:
+	    (1) It is raining.
+	    (2) If its rains, the lawn will be wet.
+
+	We will now prove that the lawn is wet:
+	    By (1), it is raining.
+	    Thus, by (2), the lawn is wet.
+	</block>
+
+Now that we've deconstructed the proof and understand exactly all of the pieces involved, we can write this proof using <pt>ProofTree</pt>. To start, open a new file (Notebook is fine, but you can download and use SublimeText if you want to be fancy) and name it <cd>Main.proof</cd>. Let's start translating!<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	The following statements exist (though they
+	are not necessarily true):
+	    It is raining.
+	    The lawn is wet.
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+
+	<id>opaque predicate</id> R
+	<id>opaque predicate</id> W
+	</cl>
+	</row>
+
+These two lines create two new <id>predicates</id>, or statements about the world. The <id>opaque</id> identifier simply means that we don't yet know anything about the <id>predicates</id> (such as whether or not they are true). We will use the <id>predicate</id> <cd>R</cd> to mean "it is raining," and the <id>predicate</id> <cd>W</cd> to mean "the lawn is wet."<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	We will accept the following as true:
+	    (1) It is raining.
+	    (2) If its rains, the lawn will be wet.
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+
+	<id>axiom</id> rain <sp>:</sp> R
+	<id>axiom</id> rain_lawn <sp>:</sp> R <op>-></op> W
+	</cl>
+	</row>
+
+An <id>axiom</id> is a statement that we will assume is true. When declaring a new <id>axiom</id>, we need two things: the name of the axiom, so we can refer to it later, and the statement that we are asserting. The former goes before the colon, while the latter goes after it. Note that statements of the form "if <cd>A</cd> then <cd>B</cd>" get translated to "<cd>A <op>-></op> B</cd>."<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	We will now prove that the lawn is wet:
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+	<id>theorem</id> <sp>:</sp> W {
+	</cl>
+	</row>
+
+Pretty straightfoward: new proofs begin with the <id>theorem</id> identifier, followed by a colon, followed by the statement to be proved, and then a opening curly brace.<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	    By (1), it is raining.
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+	    R <sp>|</sp> rain
+	</cl>
+	</row>
+
+Every step of a <pt>ProofTree</pt> proof begins with the statement being assserted at that step, and concludes with the <id>axiom</id> that justifies it, separated by the pipe symbol. Similarly,<br>
+
+	<row>
+	<cl>
+	<pt>English</pt>
+
+	    Thus, by (2), the lawn is wet.
+	</cl>
+	<cl>
+	<pt>ProofTree</pt>
+
+	    W <sp>|</sp> rain_lawn
+	</cl>
+	</row>
+
+Finally, we conclude the proof with a closing curly brace. Putting it all together, our first <pt>ProofTree</pt> proof looks like this:<br>
+
+	<block>
+	<id>opaque predicate</id> R
+	<id>opaque predicate</id> W
+
+	<id>axiom</id> rain <sp>:</sp> R
+	<id>axiom</id> rain_lawn <sp>:</sp> R <op>-></op> W
+
+	<id>theorem</id> <sp>:</sp> W {
+	    R <sp>|</sp> rain
+	    W <sp>|</sp> rain_lawn
+	}
+	</block>
+
+To confirm that our proof is valid, we run the <pt>ProofTree</pt> program. You should receive the following message (your speeds may very):<br>
+
+	<block>
+	Complied Main.proof
+	Compilied at 59 milliseconds
+	Proof is valid!
+	Completed at 64 milliseconds
+	</block>
+
+Congrats! You have proven your first theorem in <pt>ProofTree</pt>. In the ensuing chapters you will learn how to prove implications, how to talk about numbers, and more. Welcome to <pt>ProofTree</pt>!<br>
+<br>
+For homework / extra credit, complete the proof by filling in the two missing lines:<br>
+
+	<block>
+	<id>opaque predicate</id> A
+	<id>opaque predicate</id> B
+	<id>opaque predicate</id> C
+	<id>opaque predicate</id> D
+
+	<id>axiom</id> a <sp>:</sp> A
+	<id>axiom</id> ab <sp>:</sp> A <op>-></op> B
+	<id>axiom</id> bc <sp>:</sp> B <op>-></op> C
+	<id>axiom</id> cd <sp>:</sp> C <op>-></op> D
+
+	<id>theorem</id> <sp>:</sp> D {
+	    A <sp>|</sp> a
+	    ??????
+	    ??????
+	    D <sp>|</sp> cd
+	}
+	</block>
+
+</body>
+</html>

@@ -1,75 +1,17 @@
-predicate != (2) {
-	sugar(a, b): NOT a = b
-	strength: 0
-}
-
-
 theorem reflexivity [P] : P -> P {
 	P | assumption
-	P | truths
 }
 
-theorem explosion [P] : False -> P {
-	False | assumption
-	NOT P | contradiction
+theorem insertion [P, Q] : P -> Q -> P {
+	P | assumption
 }
 
-theorem double_negation [P] : P <-> NOT NOT P {
-	lemma : P -> NOT NOT P {
-		P | assumption
-		NOT P | assumption
-		False | truths
-	}
-
-	lemma : NOT NOT P -> P  {
-		NOT NOT P | assumption
-		NOT P | contradiction
-		False | truths
-	}
-}
-
-theorem contrapositive [P, Q] : P -> Q <-> NOT Q -> NOT P {
-	lemma : (P -> Q) -> NOT Q -> NOT P {
-		P -> Q | assumption
-		NOT Q | assumption
-		P | assumption
-		Q | truths
-		False | truths
-	}
-
-	lemma : (NOT Q -> NOT P) -> P -> Q {
-		NOT Q -> NOT P | assumption
-		P | assumption
-		NOT Q | contradiction
-		NOT P | truths
-		False | truths
-	}
-}
-
-theorem not_implies [P, Q] : NOT (P -> Q) -> P AND NOT Q {
-	NOT (P -> Q) | assumption
-	
-	lemma : P {
-		NOT P | contradiction
-
-		lemma : P -> Q {
-			P | assumption
-			False | truths
-			Q | explosion
-		}
-
-		False | truths
-	}
-
-	lemma : NOT Q {
-		Q | assumption
-
-		lemma : P -> Q {
-			P | assumption
-		}
-
-		False | truths
-	}
+theorem separation [P, Q, R] : (P -> Q -> R) -> (P -> Q) -> (P -> R) {
+	P -> Q -> R | assumption
+	P -> Q | assumption
+	P | assumption
+	Q | truths
+	R | truths
 }
 
 theorem transitivity [P, Q, R] : (P -> Q) AND (Q -> R) -> P -> R {
@@ -79,152 +21,46 @@ theorem transitivity [P, Q, R] : (P -> Q) AND (Q -> R) -> P -> R {
 	R | truths
 }
 
-theorem excluded_middle [P, Q] : (P -> Q) AND (NOT P -> Q) -> Q {
-	(P -> Q) AND (NOT P -> Q) | assumption
-	NOT Q | contradiction
-	NOT P | contrapositive : [P, Q]
-	Q | truths
-	False | truths
+theorem explosion [P] : False -> P {
+	True | truths
+}
+
+theorem implosion [P] : (P OR P) -> P {
+	NOT P | assumption
 }
 
 theorem cases [P, Q, R] : (P OR Q) AND (P -> R) AND (Q -> R) -> R {
 	(P OR Q) AND (P -> R) AND (Q -> R) | assumption
 
-	NOT R | contradiction
-
-	lemma : NOT P {
-		P | assumption
+	lemma : NOT R -> R {
+		NOT R | assumption
+		NOT P | truths
+		Q | truths
 		R | truths
-		False | truths
 	}
 
-	Q | truths
-	R | truths
-	False | truths
+	| implosion
 }
 
-theorem not_and [P, Q] : NOT (P AND Q) <-> NOT P OR NOT Q {
-	lemma : NOT (P AND Q) -> NOT P OR NOT Q {
-		NOT (P AND Q) | assumption
-		NOT NOT P | assumption
-		P | double_negation : [P]
-		Q | assumption
-		False | truths
+theorem simple_cases [P, Q] : (P -> Q) AND (NOT P -> Q) -> Q {
+	P OR NOT P | reflexivity : [P]
+	(P -> Q) AND (NOT P -> Q) | assumption
+	| cases : [P, NOT P, Q]
+}
+
+theorem complex_cases [P, Q, R] : (P OR Q OR R) AND (Q -> P) AND (R -> P) -> P {
+	(P OR Q OR R) AND (Q -> P) AND (R -> P) | assumption
+
+	lemma : NOT P -> P {
+		NOT P | assumption
+		NOT R | truths
+		NOT Q | truths
+		P | truths
 	}
 
-	lemma : NOT P OR NOT Q -> NOT (P AND Q) {
-		NOT P OR NOT Q | assumption
-		P AND Q | assumption
-
-		lemma : NOT NOT P {
-			NOT P | assumption
-			False | truths
-		}
-
-		lemma : NOT NOT Q {
-			NOT Q | assumption
-			False | truths
-		}
-
-		False | cases : [NOT P, NOT Q, False]
-	}
+	| implosion
 }
 
-theorem not_or [P, Q] : NOT (P OR Q) <-> NOT P AND NOT Q {
-	lemma : NOT (P OR Q) -> NOT P AND NOT Q {
-		NOT (P OR Q) | assumption
-
-		lemma : NOT P {
-			P | assumption
-			False | truths
-		}
-
-		lemma : NOT Q {
-			Q | assumption
-			False | truths
-		}
-	}
-
-	lemma : NOT P AND NOT Q -> NOT (P OR Q) {
-		NOT P AND NOT Q | assumption
-		P OR Q | assumption
-		False | cases : [P, Q, False]
-	}
-}
-
-theorem reduce_or_one [P] : P OR P -> P {
-	P OR P | assumption
-	P -> P | reflexivity
-	P | cases : [P, P, P]
-}
-
-theorem reduce_or_two [P, Q] : (P OR Q) AND (P -> Q) -> Q {
-	(P OR Q) AND (P -> Q) | assumption
-	Q -> Q | reflexivity
-	Q | cases : [P, Q, Q]
-}
-
-theorem reduce_or_three [P, Q, R] : (P OR Q OR R) AND (Q -> P) AND (R -> P) -> P {
-	(P OR Q OR R) AND (Q -> P) AND (R -> P)  | assumption
-
-	lemma : P OR Q -> P {
-		P OR Q | assumption
-		P | reduce_or_two : [Q, P]
-	}
-
-	P | cases : [P OR Q, R, P]
-}
-
-theorem expand_or_left [P, Q] : P -> P OR Q {
+theorem expand_or [P, Q] : P -> P OR Q {
 	P | assumption
-}
-
-theorem expand_or_right [P, Q] : Q -> P OR Q {
-	Q | assumption
-}
-
-theorem example [P(1)] : [t](P(t) -> {b}P(b)) {
-	element a from goal
-	P(a) | assumption
-	use a
-}
-
-theorem not_exists [P(1)] : NOT {a} P(a) <-> [a] NOT P(a) {
-	lemma : NOT {a} P(a) -> [a] NOT P(a) {
-		NOT {a} P(a) | assumption
-		element a from goal
-		P(a) | assumption
-		{a} P(a) | example
-		False | truths
-	}
-
-	lemma : [a] NOT P(a) -> NOT {a} P(a) {
-		[a] NOT P(a) | assumption
-		element a from {a} P(a) | assumption
-		False | truths
-	}
-}
-
-theorem not_forall [P(1)] : NOT [a] P(a) <-> {a} NOT P(a) {
-	lemma : NOT [a] P(a) -> {a} NOT P(a) {
-		NOT [a] P(a) | assumption
-
-		lemma : [a] NOT NOT P(a) -> [a] P(a) {
-			[a] NOT NOT P(a) | assumption
-			element a from goal
-			NOT NOT P(a) | truths
-			P(a) | double_negation
-		}
-
-		NOT [a] NOT NOT P(a) | transitivity : [[a] NOT NOT P(a), [a] P(a), False]
-		NOT {a} NOT P(a) -> [a] NOT NOT P(a) | not_exists
-		NOT NOT {a} NOT P(a) | contrapositive : [NOT {a} NOT P(a), [a] NOT NOT P(a)]
-		{a} NOT P(a) | double_negation
-	}
-
-	lemma : {a} NOT P(a) -> NOT [a] P(a) {
-		element a from {a} NOT P(a) | assumption
-		P(a) | assumption
-		False | truths
-	}
 }

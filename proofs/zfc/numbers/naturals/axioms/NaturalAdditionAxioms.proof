@@ -1,0 +1,281 @@
+import zfc {
+	axioms
+	relations
+}
+
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+transparent function  0 from EmptySet
+transparent function  S from Successor
+transparent predicate T from Telated
+transparent function  . from MapSymbol
+transparent function .. from BinaryMapSymbol
+
+opaque function NaturalAdditionSuccessor(r):
+	Telationator[:(x, y, z):
+		T(r, x, y, z)
+		OR (x = z AND y = 0)
+		OR {u}{v}{w}(
+			T(r, u, v, w)
+			AND x = u
+			AND y = S(v)
+			AND z = S(w)
+		)
+	](nat)
+
+opaque function NaturalAddition: Telationator[:(x, y, z): [r](r = NaturalAdditionSuccessor(r) -> T(r, x, y, z))](nat)
+
+transparent predicate TelatedNaturalAddition(x, y, z): T(NaturalAddition, x, y, z)
+transparent predicate TelatedNaturalAdditionSuccessor(r, x, y, z): T(NaturalAdditionSuccessor(r), x, y, z)
+
+transparent predicate TaNA from TelatedNaturalAddition
+transparent predicate TaNAS from TelatedNaturalAdditionSuccessor
+
+opaque function |1| +n+ (a, b): a ..(NaturalAddition) b
+
+transparent function + from +n+
+
+lemma natural_addition_successor_subset : [r](IsTelation(r, nat) AND NaturalAdditionSuccessor(r) # r -> r = NaturalAdditionSuccessor(r)) {
+	element r from goal
+	IsTelation(r, nat) AND NaturalAdditionSuccessor(r) # r | assumption
+	IsTelation(NaturalAdditionSuccessor(r), nat) | telationator_is_telation
+
+	lemma : r # NaturalAdditionSuccessor(r) {
+		lemma : [x @ nat][y @ nat][z @ nat](T(r, x, y, z) -> TaNAS(r, x, y, z)) {
+			element x from goal x @ nat | assumption
+			element y from goal y @ nat | assumption
+			element z from goal z @ nat | assumption
+			T(r, x, y, z) | assumption
+			TaNAS(r, x, y, z) | telationator_telated
+		}
+
+		| telation_subset
+	}
+
+	| double_inclusion
+}
+
+lemma natural_addition_add_zero : [a @ nat] TaNA(a, 0, a) {
+	element a from goal
+	a @ nat | assumption
+	0 @ nat | zero_is_nat
+
+	lemma : [r](r = NaturalAdditionSuccessor(r) -> T(r, a, 0, a)) {
+		element r from goal
+		TaNAS(r, a, 0, a) | telationator_telated
+		T    (r, a, 0, a) | assumption
+	}
+
+	| telationator_telated
+}
+
+lemma natural_addition_add_succ : [a @ nat][b @ nat][c](TaNA(a, b, c) -> TaNA(a, S(b), S(c))) {
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption S(b) @ nat | succ_is_nat
+	element c from goal
+
+	TaNA(a, b, c) | assumption
+
+	IsTelation(NaturalAddition, nat) | telationator_is_telation 
+	c @ nat | dex_in_bound
+	S(c) @ nat | succ_is_nat
+
+	lemma : [r](r = NaturalAdditionSuccessor(r) -> T(r, a, S(b), S(c))) {
+		element r from goal
+		r = NaturalAdditionSuccessor(r) | assumption
+
+		T    (r, a,   b,    c ) | telationator_telated
+		TaNAS(r, a, S(b), S(c)) | telationator_telated
+		T    (r, a, S(b), S(c)) | substitution
+	}
+
+	| telationator_telated
+}
+
+lemma natural_addition_is_binary_function : IsBinaryFunction(NaturalAddition, nat) {
+	
+	IsTelation(NaturalAddition, nat) | telationator_is_telation
+
+	lemma : IsSerialTelation(NaturalAddition, nat) {
+		lemma : [a @ nat][b @ nat]{c} TaNA(a, b, c) {
+			element a from goal a @ nat | assumption
+
+			lemma : {c}(TaNA(a, 0, c)) {
+				TaNA(a, 0, a) | natural_addition_add_zero
+			}
+
+			lemma : [b @ nat]({c} TaNA(a, b, c) -> {c} TaNA(a, S(b), c)) {
+				element b from goal b @ nat | assumption
+				element c from {c} TaNA(a, b, c) | assumption
+				TaNA(a, S(b), S(c)) | natural_addition_add_succ
+			}
+
+			| nat_induction
+		}
+
+		| telation_is_serial
+	}
+
+	lemma : IsFunctionalTelation(NaturalAddition, nat) {
+		lemma : [a @ nat][b @ nat][c][d](TaNA(a, b, c) AND TaNA(a, b, d) -> c = d) {
+			element a from goal a @ nat | assumption
+
+			lemma lema : [b @ nat]{r}(r = NaturalAdditionSuccessor(r) AND [c][d](T(r, a, b, c) AND T(r, a, b, d) -> c = d)) {
+				lemma : {r}(r = NaturalAdditionSuccessor(r) AND [c][d](T(r, a, 0, c) AND T(r, a, 0, d) -> c = d)) {
+					function r : Telationator[:(x, y, z): y = 0 -> x = z](nat)
+
+					IsTelation(                         r , nat) | telationator_is_telation
+					IsTelation(NaturalAdditionSuccessor(r), nat) | telationator_is_telation
+
+					lemma : r = NaturalAdditionSuccessor(r) {
+						lemma : NaturalAdditionSuccessor(r) # r {
+							lemma : [x @ nat][y @ nat][z @ nat](TaNAS(r, x, y, z) -> T(r, x, y, z)) {
+								element x from goal x @ nat | assumption
+								element y from goal y @ nat | assumption
+								element z from goal z @ nat | assumption
+								TaNAS(r, x, y, z) | assumption
+
+								lemma : x = z AND y = 0 -> T(r, x, y, z) {
+									x = z AND y = 0 | assumption
+									T(r, x, y, z) | telationator_telated
+								}
+
+								lemma : {u}{v}{w}(T(r, u, v, w) AND x = u AND y = S(v) AND z = S(w)) -> T(r, x, y, z) {
+									element u, v, w from {u}{v}{w}(T(r, u, v, w) AND x = u AND y = S(v) AND z = S(w)) | assumption
+									y != 0 | succ_not_zero
+									T(r, x, y, z) | telationator_telated
+								}
+
+								T(r, x, y, z) OR (x = z AND y = 0) OR {u}{v}{w}(T(r, u, v, w) AND x = u AND y = S(v) AND z = S(w)) | telationator_telated
+								T(r, x, y, z) | complex_cases : [T(r, x, y, z), x = z AND y = 0, {u}{v}{w}(T(r, u, v, w) AND x = u AND y = S(v) AND z = S(w))]
+							}
+
+							| telation_subset
+						}
+
+						| natural_addition_successor_subset
+					}
+
+					lemma : [c][d](T(r, a, 0, c) AND T(r, a, 0, d) -> c = d) {
+						element c, d from goal
+						T(r, a, 0, c) AND T(r, a, 0, d) | assumption
+						c = a | telationator_telated
+						  = d | telationator_telated
+					}
+				}
+
+				lemma : [b @ nat]({r}(r = NaturalAdditionSuccessor(r) AND [c][d](T(r, a, b, c) AND T(r, a, b, d) -> c = d)) -> {r}(r = NaturalAdditionSuccessor(r) AND [c][d](T(r, a, S(b), c) AND T(r, a, S(b), d) -> c = d))) {
+					element b from goal b @ nat | assumption
+					element e from {e} TaNA(a, b, e) | telation_is_serial
+					element r from {r}(r = NaturalAdditionSuccessor(r) AND [c][d](T(r, a, b, c) AND T(r, a, b, d) -> c = d)) | assumption
+					function s : Telationator[:(x, y, z): T(r, x, y, z) AND (x = a AND y = S(b) -> z = S(e))](nat)
+
+					IsTelation(                         s , nat) | telationator_is_telation
+					IsTelation(NaturalAdditionSuccessor(s), nat) | telationator_is_telation
+
+					lemma : s = NaturalAdditionSuccessor(s) {
+						lemma : NaturalAdditionSuccessor(s) # s {
+							lemma : [x @ nat][y @ nat][z @ nat](TaNAS(s, x, y, z) -> T(s, x, y, z)) {
+								element x from goal x @ nat | assumption
+								element y from goal y @ nat | assumption
+								element z from goal z @ nat | assumption
+								TaNAS(s, x, y, z) | assumption
+
+								lemma : x = z AND y = 0 -> T(s, x, y, z) {
+									x = z AND y = 0 | assumption
+
+									lemma : T(r, x, y, z) {
+										TaNAS(r, x, y, z) | telationator_telated
+										T(r, x, y, z) | substitution
+									}
+
+									y != S(b) | succ_not_zero
+
+									T(s, x, y, z) | telationator_telated
+								}
+
+								lemma : {u}{v}{w}(T(s, u, v, w) AND x = u AND y = S(v) AND z = S(w)) -> T(s, x, y, z) {
+									element u, v, w from {u}{v}{w}(T(s, u, v, w) AND x = u AND y = S(v) AND z = S(w)) | assumption
+									
+									T(r, u, v, w) | telationator_telated
+
+									lemma : T(r, x, y, z) {
+										TaNAS(r, x, y, z) | telationator_telated
+										T(r, x, y, z) | substitution
+									}
+
+									lemma : x = a AND y = S(b) -> z = S(e) {
+										x = a AND y = S(b) | assumption
+										b = v | succ_inj
+
+										T(r, a, b, e) | telationator_telated
+										T(r, a, b, w) | substitution
+
+										S(w) = S(e) | truths
+									}
+
+									T(s, x, y, z) | telationator_telated
+								}
+
+								T(s, x, y, z) OR (x = z AND y = 0) OR {u}{v}{w}(T(s, u, v, w) AND x = u AND y = S(v) AND z = S(w)) | telationator_telated
+								T(s, x, y, z) | complex_cases : [T(s, x, y, z), x = z AND y = 0, {u}{v}{w}(T(s, u, v, w) AND x = u AND y = S(v) AND z = S(w))]
+							}
+
+							| telation_subset
+						}
+
+						| natural_addition_successor_subset
+					}
+
+					lemma : [c][d](T(s, a, S(b), c) AND T(s, a, S(b), d) -> c = d) {
+						element c, d from goal
+						T(s, a, S(b), c) AND T(s, a, S(b), d) | assumption
+						c = S(e) | telationator_telated
+						  = d | telationator_telated
+					}
+				}
+
+				| nat_induction
+			}
+
+			element b from goal b @ nat | assumption
+			element r from {r}(r = NaturalAdditionSuccessor(r) AND [c][d](T(r, a, b, c) AND T(r, a, b, d) -> c = d)) | lema
+			element c, d from goal
+			TaNA(a, b, c) AND TaNA(a, b, d) | assumption
+			T(r, a, b, c) | telationator_telated
+			T(r, a, b, d) | telationator_telated
+			c = d | truths
+		}
+
+		| telation_is_functional
+	}
+}
+
+theorem add_is_nat : [a @ nat][b @ nat] a + b @ nat {
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption
+
+	IsBinaryFunction(NaturalAddition, nat) | natural_addition_is_binary_function
+
+	a + b @ nat | binary_function_in_bound
+}
+
+theorem nat_add_zero : [a @ nat] a + 0 = a {
+	element a from goal a @ nat | assumption
+
+	IsBinaryFunction(NaturalAddition, nat) | natural_addition_is_binary_function
+
+	TaNA(a, 0, a) | natural_addition_add_zero
+	a + 0 = a | binary_function_map
+}
+
+theorem nat_add_succ : [a @ nat][b @ nat] a + S(b) = S(a + b) {
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption
+
+	IsBinaryFunction(NaturalAddition, nat) | natural_addition_is_binary_function
+
+	TaNA(a, b, a + b) | binary_function_map
+	TaNA(a, S(b), S(a + b)) | natural_addition_add_succ
+	a + S(b) = S(a + b) | binary_function_map
+}

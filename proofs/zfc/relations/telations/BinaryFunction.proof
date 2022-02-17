@@ -1,0 +1,122 @@
+import zfc {
+	axioms
+	relations {
+		relations
+		functions
+		telations {
+			Telation
+			TelationProperties
+		}
+	}
+}
+
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+transparent predicate R from Related
+transparent predicate T from Telated
+transparent function  . from MapSymbol
+
+transparent predicate IsBinaryFunction(f, a): IsFunction(f, CP(a, a), a)
+
+opaque function BinaryMap(f, x, y): f . OP(x, y)
+
+transparent function |10| BinaryMapSymbol(f, x, y): BinaryMap(f, x, y)
+
+transparent function .. from BinaryMapSymbol
+
+opaque predicate IsBinaryFunctionallyClosed{F(2)}(a): [x @ a][y @ a] F(x, y) @ a | is_binary_functionally_closed
+
+opaque function BinaryFunctionator{F(2)}(a): Functionator{:(o): F(Left(o), Right(o))}(CP(a, a), a)
+
+theorem binary_function_map : [f][a](IsBinaryFunction(f, a) -> [x][y][z](T(f, x, y, z) <-> x @ a AND y @ a AND x ..(f) y = z)) {
+	element f, a from goal
+	IsBinaryFunction(f, a) | assumption
+	element x, y, z from goal
+
+	lemma : T(f, x, y, z) -> x @ a AND y @ a AND x ..(f) y = z {
+		T(f, x, y, z) | assumption
+		x @ a | sin_in_bound
+		y @ a | mid_in_bound
+
+		R(f, OP(x, y), z) | op_is_telated
+
+		x ..(f) y = z | function_map
+	}
+
+	lemma : x @ a AND y @ a AND x ..(f) y = z -> T(f, x, y, z) {
+		x @ a AND y @ a AND x ..(f) y = z | assumption
+		OP(x, y) @ CP(a, a) | op_in_cp
+		R(f, OP(x, y), z) | function_map
+		T(f, x, y, z) | op_is_telated
+	}
+}
+
+theorem binary_function_in_bound : [f][a](IsBinaryFunction(f, a) -> [x @ a][y @ a] x ..(f) y @ a) {
+	element f, a from goal
+	IsBinaryFunction(f, a) | assumption
+
+	element x from goal x @ a | assumption
+	element y from goal y @ a | assumption
+	T(f, x, y, x ..(f) y) | binary_function_map
+	x ..(f) y @ a | dex_in_bound
+}
+
+theorem binary_function_equality : [f][g][a](IsBinaryFunction(f, a) AND IsBinaryFunction(g, a) -> [x @ a][y @ a](x ..(f) y = x ..(g) y) -> f = g) {
+	element f, g, a from goal
+	IsBinaryFunction(f, a) AND IsBinaryFunction(g, a) | assumption
+
+	lemma ass : [x @ a][y @ a](x ..(f) y = x ..(g) y) {| assumption}
+
+	lemma : [o @ CP(a, a)](f . o = g . o) {
+		element o from goal
+		o @ CP(a, a) | assumption
+		Left(o) @ a | left_in_cp
+		Right(o) @ a | right_in_cp
+
+		R(f, o, f . o) | function_map
+		T(f, Left(o), Right(o), f . o) | is_telated
+
+		R(g, o, g . o) | function_map
+		T(g, Left(o), Right(o), g . o) | is_telated
+
+		f . o = Left(o) ..(f) Right(o) | binary_function_map
+		      = Left(o) ..(g) Right(o) | ass
+		      = g . o | binary_function_map
+	}
+
+	| function_equality
+}
+
+theorem binary_functionator_is_function {F(2)} : [a](IsBinaryFunctionallyClosed{F}(a) -> IsBinaryFunction(BinaryFunctionator{F}(a), a)) {
+	element a from goal
+
+	IsBinaryFunctionallyClosed{F}(a) | assumption
+
+	lemma : IsFunctionallyClosed{:(o): F(Left(o), Right(o))}(CP(a, a), a) {
+		lemma : [o @ CP(a, a)] F(Left(o), Right(o)) @ a {
+			element o from goal
+			o @ CP(a, a) | assumption
+			Left(o) @ a | left_in_cp
+			Right(o) @ a | right_in_cp
+			F(Left(o), Right(o)) @ a | is_binary_functionally_closed
+		}
+
+		| is_functionally_closed
+
+	}
+
+	| functionator_is_function
+}
+
+theorem binary_functionator_map {F(2)} : [a](IsBinaryFunction(BinaryFunctionator{F}(a), a) -> [x @ a][y @ a] x ..(BinaryFunctionator{F}(a)) y = F(x, y)) {
+	element a from goal
+	IsBinaryFunction(BinaryFunctionator{F}(a), a) | assumption
+	
+	element x from goal x @ a | assumption
+	element y from goal y @ a | assumption
+	OP(x, y) @ CP(a, a) | op_in_cp
+
+	x ..(BinaryFunctionator{F}(a)) y = F(Left(OP(x, y)), Right(OP(x, y))) | functionator_map
+	                                 = F(x, Right(OP(x, y))) | left_op
+	                                 = F(x, y) | right_op
+}

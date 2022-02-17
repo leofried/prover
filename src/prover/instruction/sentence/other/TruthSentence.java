@@ -3,7 +3,6 @@ package prover.instruction.sentence.other;
 import java.util.List;
 import java.util.Set;
 
-import prover.error.logic.logics.AmbiguousDefinitionError;
 import prover.error.logic.logics.CannotReduceError;
 import prover.error.logic.logics.GoalManipulationError;
 import prover.error.syntax.SyntaxError;
@@ -11,14 +10,17 @@ import prover.instruction.justification.Justification;
 import prover.instruction.justification.justifications.EmptyTheoremJustification;
 import prover.instruction.justification.justifications.FullTheoremJustification;
 import prover.instruction.sentence.Sentence;
+import prover.reader.Reader;
 import prover.reader.readers.Lexer;
 import prover.reader.readers.Parser;
+import prover.reader.readers.Validator;
 import prover.state.base.bases.TheoremBase;
 import prover.state.space.Namespace;
 import prover.structure.regular.converter.definition.Definition;
 import prover.structure.regular.entity.element.Element;
 import prover.structure.regular.entity.proposition.Proposition;
 import prover.utility.utilities.Constants;
+import prover.utility.utilities.Logger;
 import prover.utility.utilities.NewCollection;
 import prover.utility.utilities.Pair;
 
@@ -27,38 +29,40 @@ public class TruthSentence extends Sentence<TheoremBase, Object> {
 	private Proposition prop;
 	private Justification just;
 
-	public TruthSentence(Lexer lex, Namespace space) throws SyntaxError {
-		super(lex, space);
+	public TruthSentence(Lexer lex, Namespace space, Validator valid) throws SyntaxError {
+		super(lex, space, valid);
 	}
 
-	protected void init(Lexer lex, Namespace space, Object obj) throws SyntaxError {
+	@Override
+	protected void compile(Lexer lex, Namespace space, Validator valid, Object obj) throws SyntaxError {
 		if(!lex.peek().equals(Constants.JUSTIFICATION_SEPARATOR)) prop = Parser.readTruthEntity(lex, space);
 
 		lex.force(Constants.JUSTIFICATION_SEPARATOR);
 
-		if(lex.check("assumption")) just = Justification.ASSUMPTION;
-		else if(lex.check("contradiction")) just = Justification.CONTRADICTION;
-		else if(lex.check("definition")) just = Justification.DEFINITION;
-		else if(lex.check("substitution")) just = Justification.SUBSTITUTION;
-		else if(lex.check("truths")) just = Justification.TRUTHS;
-		else if(lex.check("sorry")) just = Justification.SORRY;
+		if(lex.check(Constants.ASSUMPTION))        just = Justification.ASSUMPTION;
+		else if(lex.check(Constants.SUBSTITUTION)) just = Justification.SUBSTITUTION;
+		else if(lex.check(Constants.TRUTHS))       just = Justification.TRUTHS;
+		else if(lex.check(Constants.SORRY))        just = Justification.SORRY;
 		else {
-			Definition<Proposition> theorem = space.getTheorem(lex, lex.nextName(true));
+			String theoremName = lex.nextName(true);			
+			Definition<Proposition> theorem = space.getTheorem(lex, theoremName);
+			
+			valid.useTheorem(theoremName, theorem);
 
-			if(lex.check(Constants.DECLARATION_SEPARATOR)) {
+			if(lex.check(Constants.SUBSTITUTION_SEPARATOR)) {
 				List<Definition<Proposition>> predicates = NewCollection.list();
 				List<Definition<Element>> functions = NewCollection.list();
 
 				lex.nextBracket(-1, theorem.getArguments().getPredicates().size(), Constants.PREDICATES);
 				for(int i=0; i<theorem.getArguments().getPredicates().size(); i++) {
-					predicates.add(Parser.readDefinition(lex, space, theorem.getArguments().getPredicates().get(i), true, Proposition.class));
+					predicates.add(Parser.readDefinition(lex, space, theorem.getArguments().getPredicates().get(i), Proposition.class));
 					lex.nextBracket(i, theorem.getArguments().getPredicates().size(), Constants.PREDICATES);
 				}
 
 
 				lex.nextBracket(-1, theorem.getArguments().getFunctions().size(), Constants.FUNCTIONS);
 				for(int i=0; i<theorem.getArguments().getFunctions().size(); i++) {
-					functions.add(Parser.readDefinition(lex, space, theorem.getArguments().getFunctions().get(i), true, Element.class));
+					functions.add(Parser.readDefinition(lex, space, theorem.getArguments().getFunctions().get(i), Element.class));
 					lex.nextBracket(i, theorem.getArguments().getFunctions().size(), Constants.FUNCTIONS);
 				}
 
@@ -69,20 +73,29 @@ public class TruthSentence extends Sentence<TheoremBase, Object> {
 		}
 	}
 
+	
 	@Override
-	public Proposition execute(TheoremBase base) throws CannotReduceError, GoalManipulationError, AmbiguousDefinitionError {
-		if(prop == null) prop = base.getGoal();
-		base.addStructureInformation(prop);
+	public Proposition run(TheoremBase base, Validator valid) throws CannotReduceError, GoalManipulationError {		
+		Proposition adjProp = base.addEntity(prop);
+		if(Reader.DEBUG) Logger.log(location());
 
-		Set<Pair<Proposition, Proposition>> truths = just.getTruths(location(), base, prop);
+		List<Pair<Proposition, Pair<Proposition, Integer>>> truths = just.getTruths(location(), base, adjProp);
+		
 		if(truths != null) {
-			Set<Proposition> props = NewCollection.set(prop);
-			for(Proposition truth : base.getTruthsAndEqualities()) {
-				props.addAll(NewCollection.nullToEmpty(prop.getDifferenceEquality(truth)));
+			Set<Proposition> props = null;
+			
+			for(Proposition subProp : adjProp.deconstruct()) {
+				Set<Proposition> subProps = NewCollection.set();
+				for(Proposition truth : base.getTruthsAndEqualities()) {
+					subProps.addAll(NewCollection.nullToEmpty(subProp.getDifferenceEquality(truth)));
+				}
+				props = NewCollection.intersect(props, subProps);
 			}
+			props.add(adjProp);
 
+			
 			boolean reduced = false;
-			for(Pair<Proposition, Proposition> truth : truths) {	
+			for(Pair<Proposition, Pair<Proposition, Integer>> truth : truths) {
 				if(truth.left.doesThisProve(base, props)) {
 					base.setGoal(truth.right);
 					reduced = true;
@@ -91,16 +104,21 @@ public class TruthSentence extends Sentence<TheoremBase, Object> {
 			}
 
 			if(!reduced) {
-				for(Pair<Proposition, Proposition> truth : truths) {	
-					truth.left.doesThisProve(base, props);
+				if(Reader.DEBUG) {
+					for(Pair<Proposition, Pair<Proposition, Integer>> truth : truths) {	
+						truth.left.doesThisProve(base, props);
+						Logger.log(truth);
+					}
+					Logger.log(base.getTruths());
+					Logger.log(props);
+					Logger.log(adjProp);
 				}
-				System.out.println(prop);
 				throw new CannotReduceError(location());
 			}
 		}
 
-		base.addTruth(prop);
-		return prop;
+		base.addTruth(adjProp);
+		return adjProp;
 	}
 
 }

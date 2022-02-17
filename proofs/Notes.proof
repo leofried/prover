@@ -1,0 +1,39 @@
+//orderings.*
+//algebras.groups.OrderedGroups
+algebras.rings.*
+algebras.fields.*
+topology.metric.Axioms
+topology.metric.Sequences
+numbers.rationals.*
+numbers.reals.*
+cardinalities.*
+algebras.vectors.*
+algebras.groups.Cosets
+algebras.groups.NormalSubgroups
+algebras.groups.Quotients
+
+
+
+Big Old Cleaning Project:
+	make sure proposition are as clean as they could be
+	IsBinaryFunction predicate
+	use algebras to allow for number's properties
+	letter ordering on resp_add_left and stuff
+	give every operator a OperatorSymbol predicate (or just let function x from y turn something into symbol)
+	helper partition should have a theroem that handles P(x, y) = P(w, z) <-> R(r, OP(x, y), OP(w, z)) as well as P(x, y) @ p
+	develop a base well-defined file that number.helpers can build off of
+	do order axioms need boudned quantifiers (and should refl be a = b -> R(r, a, b))
+	organize group_homormophism and subgroup and number of theorems and stuff
+	lemmas as private
+	-> IsXRelation or IsX
+	sorry on restrictions
+	use Object[P](x)
+	cleanup groups
+	clean relations and numbers and stuff
+	is_injection vs injection_map vs related vs map (naming)
+	inverse_surjection vs inverse_is_surjection vs inverse_serial
+	this_is_a_bad_name
+	functionator for binary funtions
+	what is first, serial or functional
+	right vs rite (to make it 4 letters like left)
+	clean arithmatic theorems proved (are all nec, group them, etc.)

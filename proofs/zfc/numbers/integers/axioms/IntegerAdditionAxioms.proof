@@ -1,0 +1,91 @@
+import zfc {
+	axioms
+	relations
+	numbers {
+		helpers
+		naturals
+		integers {
+			Integers
+		}
+	}
+}
+
+transparent predicate @ from ElementOfSymbol
+transparent predicate C from Celated
+transparent function .. from BinaryMapSymbol
+transparent function  + from +n+
+transparent function  r from IntegerEquivalenceRelation
+
+opaque function IntegerAdditionA(a, b, c, d): a + c
+opaque function IntegerAdditionB(a, b, c, d): b + d
+
+transparent function  A from IntegerAdditionA
+transparent function  B from IntegerAdditionB
+
+opaque function IntegerAddition: HelperBinary{A, B}(r)
+
+transparent function |1| +z+ (a, b): a ..(IntegerAddition) b
+
+theorem integer_addition_is_helper_binary : IsHelperBinary{Int, A, B}(int, r, nat, nat) {
+	IsEquivalenceCelation(r, nat, nat) | integers_are_equivalence_relation
+
+	IsHelperPartition{Int}(int, r) | integers_are_helper_partition
+
+	lemma : IsHelperBinaryClosed{A, B}(nat, nat) {
+		lemma : [a @ nat][b @ nat][c @ nat][d @ nat](A(a, b, c, d) @ nat AND B(a, b, c, d) @ nat) {
+			element a from goal a @ nat | assumption
+			element b from goal b @ nat | assumption
+			element c from goal c @ nat | assumption
+			element d from goal d @ nat | assumption
+			
+			a + c @ nat | add_is_nat
+			b + d @ nat | add_is_nat
+		}
+
+		| is_helper_binary_closed
+	}
+
+	lemma : IsHelperBinaryWellDefined{A, B}(r, nat, nat) {
+		lemma : [a @ nat][b @ nat][c @ nat][d @ nat][e @ nat][f @ nat][g @ nat][h @ nat](C(r, a, b, c, d) AND C(r, e, f, g, h) -> C(r, A(a, b, e, f), B(a, b, e, f), A(c, d, g, h), B(c, d, g, h))) {
+			element a from goal a @ nat | assumption
+			element b from goal b @ nat | assumption
+			element c from goal c @ nat | assumption
+			element d from goal d @ nat | assumption
+			element e from goal e @ nat | assumption
+			element f from goal f @ nat | assumption
+			element g from goal g @ nat | assumption
+			element h from goal h @ nat | assumption
+
+			a + e @ nat | add_is_nat
+			d + h @ nat | add_is_nat
+			b + f @ nat | add_is_nat
+			c + g @ nat | add_is_nat
+
+			C(r, a, b, c, d) AND C(r, e, f, g, h) | assumption
+
+			(a + e) + (d + h) = (a + d) + (e + h) | nat_paren_add_paren_comm
+			                  = (b + c) + (e + h) | integers_are_equivalent
+			                  = (b + c) + (f + g) | integers_are_equivalent
+			                  = (b + f) + (c + g) | nat_paren_add_paren_comm
+
+			| integers_are_equivalent
+		}
+
+		| is_helper_binary_well_defined
+	}
+}
+
+theorem integer_addition_is_function : IsBinaryFunction(IntegerAddition, int) {
+	IsHelperBinary{Int, IntegerAdditionA, IntegerAdditionB}(int, r, nat, nat) | integer_addition_is_helper_binary
+	| helper_binary
+}
+
+theorem int_add : [a @ nat][b @ nat][c @ nat][d @ nat](Int(a, b) +z+ Int(c, d) = Int(a + c, b + d)) {
+	IsHelperBinary{Int, IntegerAdditionA, IntegerAdditionB}(int, r, nat, nat) | integer_addition_is_helper_binary
+	| helper_binary
+}
+
+theorem add_is_int : [x @ int][y @ int] x +z+ y @ int {
+	IsBinaryFunction(IntegerAddition, int) | integer_addition_is_function
+	| binary_function_in_bound
+}

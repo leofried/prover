@@ -1,0 +1,314 @@
+<html>
+<head><link rel="stylesheet" href="style.css"></head>
+<body>
+
+<h1>Chapter 05: Induction</h1>
+
+In this chapter we'll prove a few key theorems about the addition of natural numbers. But before we do that, we need to make some edits to our <cd>Axioms.proof</cd> file.<br>
+<br>
+First, twice in our axioms we define a new constant, and then immediatly create a new axiom asserting that constant's equality so some other element. This type of thing happens enough that <pt>ProofTree</pt> has a short hand for it. We can replace the two lines:<br>
+
+	<block>
+	<id>opaque function</id> 1
+	<id>axiom</id> one_is_succ_zero <sp>:</sp> 1 = S(0)
+	</block>
+
+with the single line:<br>
+
+	<block>
+	<id>opaque function</id> 1<sp>:</sp> S(0) <sp>|</sp> one_is_succ_zero
+	</block>
+
+Likewise,<br>
+
+	<block>
+	<id>opaque function</id> 2
+	<id>axiom</id> two_is_succ_one <sp>:</sp> 2 = S(1)
+	</block>
+
+becomes<br>
+
+	<block>
+	<id>opaque function</id> 2<sp>:</sp> S(1) <sp>|</sp> two_is_succ_one 
+	</block>
+
+The other change we need to make to <cd>Axioms.proof</cd> is the addition of a new <id>axiom</id>: the principle of induction. Induction is the idea that we can prove something is true about every natural number by proving that<br>
+&emsp;i) it is true about <cd>0</cd>, and that<br>
+&emsp;ii) if it is true for any given natural number, then it is true for the next one as well.<br>
+<br>
+Induction is not derivable from our current set of <id>axioms</id>, but it is one of the most important properties of the natural numbers, so we include it as another <id>axiom</id>. In <pt>ProofTree</pt>, the prinicple of induction looks like this:<br>
+
+	<block>
+	<id>axiom</id> induction [P(1)] <sp>:</sp> P(0) <op>AND</op> [a](P(a) <op>-></op> P(S(a)) <op>-></op> [a]P(a)
+	</block>
+
+There's a lot going on there, so lets break it down piece by piece.<br>
+
+	<block>
+	<id>axiom</id> induction
+	</block>
+
+The line starts by creating a new <id>axiom</id> and naming it <cd>induction</cd>. Induction is different from every other <id>theorem</id> and <id>axiom</id> that we've dealt with before, however, because it generalizes over properties. We've seen statements of the form "for every number <cd>a</cd> something is true about <cd>a</cd>." Induction, however, says something different. Induction tells us "Every <i>property</i> <cd>P</cd> that fulfills the two criteria is true for every natural number."<br>
+<br>
+We've already learned how to make statements that say "for every number <cd>a</cd>": by using the <i>for all</i> quantifier <cd>[a]</cd>. Statements of the form "Every property <cd>P</cd>" look very similar.<br>
+
+	<block>
+	<id>axiom</id> induction [P(1)] <sp>:</sp>
+	</block>
+
+There are just two key differences. First, we place the quantifier before the colon instead of after it (this indicates that we are quantifying over properties rather than numbers themselves). And second, we indicate in parentheses how many variables our property has. Induction applies to properties of a single variable, so we we follow the arbitrary property <cd>P</cd> with <cd>(1)</cd>.<br>
+<br>
+Next we require that criteria <i>i</i> and <i>ii</i> be met.<br>
+
+	<block>
+	<id>axiom</id> induction [P(1)] <sp>:</sp> P(0)
+	</block>
+
+The first criteria is that that property is true of <cd>0</cd>.<br>
+
+	<block>
+	<id>axiom</id> induction [P(1)] <sp>:</sp> P(0) <op>AND</op> [a](P(a) <op>-></op> P(S(a))
+	</block>
+
+The second criteria is that for every natural number <cd>a</cd>, if the property is true of <cd>a</cd>, then it's true of <cd>S(a)</cd> as well. (Remember <cd>S</cd> is a function that maps every natural number to the next one).<br>
+
+	<block>
+	<id>axiom</id> induction [P(1)] <sp>:</sp> P(0) <op>AND</op> [a](P(a) <op>-></op> P(S(a)) <op>-></op> [a]P(a)
+	</block>
+
+Finally, if those criteria are met, the principle of induction tells us that the property is true for every natural number.<br>
+<br>
+With these changes, your <cd>Axioms.proof</cd> file should now look like this:<br>
+
+	<block>
+	<id>opaque function</id> 0
+
+	<id>opaque function</id> S(a)
+
+	<id>opaque function</id> 1<sp>:</sp> S(0) <sp>|</sp> one_is_succ_zero
+	<id>opaque function</id> 2<sp>:</sp> S(1) <sp>|</sp> two_is_succ_one
+
+	<id>opaque function</id> <sp>|</sp>1<sp>|</sp> +(a, b)
+
+	<id>axiom</id> add_zero <sp>:</sp> [a] a + 0 = a
+	<id>axiom</id> add_succ <sp>:</sp> [a][b] a + S(b) = S(a + b)
+
+	<id>axiom</id> induction [P(1)] <sp>:</sp> P(0) <op>AND</op> [a](P(a) <op>-></op> P(S(a)) <op>-></op> [a]P(a)
+	</block>
+
+Let's use induction to prove some theorems about addition! Create a new file called <cd>Addition.proof</cd>, and copy the following proof in:
+
+	<block>
+	<id>import</id> Axioms
+
+	<id>theorem</id> zero_add <sp>:</sp> [a] 0 + a = a {
+		
+	    <id>lemma</id> <sp>:</sp> 0 + 0 = 0 {
+	        0 + 0 = 0 <sp>|</sp> add_zero
+	    }
+	    
+	    <id>lemma</id> <sp>:</sp> [a](0 + a = a <op>-></op> 0 + S(a) = S(a)){
+	        <id>element</id> a <sp>from</sp> <ju>goal</ju>
+	        
+	        0 + S(a) = S(0 + a) <sp>|</sp> add_succ
+	                 = S(a) <sp>|</sp> <ju>assumption</ju>
+	    }
+	    
+	    [a] 0 + a = a <sp>|</sp> induction
+	}
+	</block>
+
+This is a proof that for every natural number <cd>a</cd>, <cd>0 + a = a</cd>. Note that this is different from the <id>add_zero</id>, which asserts <cd>[a] a + 0 = a</cd>. We don't even know that addition is communitive yet! (Although at the end of the chapter you'll prove that it is.)<br>
+
+	<block>
+	<id>import</id> Axioms
+
+	<id>theorem</id> zero_add <sp>:</sp> [a] 0 + a = a {
+	</block>
+
+We start by <id>importing</id> the <cd>Axioms.proof</cd> file, and creating a new <id>theorem</id>. We will prove that <cd>[a] 0 + a = a</cd> by using induction. First, we'll prove that the statements true about <cd>0</cd> (that <cd>0 + 0 = 0</cd>), and then we'll prove that if <cd>0 + a = a</cd>, then <cd>0 + S(a) = S(a)</cd>. Finally, induction will tell us that <cd>[a] 0 + a = a</cd>.<br>
+<br>
+When a proof is naturally divided into chunks as this one is, we can express this using <id>lemmas</id>. A <id>lemma</id> is a like a <id>theorem</id> within a <id>theorem</id>. It operates under the exact same set of rules, except it's contained within another <id>theorem</id>. Once the <id>lemma</id> is proved, it can be used later in the <id>theorem</id> just like any other step of a proof.<br>
+
+	<block>
+	    <id>lemma</id> <sp>:</sp> 0 + 0 = 0 {
+	        0 + 0 = 0 <sp>|</sp> add_zero
+	    }
+	</block>
+
+Our first <id>lemma</id> is a pretty simple one-liner. The first criteria needed for induction is that the statment is true for <cd>0</cd>, which in this case is that <cd>0 + 0 = 0</cd>. We can quickly prove this <id>lemma</id> using the <cd>add_zero</cd> <id>axiom</id>.<br>
+
+	<block>
+	    <id>lemma</id> <sp>:</sp> [a](0 + a = a <op>-></op> 0 + S(a) = S(a)){
+	</block>
+
+The other <id>lemma</id> proves that <cd>[a](0 + a = a <op>-></op> 0 + S(a) = S(a))</cd>.<br>
+
+	<block>
+	        <id>element</id> a <sp>from</sp> <ju>goal</ju>
+	</block>
+
+We start by considering an arbitraty natural number <cd>a</cd>.<br>
+
+	<block>
+	        0 + S(a) = S(0 + a) <sp>|</sp> add_succ
+	</block>
+
+We know by the <cd>add_succ</cd> <id>axiom</id> that <cd>0 + S(a) = S(0 + a)</cd>.<br>
+
+	<block>
+	                 = S(a) <sp>|</sp> <ju>assumption</ju>
+	</block>
+
+Remember that when proving an implication (such as <cd>0 + a = a <op>-></op> 0 + S(a) = S(a)</cd>), we can <ju>assume</ju> the first half of it. Thus, by <ju>asssumption</ju> <cd>0 + a = a</cd>, which means that <cd>S(0 + a)</cd> must equal <cd>S(a)</cd>.<br>
+
+	<block>            
+	    }
+	</block>
+
+Thus we have <cd>0 + S(a) = S(a)</cd> and have proven the <id>lemma</id>.<br>
+
+	<block>
+	    [a] 0 + a = a <sp>|</sp> induction
+
+	}
+	</block>
+
+Finally, we've proven both of the criteria, and thus, by induction, have <cd>[a] 0 + a = a</cd>.<br>
+<br>
+Remember, the <pt>ProofTree</pt> program only reads your <cd>Main.proof</cd> file, so to tell it to read proofs you've written in other files (like <cd>Addition.proof</cd>), you have to <id>import</id> them. Replace <cd>Main.proof</cd> with the single line<br>
+
+	<block>
+	<id>import</id> Addition
+	</block>
+
+and run the <pt>ProofTree</pt> program.<br>
+
+	<block>
+	Complied Axioms.proof
+	Complied Addition.proof
+	Complied Main.proof
+	Compilied at 79 milliseconds
+	Proof of zero_add is valid!
+	Completed at 84 milliseconds
+	</block>
+
+Let's quickly look at a second induction proof, and then you will have the chance to prove two more of them on your own.<br>
+
+	<block>
+	<id>theorem</id> succ_add <sp>:</sp> [a][b] S(a) + b = S(a + b){
+	    <id>element</id> a <sp>from</sp> <ju>goal</ju>
+
+	    <id>lemma</id> <sp>:</sp> S(a) + 0 = S(a + 0){
+	        S(a) + 0 = S(a) <sp>|</sp> add_zero
+	                 = S(a + 0) <sp>|</sp> add_zero
+	    }
+
+	    <id>lemma</id> <sp>:</sp> [b](S(a) + b = S(a + b) <op>-></op> S(a) + S(b) = S(a + S(b))){
+	        <id>element</id> b <sp>from</sp> <ju>goal</ju>
+
+	        S(a) + S(b) = S(S(a) + b) <sp>|</sp> add_succ
+	                    = S(S(a + b)) <sp>|</sp> <ju>assumption</ju>
+	                    = S(a + S(b)) <sp>|</sp> add_succ
+	    }
+
+	    [b] S(a) + b = S(a + b) <sp>|</sp> induction
+	}
+	</block>
+
+Once again, we don't yet have that addition is communitive, so we need a proof of <cd>succ_add</cd> that is separete from the <id>axiom</id> <cd>add_succ</cd>. Here, we are inducting on the variable <cd>b</cd>. We being the proof by considering an arbitrary natural number <cd>a</cd>, leaving us to prove that for that fixed <cd>a</cd>, <cd>[b] S(a) + b = S(a + b)</cd>. We then induct on <cd>b</cd>, first proving that the statement is true if <cd>b = 0</cd>, next proving that if its true for a given <cd>b</cd> then its true for <cd>S(b)</cd>, before finally citing induction to complete the proof.<br>
+<br>
+For homework, complete the proofs that addition is communitive and associative. (At the end of this chapter, <cd>Addition.proof</cd> should have four proofs in it. You can use the results from early proofs to complete later ones).<br>
+
+	<block>
+	<id>theorem</id> add_comm <sp>:</sp> [a][b] a + b = b + a {
+	    <id>element</id> a <sp>from</sp> <ju>goal</ju>
+
+	    <id>lemma</id> <sp>:</sp> a + 0 = 0 + a {
+	    
+
+	    }
+
+	    <id>lemma</id> <sp>:</sp> [b](a + b = b + a <op>-></op> a + S(b) = S(b) + a){
+
+
+
+
+
+	    }
+
+	    [b] a + b = b + a <sp>|</sp> induction
+	}
+
+	<id>theorem</id> add_assoc <sp>:</sp> [a][b][c] a + b + c = a + (b + c) {
+	    <id>element</id> a, b <sp>from</sp> <ju>goal</ju>
+
+	    <id>lemma</id> <sp>:</sp> a + b + 0 = a + (b + 0){
+
+
+	    }
+
+	    <id>lemma</id> <sp>:</sp> [c](a + b + c = a + (b + c) <op>-></op> a + b + S(c) = a + (b + S(c))){
+
+
+
+
+
+
+	    }
+
+	    [c] a + b + c = a + (b + c) <sp>|</sp> induction
+	}
+	</block>
+
+<p style="page-break-after: always;">&nbsp;</p>
+Solutions:<br>
+
+	<block>
+	<id>theorem</id> add_comm <sp>:</sp> [a][b] a + b = b + a {
+	    <id>element</id> a <sp>from</sp> <ju>goal</ju>
+
+	    <id>lemma</id> <sp>:</sp> a + 0 = 0 + a {
+	        a + 0 = a <sp>|</sp> add_zero
+	              = 0 + a <sp>|</sp> zero_add
+	    }
+
+	    <id>lemma</id> <sp>:</sp> [b](a + b = b + a <op>-></op> a + S(b) = S(b) + a){
+	        <id>element</id> b <sp>from</sp> <ju>goal</ju>
+
+	        a + S(b) = S(a + b) <sp>|</sp> add_succ
+	                 = S(b + a) <sp>|</sp> assumption
+	                 = S(b) + a <sp>|</sp> succ_add
+	    }
+
+	    [b] a + b = b + a <sp>|</sp> induction
+	}
+
+	<id>theorem</id> add_assoc <sp>:</sp> [a][b][c] a + b + c = a + (b + c) {
+	    <id>element</id> a, b <sp>from</sp> <ju>goal</ju>
+
+	    <id>lemma</id> <sp>:</sp> a + b + 0 = a + (b + 0){
+	        a + b + 0 = a + b <sp>|</sp> add_zero
+	                  = a + (b + 0) <sp>|</sp> add_zero
+	    }
+
+	    <id>lemma</id> <sp>:</sp> [c](a + b + c = a + (b + c) <op>-></op> a + b + S(c) = a + (b + S(c))){
+	        <id>element</id> c <sp>from</sp> <ju>goal</ju>
+
+	        a + b + S(c) = S(a + b + c) <sp>|</sp> add_succ
+	                     = S(a + (b + c)) <sp>|</sp> assumption
+	                     = a + S(b + c) <sp>|</sp> add_succ
+	                     = a + (b + S(c)) <sp>|</sp> add_succ
+	    }
+
+	    [c] a + b + c = a + (b + c) <sp>|</sp> induction
+	}
+	</block>
+
+
+
+
+
+
+</body>
+</html>
