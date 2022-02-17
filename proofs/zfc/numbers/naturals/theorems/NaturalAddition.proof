@@ -1,0 +1,240 @@
+import zfc {
+	axioms
+	numbers.naturals {
+		Naturals
+		axioms
+	}
+}
+
+transparent	predicate @ from ElementOfSymbol
+transparent function  0 from EmptySet
+transparent function  1 from 1n
+transparent function  S from Successor
+transparent function  + from +n+
+
+theorem nat_zero_add : [a @ nat] 0 + a = a {
+	0 @ nat | zero_is_nat
+ 
+	lemma : 0 + 0 = 0 {
+		0 + 0 = 0 | nat_add_zero
+	}
+
+	lemma : [a @ nat](0 + a = a -> 0 + S(a) = S(a)) {
+		element a from goal a @ nat | assumption
+		S(a) @ nat | succ_is_nat
+		0 + a = a | assumption
+
+		0 + S(a) = S(0 + a) | nat_add_succ
+		         = S(a) | substitution
+	}
+
+	| nat_induction
+}
+
+theorem nat_succ_add : [a @ nat][b @ nat] S(a) + b = S(a + b) {
+	element a from goal a @ nat | assumption
+	S(a) @ nat | succ_is_nat
+
+	lemma : S(a) + 0 = S(a + 0) {
+		S(a) + 0 = S(a) | nat_add_zero
+		         = S(a + 0) | nat_add_zero
+	}
+
+	lemma : [b @ nat](S(a) + b = S(a + b) -> S(a) + S(b) = S(a + S(b)))  {
+		element b from goal b @ nat | assumption
+		S(b) @ nat | succ_is_nat
+
+		S(a) + S(b) = S(S(a) + b) | nat_add_succ
+		            = S(S(a + b)) | assumption
+		            = S(a + S(b)) | nat_add_succ
+	}
+
+	| nat_induction
+}
+
+theorem nat_add_assoc : [a @ nat][b @ nat][c @ nat] a + b + c = a + (b + c) {
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption
+	
+	a + b @ nat | add_is_nat
+
+	lemma : a + b + 0 = a + (b + 0) {
+		a + b + 0 = a + b | nat_add_zero
+		          = a + (b + 0) | nat_add_zero
+	}
+
+	lemma : [c @ nat](a + b + c = a + (b + c) -> a + b + S(c) = a + (b + S(c)))  {
+		element c from goal c @ nat | assumption
+		b + c @ nat | add_is_nat
+
+		a + b + S(c) = S(a + b + c) | nat_add_succ
+		             = S(a + (b + c)) | assumption
+		             = a + S(b + c) | nat_add_succ
+		             = a + (b + S(c)) | nat_add_succ
+	}
+
+	| nat_induction
+}
+
+theorem nat_add_comm : [a @ nat][b @ nat] a + b = b + a {
+	element a from goal a @ nat | assumption
+
+	lemma : a + 0 = 0 + a {
+		a + 0 = a | nat_add_zero
+	          = 0 + a | nat_zero_add
+	}
+
+	lemma : [b @ nat](a + b = b + a -> a + S(b) = S(b) + a) {
+		element b from goal b @ nat | assumption
+
+		a + S(b) = S(a + b) | nat_add_succ
+		         = S(b + a) | assumption
+		         = S(b) + a | nat_succ_add
+	}
+
+	| nat_induction
+}
+
+theorem nat_add_succ_comm : [a @ nat][b @ nat] a + S(b) = b + S(a) {
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption
+
+	a + S(b) = S(a + b) | nat_add_succ
+	         = S(b + a) | nat_add_comm
+	         = b + S(a) | nat_add_succ
+}
+
+theorem nat_succ_add_comm : [a @ nat][b @ nat] S(a) + b = S(b) + a {
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption
+
+	S(a) + b = S(a + b) | nat_succ_add
+	         = S(b + a) | nat_add_comm
+	         = S(b) + a | nat_succ_add
+}
+
+theorem nat_add_paren_comm_left : [a @ nat][b @ nat][c @ nat] a + (b + c) = b + (a + c) {
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption
+	element c from goal c @ nat | assumption
+
+	a + (b + c) = a + b + c | nat_add_assoc
+	            = b + a + c | nat_add_comm
+	            = b + (a + c) | nat_add_assoc
+}
+
+theorem nat_add_paren_comm_right : [a @ nat][b @ nat][c @ nat] a + b + c = a + c + b {
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption
+	element c from goal c @ nat | assumption
+
+	a + b + c = a + (b + c) | nat_add_assoc
+	          = a + (c + b) | nat_add_comm
+	          = a + c + b | nat_add_assoc
+}
+
+theorem nat_paren_add_paren_comm : [a @ nat][b @ nat][c @ nat][d @ nat] (a + b) + (c + d) = (a + c) + (b + d) {
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption
+	element c from goal c @ nat | assumption
+	element d from goal	d @ nat | assumption
+
+	c + d @ nat | add_is_nat
+	a + c @ nat | add_is_nat
+
+	(a + b) + (c + d) = (a + (c + d)) + b | nat_add_paren_comm_right
+	                  = ((a + c) + d) + b | nat_add_assoc
+	                  = (a + c) + (d + b) | nat_add_assoc
+	                  = (a + c) + (b + d) | nat_add_comm
+}
+
+theorem nat_add_to_zero_right : [a @ nat][b @ nat](a + b = 0 -> b = 0) {
+	0 @ nat | zero_is_nat
+
+	element a from goal a @ nat | assumption
+
+	lemma : a + 0 = 0 -> 0 = 0 {
+		a + 0 = 0 | assumption
+	}
+
+	lemma : [b @ nat]((a + b = 0 -> b = 0) -> (a + S(b) = 0 -> S(b) = 0)) {
+		element b from goal b @ nat | assumption
+
+		a + b = 0 -> b = 0 | assumption
+
+		0 = a + S(b) | assumption
+		  = S(a + b) | nat_add_succ
+
+		False | succ_not_zero
+		| explosion
+	}
+
+	| nat_induction
+}
+
+theorem nat_add_to_zero_left : [a @ nat][b @ nat](a + b = 0 -> a = 0) {
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption
+
+	0 = a + b | assumption
+	  = b + a | nat_add_comm
+
+	a = 0 | nat_add_to_zero_right
+}
+
+theorem nat_add_cancel_right : [a @ nat][b @ nat][c @ nat](a + c = b + c -> a = b) {
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption
+
+	lemma : a + 0 = b + 0 -> a = b {
+		a = a + 0 | nat_add_zero
+		  = b + 0 | assumption
+		  = b | nat_add_zero
+	}
+
+	lemma : [c @ nat]((a + c = b + c -> a = b) -> (a + S(c) = b + S(c) -> a = b))  {
+		element c from goal c @ nat | assumption
+
+		a + c = b + c -> a = b | assumption
+
+		S(a + c) = a + S(c) | nat_add_succ
+		         = b + S(c) | assumption
+		         = S(b + c) | nat_add_succ
+
+		a + c = b + c | succ_inj
+		a = b | truths
+	}
+
+	| nat_induction
+}
+
+theorem nat_add_cancel_left : [a @ nat][b @ nat][c @ nat](c + a = c + b -> a = b) {
+	element a from goal a @ nat | assumption
+	element b from goal	b @ nat | assumption
+	element c from goal	c @ nat | assumption
+
+	a + c = c + a | nat_add_comm
+	      = c + b | assumption
+	      = b + c | nat_add_comm
+
+	a = b | nat_add_cancel_right
+}
+
+theorem nat_add_one : [a @ nat] a + 1 = S(a) {
+	0 @ nat | zero_is_nat
+
+	element a from goal a @ nat | assumption
+
+	a + 1 = a + S(0) | one_is_succ_zero
+	      = S(a + 0) | nat_add_succ
+	      = S(a) | nat_add_zero
+}
+
+theorem nat_one_add : [a @ nat] 1 + a = S(a) {
+	1 @ nat | one_is_nat
+
+	element a from goal a @ nat | assumption
+
+	1 + a = a + 1 | nat_add_comm
+	      = S(a) | nat_add_one
+}

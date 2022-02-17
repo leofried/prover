@@ -1,0 +1,112 @@
+import Axioms
+
+theorem one_plus_one_is_two : 1 + 1 = 2 {
+	1 + 1 = 1 + S(0) | one_is_succ_zero
+	      = S(1 + 0) | add_succ
+	      = S(1) | add_zero
+	      = 2 | two_is_succ_one
+}
+
+theorem two_is_succ_succ_zero : 2 = S(S(0)) {
+	2 = S(1) | two_is_succ_one
+	  = S(S(0)) | one_is_succ_zero
+}
+
+//This is comment
+//Anything following two slashes will be ignored by the ProofTree program.
+//It's useful for communicating important info to anyone reading your proof.
+//Or for for hints!
+//Since you've already proved that 1 + 1 = 2, you can cite the theorem
+//one_plus_one_is_two in the same way you would cite an axiom!
+
+theorem : (1 + 0) + 1 = 2 + 0 {
+	(1 + 0) + 1 = 1 + 1 | add_zero
+	            = 2 | one_plus_one_is_two
+	            = 2 + 0 | add_zero
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*opaque predicate I(x)
+opaque predicate R(x)
+
+axiom int_is_rat : [x](I(x) -> R(x))
+
+theorem int_rat_swap : [x][y](x = y AND I(x) -> R(y)) {
+	element x, y from goal
+	x = y AND I(x) | assumption
+	I(y) | substitution
+	R(y) | int_is_rat
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*opaque predicate P
+opaque predicate I
+opaque predicate S
+
+axiom practice_improve : P -> I
+axiom improve_succeed : I -> S
+
+theorem practice_succeed : P -> S {
+	P | assumption
+	I | practice_improve
+	S | improve_succeed
+}
+
+
+
+
+
+
+
+
+
+/*
+opaque predicate P(a)
+
+theorem substitution_practice : [x][y](P(x) AND x = y -> P(y)) {
+	element x, y from goal
+	P(x) AND x = y | assumption
+	P(y) | substitution
+}
+
+
+/*opaque predicate P
+opaque predicate Q
+opaque predicate R
+
+theorem hilberts_third_axiom_of_logic : (P -> Q -> R) -> (P -> Q) -> P -> R {
+	P -> Q -> R | assumption
+	P -> Q | assumption
+	P | assumption
+	Q | truths
+	R | truths
+}

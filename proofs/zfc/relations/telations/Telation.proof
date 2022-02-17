@@ -1,0 +1,144 @@
+import zfc {
+	axioms
+	relations.relations
+}
+
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+transparent predicate R from Related
+
+transparent predicate IsTelation(r, a): IsRelation(r, CP(a, a), a)
+
+opaque predicate Telated(r, x, y, z): R(r, OP(x, y), z) | op_is_telated
+
+opaque function Telationator[P(3)](a): Relationator[:(o, z): P(Left(o), Right(o), z)](CP(a, a), a)
+
+transparent predicate T from Telated
+
+theorem is_telated : [r][a](IsTelation(r, a) -> [o][z](R(r, o, z) <-> o @ CP(a, a) AND T(r, Left(o), Right(o), z))) {
+	element r, a from goal
+	IsTelation(r, a) | assumption
+
+	element o, z from goal
+
+	lemma : R(r, o, z) -> o @ CP(a, a) AND T(r, Left(o), Right(o), z) {
+		R(r, o, z) | assumption
+		o @ CP(a, a) | left_in_bound
+		R(r, OP(Left(o), Right(o)), z) | op_left_right
+		T(r, Left(o), Right(o), z) | op_is_telated
+	}
+
+	lemma : o @ CP(a, a) AND T(r, Left(o), Right(o), z) -> R(r, o, z) {
+		o @ CP(a, a) AND T(r, Left(o), Right(o), z) | assumption
+		R(r, OP(Left(o), Right(o)), z) | op_is_telated
+		R(r, o, z) | op_left_right
+	}
+}
+
+theorem sin_in_bound : [r][a](IsTelation(r, a) -> [x]({y}{z} T(r, x, y, z) -> x @ a)) {
+	element r, a from goal
+	IsTelation(r, a) | assumption
+
+	element x from goal
+	element y, z from {y}{z} T(r, x, y, z) | assumption
+	R(r, OP(x, y), z) | op_is_telated
+
+	OP(x, y) @ CP(a, a) | left_in_bound
+	x @ a | op_in_cp
+}
+
+theorem mid_in_bound : [r][a](IsTelation(r, a) -> [y]({x}{z} T(r, x, y, z) -> y @ a)) {
+	element r, a from goal
+	IsTelation(r, a) | assumption
+
+	element y from goal
+	element x, z from {x}{z} T(r, x, y, z) | assumption
+	R(r, OP(x, y), z) | op_is_telated
+
+	OP(x, y) @ CP(a, a) | left_in_bound
+	y @ a | op_in_cp
+}
+
+theorem dex_in_bound : [r][a](IsTelation(r, a) -> [z]({x}{y} T(r, x, y, z) -> z @ a)) {
+	element r, a from goal
+	IsTelation(r, a) | assumption
+
+	element z from goal
+	element x, y from {x}{y} T(r, x, y, z) | assumption
+	R(r, OP(x, y), z) | op_is_telated
+
+	z @ a | right_in_bound
+}
+
+theorem telation_subset : [r][s][a](IsTelation(r, a) AND IsTelation(s, a) -> (r # s <-> [x @ a][y @ a][z @ a](T(r, x, y, z) -> T(s, x, y, z)))) {
+	element r, s, a from goal
+	IsTelation(r, a) AND IsTelation(s, a) | assumption
+
+	lemma : r # s -> [x @ a][y @ a][z @ a](T(r, x, y, z) -> T(s, x, y, z)) {
+		r # s | assumption
+		element x from goal x @ a | assumption
+		element y from goal y @ a | assumption
+		element z from goal z @ a | assumption
+
+		OP(x, y) @ CP(a, a) | op_in_cp
+
+		T(r, x, y, z) | assumption
+		R(r, OP(x, y), z) | op_is_telated
+		R(s, OP(x, y), z) | relation_subset
+		T(s, x, y, z) | op_is_telated
+	}
+
+	lemma : [x @ a][y @ a][z @ a](T(r, x, y, z) -> T(s, x, y, z)) -> r # s {
+		lemma ass : [x @ a][y @ a][z @ a](T(r, x, y, z) -> T(s, x, y, z)) {| assumption}
+
+		lemma : [o @ CP(a, a)][z @ a](R(r, o, z) -> R(s, o, z)) {
+			element o from goal o @ CP(a, a) | assumption
+			element z from goal z @ a | assumption
+			R(r, o, z) | assumption
+
+			Left(o) @ a | left_in_cp
+			Right(o) @ a | right_in_cp
+
+			T(r, Left(o), Right(o), z) | is_telated
+			T(s, Left(o), Right(o), z) | ass
+			R(s, o, z) | is_telated
+		}
+
+		| relation_subset
+	}
+}
+
+theorem telationator_is_telation [P(3)] : [a](IsTelation(Telationator[P](a), a)) {
+	element a from goal
+	| relationator_is_relation
+}
+
+theorem telationator_telated [P(3)] : [a][x][y][z](T(Telationator[P](a), x, y, z) <-> x @ a AND y @ a AND z @ a AND P(x, y, z)) {
+	element a, x, y, z from goal
+
+	IsTelation(Telationator[P](a), a) | telationator_is_telation
+
+	lemma : T(Telationator[P](a), x, y, z) -> x @ a AND y @ a AND z @ a AND P(x, y, z) {
+		T(Telationator[P](a), x, y, z) | assumption
+		R(Telationator[P](a), OP(x, y), z) | op_is_telated
+
+		x @ a | sin_in_bound
+		y @ a | mid_in_bound
+		z @ a | dex_in_bound
+
+		P(Left(OP(x, y)), Right(OP(x, y)), z) | relationator_related
+		P(        x     , Right(OP(x, y)), z) | left_op
+		P(        x     ,             y  , z) | right_op
+	}
+
+	lemma : x @ a AND y @ a AND z @ a AND P(x, y, z) -> T(Telationator[P](a), x, y, z) {
+		x @ a AND y @ a AND z @ a AND P(        x     ,             y  , z) | assumption
+		                              P(        x     , Right(OP(x, y)), z) | right_op
+		                              P(Left(OP(x, y)), Right(OP(x, y)), z) | left_op
+
+		OP(x, y) @ CP(a, a) | op_in_cp
+
+		R(Telationator[P](a), OP(x, y), z) | relationator_related
+		| op_is_telated
+	}
+}

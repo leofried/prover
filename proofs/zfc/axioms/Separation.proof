@@ -1,7 +1,15 @@
-import zfc.axioms.Extensionality
-import zfc.axioms.Subset
+import zfc.axioms {
+	Extensionality
+	Pairing
+	Subset
+	Union
+}
 
-function Separate[(1)](1)
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+
+opaque function Separate[P(1)](a)
+opaque function Object  [P(1)](a): Union(Separate[P](a))
 
 axiom axiom_of_separation [P(1)] : [a][x](x @ Separate[P](a) <-> x @ a AND P(x))
 
@@ -9,4 +17,35 @@ theorem separation_is_subset [P(1)] : [a](Separate[P](a) # a){
 	element a, x from goal
 	x @ Separate[P](a) | assumption
 	  @ a | axiom_of_separation
+}
+
+theorem is_object [P(1)] : [a][x @ a](P(x) AND [y @ a](P(y) -> x = y) -> x = Object[P](a)) {
+	element a, x from goal
+	x @ a | assumption
+
+	P(x) AND [y @ a](P(y) -> x = y) | assumption
+
+	lemma lema : Separate[P](a) = Singleton(x) {
+		lemma : Separate[P](a) # Singleton(x) {
+			element y from goal
+			y @ Separate[P](a) | assumption
+			P(y) AND y @ a | axiom_of_separation
+			x = y | truths
+			y @ Singleton(x) | in_singleton
+		}
+
+		lemma : Singleton(x) # Separate[P](a) {
+			element y from goal
+			y @ Singleton(x) | assumption
+			P(y)  | in_singleton
+			y @ a | in_singleton
+			y @ Separate[P](a) | axiom_of_separation
+		}
+
+		| double_inclusion
+	}
+
+	Object[P](a) = Union(Separate[P](a)) | truths
+	             = Union(Singleton(x)) | lema
+	             = x | union_singleton
 }

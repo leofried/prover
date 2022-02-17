@@ -1,0 +1,48 @@
+import zfc.axioms
+
+transparent predicate @ from ElementOfSymbol
+transparent function  0 from EmptySet
+transparent function  S from Successor
+
+opaque function 1n: S(0)  | one_is_succ_zero
+opaque function 2n: S(1n) | two_is_succ_one
+
+transparent function 1 from 1n
+transparent function 2 from 2n
+
+theorem one_is_nat : 1 @ nat {   
+	0 @ nat | zero_is_nat
+	S(0) @ nat | succ_is_nat
+	   1 @ nat | one_is_succ_zero
+}
+
+theorem two_is_succ_succ_zero : 2 = S(S(0)) {
+	2 = S(1) | two_is_succ_one
+	  = S(S(0)) | one_is_succ_zero
+}
+
+theorem two_is_nat : 2 @ nat {
+	1 @ nat | one_is_nat
+	S(1) @ nat | succ_is_nat
+	   2 @ nat | two_is_succ_one
+}
+
+theorem nat_zero_not_one : 1 != 0 {
+	0 = 1 | assumption
+	  = S(0) | one_is_succ_zero
+	False | succ_not_zero
+}
+
+theorem nat_zero_not_two : 2 != 0 {
+	0 = 2 | assumption
+	  = S(1) | two_is_succ_one
+	False | succ_not_zero
+}
+
+theorem nat_one_not_two : 2 != 1 {
+	S(0) = 1 | one_is_succ_zero
+	     = 2 | assumption
+	     = S(1) | two_is_succ_one
+	0 = 1 | succ_inj
+	False | nat_zero_not_one
+}

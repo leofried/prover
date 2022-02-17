@@ -1,0 +1,13 @@
+opaque function 0
+
+opaque function S(x)
+
+opaque function 1: S(0) | one_is_succ_zero
+opaque function 2: S(1) | two_is_succ_one
+
+opaque function |1| +(x, y)
+
+axiom add_zero : [x] x + 0 = x
+axiom add_succ : [x][y] x + S(y) = S(x + y)
+
+axiom induction [P(1)] : P(0) AND [x](P(x) -> P(S(x))) -> [x]P(x)

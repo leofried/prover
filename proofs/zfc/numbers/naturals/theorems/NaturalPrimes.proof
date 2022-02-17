@@ -1,0 +1,285 @@
+import zfc {
+	axioms
+	relations
+	numbers.naturals {
+		Naturals
+		axioms
+		theorems {
+			NaturalAddition
+			NaturalMultiplication
+			NaturalInequality
+			NaturalDivides
+		}
+	}
+}
+
+transparent predicate @  from ElementOfSymbol
+transparent predicate R  from Related
+transparent function  0  from EmptySet
+transparent function  1  from 1n
+transparent function  2  from 2n
+transparent function  S  from Successor
+transparent function  +  from +n+
+transparent function  *  from *n*
+transparent predicate <= from NaturalInequalitySymbol
+transparent predicate \  from NaturalDividesSymbol
+
+opaque predicate Plural(a): a @ nat AND 2 <= a | nat_plural_le
+
+opaque predicate Primey(a): a @ nat AND [b @ nat](b \ a -> b = 1 OR b = a) | nat_primey
+
+transparent predicate Prime(a): a @ nat AND Plural(a) AND Primey(a)
+
+theorem nat_plural_or : [a](Plural(a) <-> a @ nat AND (a != 0 AND a != 1)) {
+	2 @ nat | two_is_nat
+
+	element a from goal
+
+	lemma : Plural(a) -> a @ nat AND (a != 0 AND a != 1) {
+		Plural(a) | assumption
+		a @ nat AND 2 <= a | nat_plural_le
+
+		lemma : a != 0 {
+			2 <= 0 | assumption
+			2 = 0 | nat_le_zero
+			False | nat_zero_not_two
+		}
+
+		lemma : a != 1 {
+			0 @ nat | zero_is_nat
+			1 @ nat | one_is_nat
+
+			   2 <= 1 | assumption
+			S(1) <=   | two_is_succ_one
+			     <= S(0) | one_is_succ_zero
+			   1 <= 0 | nat_succ_le_succ_le
+			1 = 0 | nat_le_zero
+			False | nat_zero_not_one
+		}
+	}
+
+	lemma : NOT Plural(a) -> NOT a @ nat OR (a = 0 OR a = 1) {
+		NOT Plural(a) | assumption
+		a @ nat | assumption
+
+		NOT 2 <= a | nat_plural_le
+		a <= 2 | nat_le_connected
+		NOT a = 2 | nat_le_refl
+		a = 0 OR a = 1 | nat_le_two
+	}
+}
+
+theorem nat_plural_succ : [a @ nat](a != 0 -> Plural(S(a))) {
+	element a from goal a @ nat | assumption
+	S(a) @ nat | succ_is_nat
+	a != 0 | assumption
+
+	S(a) != 0 | succ_not_zero
+
+	lemma : S(a) != 1 {
+		1 = S(0) | one_is_succ_zero
+		  = S(a) | assumption
+		a = 0 | succ_inj
+		False | truths
+	}
+
+	Plural(S(a)) | nat_plural_or
+}
+
+theorem two_is_prime : Prime(2) {
+	2 @ nat | two_is_nat
+
+	lemma :  Plural(2) {
+		2 <= 2 | nat_le_refl
+		| nat_plural_le
+	}
+
+	lemma : Primey(2) {
+		lemma : [b](b @ nat -> b \ 2 -> b = 1 OR b = 2) {
+			element b from goal
+			b @ nat | assumption
+			b \ 2 | assumption
+			b != 1 | assumption
+
+			lemma : b != 0 {
+				0 \ 2 | assumption
+				2 = 0 | nat_zero_div
+				False | nat_zero_not_two
+			}
+
+			Plural(b) | nat_plural_or
+			2 <= b | nat_plural_le
+
+
+			2 != 0 | nat_zero_not_two
+			b <= 2 | nat_div_zero_or_le
+
+			b = 2 | nat_le_antisymm
+		}
+
+		| nat_primey
+	}
+}
+
+theorem nat_factor : [a](Plural(a) AND NOT Prime(a) -> {b @ nat}(Plural(b) AND S(b) <= a AND b \ a)){
+	element a from goal
+	Plural(a) AND NOT Prime(a) | assumption
+	a @ nat | nat_plural_or
+	NOT Primey(a) | truths
+
+	element b from {b @ nat}(b \ a AND (b != 1 AND b != a)) | nat_primey
+
+	lemma : a != 0 {
+		Plural(0) | assumption
+		False | nat_plural_or
+	}
+
+	lemma : Plural(b) {
+		lemma : b != 0 {
+			0 \ a | assumption
+			a = 0 | nat_zero_div
+			False | truths
+		}
+
+		| nat_plural_or
+	}
+
+	lemma : S(b) <= a {
+		b <= a | nat_div_zero_or_le
+		S(b) <= a | nat_le_eq_or_succ_le
+	}
+}
+
+theorem nat_prime_factor : [a](Plural(a) -> {b}(Prime(b) AND b \ a)){
+	lemma lema : [a @ nat](Plural(a) -> {b}(Prime(b) AND b \ a)) {
+		lemma : Plural(0) -> {b}(Prime(b) AND b \ 0) {
+			Plural(0) | assumption
+			False | nat_plural_or
+			| explosion
+		}
+
+		lemma : [a @ nat]([b @ nat](b <= a -> Plural(b) -> {c}(Prime(c) AND c \ b)) -> Plural(S(a)) -> {c}(Prime(c) AND c \ S(a))) {
+			element a from goal
+			a @ nat | assumption
+			S(a) @ nat | succ_is_nat
+
+			[b](b @ nat -> b <= a -> Plural(b) -> {c}(Prime(c) AND c \ b)) | assumption
+			Plural(S(a)) | assumption
+
+			lemma : Prime(S(a)) -> {c}(Prime(c) AND c \ S(a)) {
+				Prime(S(a)) | assumption
+				S(a) \ S(a) | nat_div_refl
+			}
+
+			lemma : NOT Prime(S(a)) -> {c}(Prime(c) AND c \ S(a)) {
+				NOT Prime(S(a)) | assumption
+				element b from {b @ nat}(Plural(b) AND S(b) <= S(a) AND b \ S(a)) | nat_factor
+				b <= a | nat_succ_le_succ_le
+
+				element c from {c}(Prime(c) AND c \ b) | truths
+				c \ S(a) | nat_div_trans
+			}
+
+			| simple_cases : [Prime(S(a)), {c}(Prime(c) AND c \ S(a))]
+		}
+
+		| nat_strong_induction
+	}
+
+	element a from goal
+	Plural(a) | assumption
+	a @ nat | nat_plural_or
+	| lema
+}
+
+theorem nat_factorial : [a @ nat]{b @ nat}(b != 0 AND [c](Plural(c) AND c <= a -> c \ b)) {
+		
+	lemma : {b @ nat}(b != 0 AND [c](Plural(c) AND c <= 0 -> c \ b)) {
+		1 @ nat | one_is_nat
+
+		1 != 0 | nat_zero_not_one
+
+		lemma : [c](Plural(c) AND c <= 0 -> c \ 1) {
+			element c from goal
+			Plural(c) AND c <= 0 | assumption
+			c @ nat | nat_plural_or
+			c = 0 | nat_le_zero
+			Plural(0) | substitution
+			False | nat_plural_or
+			| explosion
+		}
+	}
+
+	lemma : [a @ nat]({b @ nat}(b != 0 AND [c](Plural(c) AND c <= a -> c \ b)) -> {b @ nat}(b != 0 AND [c](Plural(c) AND c <= S(a) -> c \ b))) {
+		element a from goal a @ nat | assumption
+		S(a) @ nat | succ_is_nat
+
+		element b from {b @ nat}(b != 0 AND [c](Plural(c) AND c <= a -> c \ b)) | assumption
+
+		b * S(a) @ nat | mul_is_nat
+
+		lemma : b * S(a) != 0 {
+			S(a) != 0 | succ_not_zero
+			b * S(a) != 0 | nat_mul_to_zero
+		}
+
+		lemma : [c](Plural(c) AND c <= S(a) -> c \ b * S(a))  {
+			element c from goal
+			Plural(c) AND c <= S(a) | assumption
+			c @ nat | nat_plural_or
+
+			c = S(a) OR c <= a | nat_le_succ_eq_or_le
+
+			lemma : c = S(a) -> c \ b * S(a) {
+				S(a) \ S(a) | nat_div_refl
+				   c \      | assumption
+				     \ b * S(a) | nat_div_extend_left
+			}
+
+			lemma : c <= a -> c \ b * S(a) {
+				c <= a | assumption
+				c \ b | truths
+				  \ b * S(a) | nat_div_extend_right
+			}
+
+			| cases : [c = S(a), c <= a, c \ b * S(a)]
+		}
+	}
+
+	| nat_induction
+}
+
+theorem nat_div_to_no_div : [a @ nat][b](Plural(b) AND b \ S(a) -> NOT b \ a) {
+	1 @ nat | one_is_nat
+
+	element a from goal
+	a @ nat | assumption
+
+	element b from goal
+	Plural(b) AND b \ S(a) | assumption
+	b @ nat | nat_plural_or
+
+	b \ S(a) | truths
+	  \ a + 1 | nat_add_one
+	  \ a | assumption
+	  \ 1 | nat_div_split
+
+	Plural(1) | nat_div_one
+	False | nat_plural_or
+}
+
+theorem nat_infinite_primes : [a @ nat]{b}(a <= b AND Prime(b)) {
+	element a from goal a @ nat | assumption
+
+	element b from {b @ nat}(b != 0 AND [c](Plural(c) AND c <= a -> c \ b)) | nat_factorial
+
+	Plural(S(b)) | nat_plural_succ
+
+	element c from {c}(Prime(c) AND c \ S(b)) | nat_prime_factor
+
+	lemma : a <= c {
+		NOT c \ b | nat_div_to_no_div
+		NOT c <= a | truths
+		a <= c | nat_le_connected
+	}
+}

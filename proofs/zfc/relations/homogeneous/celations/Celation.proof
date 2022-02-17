@@ -1,0 +1,131 @@
+import zfc {
+	axioms
+	relations {
+		relations
+		homogeneous.Properties
+	}
+}
+
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+transparent predicate R from Related
+
+transparent predicate IsCelation(r, a, b): IsHomogeneousRelation(r, CP(a, b))
+
+opaque predicate Celated(r, x, y, w, z): R(r, OP(x, y), OP(w, z)) | op_is_celated
+
+opaque function Celationator[P(4)](a, b): Relationator[:(o, p): P(Left(o), Right(o), Left(p), Right(p))](CP(a, b), CP(a, b))
+
+transparent predicate C from Celated
+
+theorem is_celated : [r][a][b](IsCelation(r, a, b) -> [o][p](R(r, o, p) <-> o @ CP(a, b) AND p @ CP(a, b) AND C(r, Left(o), Right(o), Left(p), Right(p)))) {
+	element r, a, b from goal
+	IsCelation(r, a, b) | assumption
+
+	element o, p from goal
+
+	lemma : R(r, o, p) -> o @ CP(a, b) AND p @ CP(a, b) AND C(r, Left(o), Right(o), Left(p), Right(p)) {
+		R(r, o, p) | assumption
+		o @ CP(a, b) | left_in_bound
+		p @ CP(a, b) | right_in_bound
+		R(r, OP(Left(o), Right(o)), p) | op_left_right
+		R(r, OP(Left(o), Right(o)), OP(Left(p), Right(p))) | op_left_right
+		C(r, Left(o), Right(o), Left(p), Right(p)) | op_is_celated
+	}
+
+	lemma : o @ CP(a, b) AND p @ CP(a, b) AND C(r, Left(o), Right(o), Left(p), Right(p)) -> R(r, o, p) {
+		o @ CP(a, b) AND p @ CP(a, b) AND C(r, Left(o), Right(o), Left(p), Right(p)) | assumption
+		R(r, OP(Left(o), Right(o)), OP(Left(p), Right(p))) | op_is_celated
+		R(r, OP(Left(o), Right(o)), p) | op_left_right
+		R(r, o, p) | op_left_right
+	}
+}
+
+theorem left_left_in_bound : [r][a][b](IsCelation(r, a, b) -> [x]({y}{w}{z} C(r, x, y, w, z) -> x @ a)) {
+	element r, a, b from goal
+	IsCelation(r, a, b) | assumption
+
+	element x from goal
+	element y, w, z from {y}{w}{z} C(r, x, y, w, z) | assumption
+	R(r, OP(x, y), OP(w, z)) | op_is_celated
+
+	OP(x, y) @ CP(a, b) | left_in_bound
+	x @ a | op_in_cp
+}
+
+theorem left_right_in_bound : [r][a][b](IsCelation(r, a, b) -> [y]({x}{w}{z} C(r, x, y, w, z) -> y @ b)) {
+	element r, a, b from goal
+	IsCelation(r, a, b) | assumption
+
+	element y from goal
+	element x, w, z from {x}{w}{z} C(r, x, y, w, z) | assumption
+	R(r, OP(x, y), OP(w, z)) | op_is_celated
+
+	OP(x, y) @ CP(a, b) | left_in_bound
+	y @ b | op_in_cp
+}
+
+theorem right_left_in_bound : [r][a][b](IsCelation(r, a, b) -> [w]({x}{y}{z} C(r, x, y, w, z) -> w @ a)) {
+	element r, a, b from goal
+	IsCelation(r, a, b) | assumption
+
+	element w from goal
+	element x, y, z from {x}{y}{z} C(r, x, y, w, z) | assumption
+	R(r, OP(x, y), OP(w, z)) | op_is_celated
+
+	OP(w, z) @ CP(a, b) | right_in_bound
+	w @ a | op_in_cp
+}
+
+theorem right_right_in_bound : [r][a][b](IsCelation(r, a, b) -> [z]({x}{y}{w} C(r, x, y, w, z) -> z @ b)) {
+	element r, a, b from goal
+	IsCelation(r, a, b) | assumption
+
+	element z from goal
+	element x, y, w from {x}{y}{w} C(r, x, y, w, z) | assumption
+	R(r, OP(x, y), OP(w, z)) | op_is_celated
+
+	OP(w, z) @ CP(a, b) | right_in_bound
+	z @ b | op_in_cp
+}
+
+theorem celationator_is_celation [P(4)] : [a][b](IsCelation(Celationator[P](a, b), a, b)) {
+	element a, b from goal
+	| relationator_is_relation
+}
+
+theorem celationator_celated [P(4)] : [a][b][x][y][w][z](C(Celationator[P](a, b), x, y, w, z) <-> x @ a AND y @ b AND w @ a AND z @ b AND P(x, y, w, z)) {
+	element a, b, x, y, w, z from goal
+
+	IsCelation(Celationator[P](a, b), a, b) | celationator_is_celation
+
+	lemma : C(Celationator[P](a, b), x, y, w, z) -> x @ a AND y @ b AND w @ a AND z @ b AND P(x, y, w, z) {
+		C(Celationator[P](a, b), x, y, w, z) | assumption
+		R(Celationator[P](a, b), OP(x, y), OP(w, z)) | op_is_celated
+
+		x @ a | left_left_in_bound
+		y @ b | left_right_in_bound
+		w @ a | right_left_in_bound
+		z @ b | right_right_in_bound
+
+		P(Left(OP(x, y)), Right(OP(x, y)), Left(OP(w, z)), Right(OP(w, z))) | relationator_related
+		P(        x     , Right(OP(x, y)), Left(OP(w, z)), Right(OP(w, z))) | left_op
+		P(        x     ,             y  , Left(OP(w, z)), Right(OP(w, z))) | right_op
+		P(        x     ,             y  ,         w     , Right(OP(w, z))) | left_op
+		P(        x     ,             y  ,         w     ,             z  ) | right_op
+	}
+
+	lemma : x @ a AND y @ b AND w @ a AND z @ b AND P(x, y, w, z) -> C(Celationator[P](a, b), x, y, w, z) {
+		x @ a AND y @ b AND w @ a AND z @ b AND P(        x     ,             y  ,         w     ,             z  ) | assumption
+		                                        P(        x     ,             y  ,         w     , Right(OP(w, z))) | right_op
+		                                        P(        x     ,             y  , Left(OP(w, z)), Right(OP(w, z))) | left_op
+		                                        P(        x     , Right(OP(x, y)), Left(OP(w, z)), Right(OP(w, z))) | right_op
+		                                        P(Left(OP(x, y)), Right(OP(x, y)), Left(OP(w, z)), Right(OP(w, z))) | left_op
+
+		OP(x, y) @ CP(a, b) | op_in_cp
+		OP(w, z) @ CP(a, b) | op_in_cp
+
+		R(Celationator[P](a, b), OP(x, y), OP(w, z)) | relationator_related
+		| op_is_celated
+	}
+}

@@ -1,15 +1,28 @@
-import zfc.axioms.Extensionality
-import zfc.axioms.Pairing
-import zfc.axioms.Subset
+import zfc.axioms {
+	EmptySet
+	Extensionality
+	Pairing
+	Subset
+}
 
-function Power(1)
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+transparent function 0 from EmptySet
+
+opaque function Power(a)
 
 axiom axiom_of_power : [a][x](x @ Power(a) <-> x # a)
 
 theorem set_in_power_set : [a] a @ Power(a) {
 	element a from goal
 	a # a | subset_reflexive
-	a @ Power(a) | axiom_of_power
+	  @ Power(a) | axiom_of_power
+}
+
+theorem empty_set_in_power_set : [a] 0 @ Power(a) {
+	element a from goal
+	0 # a | empty_set_subset
+	  @ Power(a) | axiom_of_power
 }
 
 theorem singleton_in_power_set : [a][x](x @ a <-> Singleton(x) @ Power(a)) {
@@ -24,14 +37,14 @@ theorem singleton_in_power_set : [a][x](x @ a <-> Singleton(x) @ Power(a)) {
 			  @ a | in_singleton
 		}
 
-		Singleton(x) @ Power(a) | axiom_of_power
+		| axiom_of_power
 	}
 
 	lemma : Singleton(x) @ Power(a) -> x @ a {
 		Singleton(x) @ Power(a) | assumption
 		Singleton(x) # a | axiom_of_power
 		x @ Singleton(x) | in_singleton
-		x @ a | in_superset
+		| in_superset
 	}
 }
 
@@ -55,5 +68,5 @@ theorem power_inj : [a][b](Power(a) = Power(b) -> a = b) {
 		x @ a | singleton_in_power_set
 	}
 
-	a = b | double_inclusion
+	| double_inclusion
 }

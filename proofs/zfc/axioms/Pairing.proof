@@ -1,14 +1,16 @@
-import zfc.axioms.Extensionality
-import zfc.axioms.Propositions
-import zfc.axioms.Subset
+import zfc.axioms {
+	Extensionality
+	Propositions
+	Subset
+}
 
-function Pair(2)
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+
+opaque function Pair(a, b)
+opaque function Singleton(x): Pair(x, x)
 
 axiom axiom_of_pairing : [a][b][x](x @ Pair(a, b) <-> x = a OR x = b)
-
-function Singleton(1){
-	definition(x): Pair(x, x)
-}
 
 theorem pair_symmetric : [a][b](Pair(a, b) = Pair(b, a)) {
 	element a, b from goal
@@ -27,7 +29,7 @@ theorem pair_symmetric : [a][b](Pair(a, b) = Pair(b, a)) {
 		x @ Pair(a, b) | axiom_of_pairing
 	}
 
-	Pair(a, b) = Pair(b, a) | double_inclusion
+	| double_inclusion
 }
 
 theorem in_singleton : [a][x](x @ Singleton(a) <-> x = a){
@@ -35,16 +37,16 @@ theorem in_singleton : [a][x](x @ Singleton(a) <-> x = a){
 
 	lemma : x @ Singleton(a) -> x = a {
 		x @ Singleton(a) | assumption
-		x @ Pair(a, a) | definition
+		x @ Pair(a, a) | truths
 		x = a OR x = a | axiom_of_pairing
-		x = a | reduce_or_one
+		x = a | implosion
 	}
 
 	lemma : x = a -> x @ Singleton(a) {
 		x = a | assumption
 		a @ Pair(a, a) | axiom_of_pairing
 		x @ Pair(a, a) | substitution
-		x @ Singleton(a) | definition
+		x @ Singleton(a) | truths
 	}
 }
 
@@ -57,7 +59,7 @@ theorem singleton_inj : [a][b](Singleton(a) = Singleton(b) -> a = b){
 	a = b | in_singleton
 }
 
-theorem pair_eq_singleton : [a][b][c] (Pair(a, b) = Singleton(c) <-> a = c AND b = c) {
+theorem pair_eq_singleton : [a][b][c](Pair(a, b) = Singleton(c) <-> a = c AND b = c) {
 	element a, b, c from goal
 
 	lemma : Pair(a, b) = Singleton(c) -> a = c AND b = c {
@@ -94,7 +96,7 @@ theorem pair_eq_singleton : [a][b][c] (Pair(a, b) = Singleton(c) <-> a = c AND b
 				x @ Singleton(c) | in_singleton
 			}
 
-			x @ Singleton(c) | cases : [x = a, x = b, x @ Singleton(c)]
+			| cases : [x = a, x = b, x @ Singleton(c)]
 		}
 
 		lemma : Singleton(c) # Pair(a, b) {
@@ -104,7 +106,7 @@ theorem pair_eq_singleton : [a][b][c] (Pair(a, b) = Singleton(c) <-> a = c AND b
 			x @ Pair(a, b) | axiom_of_pairing
 		}
 
-		Pair(a, b) = Singleton(c) | double_inclusion
+		| double_inclusion
 	}
 }
 
@@ -119,13 +121,13 @@ theorem pair_inj_right : [a][b][c](Pair(a, b) = Pair(a, c) -> b = c) {
 
 	lemma : a = b -> b = c {
 		a = b | assumption
-		Singleton(a) = Pair(a, a) | definition
+		Singleton(a) = Pair(a, a) | truths
 		             = Pair(a, b) | substitution
 		             = Pair(a, c) | truths
 		a = c | pair_eq_singleton
 	}
 
-	b = c | reduce_or_two : [a = b, b = c]
+	| simple_cases : [a = b, b = c]
 }
 
 theorem pair_inj_left : [a][b][c](Pair(a, c) = Pair(b, c) -> a = b) {
@@ -133,5 +135,5 @@ theorem pair_inj_left : [a][b][c](Pair(a, c) = Pair(b, c) -> a = b) {
 	Pair(c, a) = Pair(a, c) | pair_symmetric
 	           = Pair(b, c) | assumption
 	           = Pair(c, b) | pair_symmetric
-	a = b | pair_inj_right
+	| pair_inj_right
 }

@@ -1,0 +1,75 @@
+import Axioms
+
+theorem zero_add : [a] 0 + a = a {
+	
+	lemma : 0 + 0 = 0 {
+		0 + 0 = 0 | add_zero
+	}
+	
+	lemma : [a](0 + a = a -> 0 + S(a) = S(a)){
+		element a from goal
+		
+		0 + S(a) = S(0 + a) | add_succ
+				 = S(a) | assumption
+	}
+	
+	[a] 0 + a = a | induction
+}
+
+theorem succ_add : [a][b] S(a) + b = S(a + b){
+	element a from goal
+
+	lemma : S(a) + 0 = S(a + 0){
+		S(a) + 0 = S(a) | add_zero
+				 = S(a + 0) | add_zero
+	}
+
+	lemma : [b]( S(a) + b = S(a + b) -> S(a) + S(b) = S(a + S(b)) ){
+		element b from goal
+
+		S(a) + S(b) = S(S(a) + b) | add_succ
+					= S(S(a + b)) | assumption
+					= S(a + S(b)) | add_succ
+	}
+
+	[b] S(a) + b = S(a + b) | induction
+}
+
+theorem add_comm : [a][b] a + b = b + a {
+	element a from goal
+
+	lemma : a + 0 = 0 + a {
+		a + 0 = a | add_zero
+			  = 0 + a | zero_add
+	}
+
+	lemma : [b](a + b = b + a -> a + S(b) = S(b) + a){
+		element b from goal
+
+		a + S(b) = S(a + b) | add_succ
+				 = S(b + a) | assumption
+				 = S(b) + a | succ_add
+	}
+
+	[b] a + b = b + a | induction
+}
+
+theorem add_assoc : [a][b][c] a + b + c = a + (b + c) {
+	element a, b from goal
+
+	lemma : a + b + 0 = a + (b + 0){
+		a + b + 0 = a + b | add_zero
+				  = a + (b + 0) | add_zero
+	}
+
+	lemma : [c]( a + b + c = a + (b + c) -> a + b + S(c) = a + (b + S(c)) ){
+		element c from goal
+
+		a + b + S(c) = S(a + b + c) | add_succ
+					 = S(a + (b + c)) | assumption
+					 = a + S(b + c) | add_succ
+					 = a + (b + S(c)) | add_succ
+	}
+
+	[c] a + b + c = a + (b + c) | induction
+}

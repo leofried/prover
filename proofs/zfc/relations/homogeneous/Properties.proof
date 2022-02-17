@@ -1,0 +1,36 @@
+import zfc {
+	axioms
+	relations.relations
+}
+
+transparent predicate @ from ElementOfSymbol
+transparent predicate R from Related
+
+opaque predicate IsReflexive    (r, a): [x @ a] R(r, x, x) | is_reflexive
+
+opaque predicate IsSymmetric    (r, a): [x @ a][y @ a](R(r, x, y) -> R(r, y, x)) | is_symmetric
+
+opaque predicate IsAntisymmetric(r, a): [x @ a][y @ a](R(r, x, y) AND R(r, y, x) -> x = y) | is_antisymmetric
+
+opaque predicate IsTransitive   (r, a): [x @ a][y @ a][z @ a](R(r, x, y) AND R(r, y, z) -> R(r, x, z)) | is_transitive
+
+opaque predicate IsConnected    (r, a): [x @ a][y @ a](R(r, x, y) OR R(r, y, x)) | is_connected
+
+transparent predicate IsHomogeneousRelation   (r, a): IsRelation(r, a, a)
+
+transparent predicate IsReflexiveRelation    (r, a): IsHomogeneousRelation(r, a) AND IsReflexive(r, a)
+
+transparent predicate IsSymmetricRelation    (r, a): IsHomogeneousRelation(r, a) AND IsSymmetric(r, a)
+
+transparent predicate IsAntisymmetricRelation(r, a): IsHomogeneousRelation(r, a) AND IsAntisymmetric(r, a)
+
+transparent predicate IsTransitiveRelation   (r, a): IsHomogeneousRelation(r, a) AND IsTransitive(r, a)
+
+transparent predicate IsConnectedRelation    (r, a): IsHomogeneousRelation(r, a) AND IsConnected(r, a)
+
+
+transparent predicate IsPreOrder             (r, a): IsHomogeneousRelation(r, a) AND IsReflexive(r, a) AND IsTransitive(r, a)
+
+transparent predicate IsPartialOrder         (r, a): IsPreOrder(r, a) AND IsAntisymmetric(r, a)
+
+transparent predicate IsConnectedOrder       (r, a): IsPartialOrder(r, a) AND IsConnected(r, a)

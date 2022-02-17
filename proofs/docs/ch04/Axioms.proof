@@ -1,0 +1,14 @@
+opaque function 0
+
+opaque function S(x)
+
+opaque function 1
+axiom one_is_succ_zero : 1 = S(0)
+
+opaque function 2
+axiom two_is_succ_one : 2 = S(1)
+
+opaque function |1| +(x, y)
+
+axiom add_zero : [x] x + 0 = x
+axiom add_succ : [x][y] x + S(y) = S(x + y)

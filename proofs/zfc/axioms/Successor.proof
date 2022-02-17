@@ -1,35 +1,41 @@
-import zfc.axioms.EmptySet
-import zfc.axioms.Extensionality
-import zfc.axioms.Foundation
-import zfc.axioms.Pairing
-import zfc.axioms.Propositions
-import zfc.axioms.Separation
-import zfc.axioms.Simple
-import zfc.axioms.Subset
-
-function S(1){
-	definition(x): SimpleUnion(x, Singleton(x))
+import zfc.axioms {
+	EmptySet
+	Extensionality
+	Foundation
+	Pairing
+	Propositions
+	Separation
+	Simple
+	Subset
 }
 
-theorem succ_not_zero : [a] NOT S(a) = 0 {
-	element a from goal
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+transparent function 0 from EmptySet
+
+opaque function Successor(x): SimpleUnion(x, Singleton(x))
+
+transparent function S from Successor
+
+theorem succ_not_zero : [a][b = S(a)](S(a) != 0 AND b != 0) {
+	element a, b from goal
+	S(a) = b | assumption
 
 	a @ Singleton(a) | in_singleton
-	  @ SimpleUnion(a, Singleton(a)) | in_simple_union
-	  @ S(a) | definition
+	  @ S(a) | in_simple_union
 
-	NOT S(a) = 0 | not_empty_is_not_empty_set
+	0 != S(a) | empty_set
+	  != b | substitution
 }
 
 theorem succ_inj : [a][b](S(a) = S(b) -> a = b) {
 	element a, b from goal
-	SimpleUnion(a, Singleton(a)) = S(a) | definition
-	                             = S(b) | assumption
-	                             = SimpleUnion(b, Singleton(b)) | definition
+
+	S(a) = S(b) | assumption
 	
 	a @ Singleton(a) | in_singleton
-	  @ SimpleUnion(a, Singleton(a)) | in_simple_union
-	  @ SimpleUnion(b, Singleton(b)) | substitution
+	  @ S(a) | in_simple_union
+	  @ S(b) | substitution
 
 	a @ b OR a @ Singleton(b) | in_simple_union
 
@@ -37,8 +43,8 @@ theorem succ_inj : [a][b](S(a) = S(b) -> a = b) {
 		a @ b | assumption
 
 		b @ Singleton(b) | in_singleton
-		  @ SimpleUnion(b, Singleton(b)) | in_simple_union
-		  @ SimpleUnion(a, Singleton(a)) | substitution
+		  @ S(b) | in_simple_union
+		  @ S(a) | substitution
 
 		b @ a OR b @ Singleton(a) | in_simple_union
 
@@ -55,5 +61,5 @@ theorem succ_inj : [a][b](S(a) = S(b) -> a = b) {
 
 	a @ Singleton(b) -> a = b | in_singleton
 
-	a = b | cases : [a @ b, a @ Singleton(b), a = b]
+	| cases : [a @ b, a @ Singleton(b), a = b]
 }

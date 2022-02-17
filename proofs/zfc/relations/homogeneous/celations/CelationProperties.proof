@@ -1,0 +1,139 @@
+import zfc {
+	axioms
+	relations {
+		relations
+		homogeneous {
+			Properties
+			celations.Celation
+		}
+	}
+}
+
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+transparent function  0 from EmptySet
+transparent predicate R from Related
+transparent predicate C from Celated
+
+transparent predicate IsReflexiveCelation(r, a, b): IsCelation(r, a, b) AND IsReflexive(r, CP(a, b))
+
+transparent predicate IsSymmetricCelation(r, a, b): IsCelation(r, a, b) AND IsSymmetric(r, CP(a, b))
+
+transparent predicate IsTransitiveCelation(r, a, b): IsCelation(r, a, b) AND IsTransitive(r, CP(a, b))
+
+theorem is_reflexive_celation : [r][a][b](IsCelation(r, a, b) -> ([x @ a][y @ b] C(r, x, y, x, y) <-> IsReflexiveCelation(r, a, b))) {
+	element r, a, b from goal
+	IsCelation(r, a, b) | assumption
+
+	lemma : [x @ a][y @ b] C(r, x, y, x, y) -> IsReflexiveCelation(r, a, b) {
+		lemma ass : [x @ a][y @ b] C(r, x, y, x, y) {| assumption}
+
+		lemma : IsReflexive(r, CP(a, b)) {
+			lemma : [o @ CP(a, b)] R(r, o, o) {
+				element o from goal
+				o @ CP(a, b) | assumption
+				Left(o) @ a | left_in_cp
+				Right(o) @ b | right_in_cp
+				C(r, Left(o), Right(o), Left(o), Right(o)) | ass
+				R(r, o, o) | is_celated
+			}
+
+			| is_reflexive
+		}
+	}
+
+	lemma : IsReflexiveCelation(r, a, b) -> [x @ a][y @ b] C(r, x, y, x, y) {
+		IsReflexiveCelation(r, a, b) | assumption
+
+		element x from goal x @ a | assumption
+		element y from goal y @ b | assumption
+		OP(x, y) @ CP(a, b) | op_in_cp
+
+		R(r, OP(x, y), OP(x, y)) | is_reflexive
+		C(r, x, y, x, y) | op_is_celated
+	}
+}
+
+theorem is_symmetric_celation : [r][a][b](IsCelation(r, a, b) -> ([x @ a][y @ b][w @ a][z @ b](C(r, x, y, w, z) -> C(r, w, z, x, y)) <-> IsSymmetricCelation(r, a, b))) {
+	element r, a, b from goal
+	IsCelation(r, a, b) | assumption
+
+	lemma : [x @ a][y @ b][w @ a][z @ b](C(r, x, y, w, z) -> C(r, w, z, x, y)) -> IsSymmetricCelation(r, a, b) {
+		lemma ass : [x @ a][y @ b][w @ a][z @ b](C(r, x, y, w, z) -> C(r, w, z, x, y)) {| assumption}
+
+		lemma : IsSymmetric(r, CP(a, b)) {
+			lemma : [o @ CP(a, b)][p @ CP(a, b)](R(r, o, p) -> R(r, p, o)) {
+				element o from goal o @ CP(a, b) | assumption Left(o) @ a | left_in_cp Right(o) @ b | right_in_cp
+				element p from goal p @ CP(a, b) | assumption Left(p) @ a | left_in_cp Right(p) @ b | right_in_cp
+				R(r, o, p) | assumption
+				C(r, Left(o), Right(o), Left(p), Right(p)) | is_celated
+				C(r, Left(p), Right(p), Left(o), Right(o)) | ass
+				R(r, p, o) | is_celated
+			}
+
+			| is_symmetric
+		}
+	}
+
+	lemma : IsSymmetricCelation(r, a, b) -> [x @ a][y @ b][w @ a][z @ b](C(r, x, y, w, z) -> C(r, w, z, x, y)) {
+		IsSymmetricCelation(r, a, b) | assumption
+
+		element x from goal x @ a | assumption
+		element y from goal y @ b | assumption
+		element w from goal w @ a | assumption
+		element z from goal z @ b | assumption
+
+		OP(x, y) @ CP(a, b) | op_in_cp
+		OP(w, z) @ CP(a, b) | op_in_cp
+
+		C(r, x, y, w, z) | assumption
+		R(r, OP(x, y), OP(w, z)) | op_is_celated
+		R(r, OP(w, z), OP(x, y)) | is_symmetric
+		C(r, w, z, x, y) | op_is_celated
+	}
+}
+
+theorem is_transitive_celation : [r][a][b](IsCelation(r, a, b) -> ([x @ a][y @ b][w @ a][z @ b][u @ a][v @ b](C(r, x, y, w, z) AND C(r, w, z, u, v) -> C(r, x, y, u, v)) <-> IsTransitiveCelation(r, a, b))) {
+	element r, a, b from goal
+	IsCelation(r, a, b) | assumption
+
+	lemma : [x @ a][y @ b][w @ a][z @ b][u @ a][v @ b](C(r, x, y, w, z) AND C(r, w, z, u, v) -> C(r, x, y, u, v))-> IsTransitiveCelation(r, a, b) {
+		lemma ass : [x @ a][y @ b][w @ a][z @ b][u @ a][v @ b](C(r, x, y, w, z) AND C(r, w, z, u, v) -> C(r, x, y, u, v)){| assumption}
+
+		lemma : IsTransitive(r, CP(a, b)) {
+			lemma : [o @ CP(a, b)][p @ CP(a, b)][q @ CP(a, b)](R(r, o, p) AND R(r, p, q) -> R(r, o, q)) {
+				element o from goal o @ CP(a, b) | assumption Left(o) @ a | left_in_cp Right(o) @ b | right_in_cp
+				element p from goal p @ CP(a, b) | assumption Left(p) @ a | left_in_cp Right(p) @ b | right_in_cp
+				element q from goal q @ CP(a, b) | assumption Left(q) @ a | left_in_cp Right(q) @ b | right_in_cp
+				R(r, o, p) AND R(r, p, q) | assumption
+				C(r, Left(o), Right(o), Left(p), Right(p)) | is_celated
+				C(r, Left(p), Right(p), Left(q), Right(q)) | is_celated
+				C(r, Left(o), Right(o), Left(q), Right(q)) | ass
+				R(r, o, q) | is_celated
+			}
+
+			| is_transitive
+		}
+	}
+
+	lemma : IsTransitiveCelation(r, a, b) -> [x @ a][y @ b][w @ a][z @ b][u @ a][v @ b](C(r, x, y, w, z) AND C(r, w, z, u, v) -> C(r, x, y, u, v)){
+		IsTransitiveCelation(r, a, b) | assumption
+
+		element x from goal x @ a | assumption
+		element y from goal y @ b | assumption
+		element w from goal w @ a | assumption
+		element z from goal z @ b | assumption
+		element u from goal u @ a | assumption
+		element v from goal v @ b | assumption
+
+		OP(x, y) @ CP(a, b) | op_in_cp
+		OP(w, z) @ CP(a, b) | op_in_cp
+		OP(u, v) @ CP(a, b) | op_in_cp
+
+		C(r, x, y, w, z) AND C(r, w, z, u, v) | assumption
+		R(r, OP(x, y), OP(w, z)) | op_is_celated
+		R(r, OP(w, z), OP(u, v)) | op_is_celated
+		R(r, OP(x, y), OP(u, v)) | is_transitive
+		C(r, x, y, u, v) | op_is_celated
+	}
+}

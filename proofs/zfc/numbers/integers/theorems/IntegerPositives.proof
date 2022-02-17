@@ -1,0 +1,56 @@
+/*import zfc.axioms.*
+import zfc.numbers.naturals.*
+import zfc.numbers.integers.Integers
+import zfc.numbers.integers.axioms.*
+import zfc.numbers.integers.theorems.IntegerAddition
+import zfc.numbers.integers.theorems.IntegerMultiplication
+import zfc.numbers.integers.theorems.IntegerInequality
+
+
+function 0 from 0z
+function 1 from 1z
+function + from +z+
+function * from *z*
+predicate <= from IntegerInequalitySymbol
+
+function pos : Separate[:(a): a != 0 AND 0 <= a](int)
+
+theorem pos_is_int : [x @ pos] x @ int {
+	| separation_is_subset
+}
+
+theorem pos_not_zero : [x @ pos] x != 0 {
+	element x from goal
+	x @ pos | assumption
+	| axiom_of_separation
+}
+
+theorem zero_le_pos : [x @ pos] 0 <= x {
+	element x from goal
+	x @ pos | assumption
+	| axiom_of_separation
+}
+
+theorem mul_is_pos : [x @ pos][y @ pos] x * y @ pos {
+	element x from goal x @ pos | assumption x != 0 AND 0 <= x AND x @ int | axiom_of_separation
+	element y from goal y @ pos | assumption y != 0 AND 0 <= y AND y @ int | axiom_of_separation
+
+	x * y @ int | mul_is_int
+	x * y != 0 | int_mul_to_zero
+
+	0 @ int | zero_is_int
+
+	0 * y <= x * y | int_le_resp_mul_right
+	    0 <= x * y | int_zero_mul
+
+	x * y @ pos | axiom_of_separation
+}
+
+theorem one_is_pos : 1 @ pos {
+	1 @ int | one_is_int
+	1 != 0 | int_zero_not_one
+	0 <= 1 | int_zero_le_one
+	| axiom_of_separation
+}
+
+

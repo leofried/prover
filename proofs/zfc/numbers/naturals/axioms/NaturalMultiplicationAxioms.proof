@@ -1,0 +1,285 @@
+import zfc {
+	axioms
+	relations
+	numbers.naturals.axioms.NaturalAdditionAxioms
+}
+
+transparent predicate @ from ElementOfSymbol
+transparent predicate # from SubsetSymbol
+transparent function  0 from EmptySet
+transparent function  S from Successor
+transparent predicate T from Telated
+transparent function  . from MapSymbol
+transparent function .. from BinaryMapSymbol
+transparent function  + from +n+
+
+opaque function NaturalMultiplicationSuccessor(r):
+	Telationator[:(x, y, z):
+		T(r, x, y, z)
+		OR (y = 0 AND z = 0)
+		OR {u}{v}{w}(
+			T(r, u, v, w)
+			AND x = u
+			AND y = S(v)
+			AND z = w + u
+		)
+	](nat)
+
+opaque function NaturalMultiplication: Telationator[:(x, y, z): [r](r = NaturalMultiplicationSuccessor(r) -> T(r, x, y, z))](nat)
+
+transparent predicate TelatedNaturalMultiplication(x, y, z): T(NaturalMultiplication, x, y, z)
+transparent predicate TelatedNaturalMultiplicationSuccessor(r, x, y, z): T(NaturalMultiplicationSuccessor(r), x, y, z)
+
+transparent predicate TaNM from TelatedNaturalMultiplication
+transparent predicate TaNMS from TelatedNaturalMultiplicationSuccessor
+
+opaque function |3| *n* (a, b): a ..(NaturalMultiplication) b
+
+transparent function * from *n*
+
+lemma natural_multiplication_successor_subset : [r](IsTelation(r, nat) AND NaturalMultiplicationSuccessor(r) # r -> r = NaturalMultiplicationSuccessor(r)) {
+	element r from goal
+	IsTelation(r, nat) AND NaturalMultiplicationSuccessor(r) # r | assumption
+	IsTelation(NaturalMultiplicationSuccessor(r), nat) | telationator_is_telation
+
+	lemma : r # NaturalMultiplicationSuccessor(r) {
+		lemma : [x @ nat][y @ nat][z @ nat](T(r, x, y, z) -> TaNMS(r, x, y, z)) {
+			element x from goal x @ nat | assumption
+			element y from goal y @ nat | assumption
+			element z from goal z @ nat | assumption
+			T(r, x, y, z) | assumption
+			TaNMS(r, x, y, z) | telationator_telated
+		}
+
+		| telation_subset
+	}
+
+	| double_inclusion
+}
+
+lemma natural_multiplication_mul_zero : [a @ nat] TaNM(a, 0, 0) {
+	element a from goal
+	a @ nat | assumption
+	0 @ nat | zero_is_nat
+
+	lemma : [r](r = NaturalMultiplicationSuccessor(r) -> T(r, a, 0, 0)) {
+		element r from goal
+		TaNMS(r, a, 0, 0) | telationator_telated
+		T    (r, a, 0, 0) | assumption
+	}
+
+	| telationator_telated
+}
+
+lemma natural_multiplication_mul_succ : [a @ nat][b @ nat][c](TaNM(a, b, c) -> TaNM(a, S(b), c + a)) {
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption S(b) @ nat | succ_is_nat
+	element c from goal
+
+	TaNM(a, b, c) | assumption
+
+	IsTelation(NaturalMultiplication, nat) | telationator_is_telation 
+	c @ nat | dex_in_bound
+	c + a @ nat | add_is_nat
+
+	lemma : [r](r = NaturalMultiplicationSuccessor(r) -> T(r, a, S(b), c + a)) {
+		element r from goal
+		r = NaturalMultiplicationSuccessor(r) | assumption
+
+		T    (r, a,   b,  c    ) | telationator_telated
+		TaNMS(r, a, S(b), c + a) | telationator_telated
+		T    (r, a, S(b), c + a) | substitution
+	}
+
+	| telationator_telated
+}
+
+lemma natural_multiplication_is_binary_function : IsBinaryFunction(NaturalMultiplication, nat) {
+	
+	IsTelation(NaturalMultiplication, nat) | telationator_is_telation
+
+	lemma : IsSerialTelation(NaturalMultiplication, nat) {
+		lemma : [a @ nat][b @ nat]{c} TaNM(a, b, c) {
+			element a from goal a @ nat | assumption
+
+			lemma : {c}(TaNM(a, 0, c)) {
+				TaNM(a, 0, 0) | natural_multiplication_mul_zero
+			}
+
+			lemma : [b @ nat]({c} TaNM(a, b, c) -> {c} TaNM(a, S(b), c)) {
+				element b from goal b @ nat | assumption
+				element c from {c} TaNM(a, b, c) | assumption
+				TaNM(a, S(b), c + a) | natural_multiplication_mul_succ
+			}
+
+			| nat_induction
+		}
+
+		| telation_is_serial
+	}
+
+	lemma : IsFunctionalTelation(NaturalMultiplication, nat) {
+		lemma : [a @ nat][b @ nat][c][d](TaNM(a, b, c) AND TaNM(a, b, d) -> c = d) {
+			element a from goal a @ nat | assumption
+
+			lemma lema : [b @ nat]{r}(r = NaturalMultiplicationSuccessor(r) AND [c][d](T(r, a, b, c) AND T(r, a, b, d) -> c = d)) {
+				lemma : {r}(r = NaturalMultiplicationSuccessor(r) AND [c][d](T(r, a, 0, c) AND T(r, a, 0, d) -> c = d)) {
+					function r : Telationator[:(x, y, z): y = 0 -> z = 0](nat)
+
+					IsTelation(                               r , nat) | telationator_is_telation
+					IsTelation(NaturalMultiplicationSuccessor(r), nat) | telationator_is_telation
+
+					lemma : r = NaturalMultiplicationSuccessor(r) {
+						lemma : NaturalMultiplicationSuccessor(r) # r {
+							lemma : [x @ nat][y @ nat][z @ nat](TaNMS(r, x, y, z) -> T(r, x, y, z)) {
+								element x from goal x @ nat | assumption
+								element y from goal y @ nat | assumption
+								element z from goal z @ nat | assumption
+								TaNMS(r, x, y, z) | assumption
+
+								lemma : y = 0 AND z = 0 -> T(r, x, y, z) {
+									y = 0 AND z = 0 | assumption
+									T(r, x, y, z) | telationator_telated
+								}
+
+								lemma : {u}{v}{w}(T(r, u, v, w) AND x = u AND y = S(v) AND z = w + u) -> T(r, x, y, z) {
+									element u, v, w from {u}{v}{w}(T(r, u, v, w) AND x = u AND y = S(v) AND z = w + u) | assumption
+									y != 0 | succ_not_zero
+									T(r, x, y, z) | telationator_telated
+								}
+
+								T(r, x, y, z) OR (y = 0 AND z = 0) OR {u}{v}{w}(T(r, u, v, w) AND x = u AND y = S(v) AND z = w + u) | telationator_telated
+								T(r, x, y, z) | complex_cases : [T(r, x, y, z), y = 0 AND z = 0, {u}{v}{w}(T(r, u, v, w) AND x = u AND y = S(v) AND z = w + u)]
+							}
+
+							| telation_subset
+						}
+
+						| natural_multiplication_successor_subset
+					}
+
+					lemma : [c][d](T(r, a, 0, c) AND T(r, a, 0, d) -> c = d) {
+						element c, d from goal
+						T(r, a, 0, c) AND T(r, a, 0, d) | assumption
+						c = 0 | telationator_telated
+						  = d | telationator_telated
+					}
+				}
+
+				lemma : [b @ nat]({r}(r = NaturalMultiplicationSuccessor(r) AND [c][d](T(r, a, b, c) AND T(r, a, b, d) -> c = d)) -> {r}(r = NaturalMultiplicationSuccessor(r) AND [c][d](T(r, a, S(b), c) AND T(r, a, S(b), d) -> c = d))) {
+					element b from goal b @ nat | assumption
+					element e from {e} TaNM(a, b, e) | telation_is_serial
+					element r from {r}(r = NaturalMultiplicationSuccessor(r) AND [c][d](T(r, a, b, c) AND T(r, a, b, d) -> c = d)) | assumption
+					function s : Telationator[:(x, y, z): T(r, x, y, z) AND (x = a AND y = S(b) -> z = e + a)](nat)
+
+					IsTelation(                         s , nat) | telationator_is_telation
+					IsTelation(NaturalMultiplicationSuccessor(s), nat) | telationator_is_telation
+
+					lemma : s = NaturalMultiplicationSuccessor(s) {
+						lemma : NaturalMultiplicationSuccessor(s) # s {
+							lemma : [x @ nat][y @ nat][z @ nat](TaNMS(s, x, y, z) -> T(s, x, y, z)) {
+								element x from goal x @ nat | assumption
+								element y from goal y @ nat | assumption
+								element z from goal z @ nat | assumption
+								TaNMS(s, x, y, z) | assumption
+
+								lemma : y = 0 AND z = 0 -> T(s, x, y, z) {
+									y = 0 AND z = 0 | assumption
+
+									lemma : T(r, x, y, z) {
+										TaNMS(r, x, y, z) | telationator_telated
+										T(r, x, y, z) | substitution
+									}
+
+									y != S(b) | succ_not_zero
+
+									T(s, x, y, z) | telationator_telated
+								}
+
+								lemma : {u}{v}{w}(T(s, u, v, w) AND x = u AND y = S(v) AND z = w + u) -> T(s, x, y, z) {
+									element u, v, w from {u}{v}{w}(T(s, u, v, w) AND x = u AND y = S(v) AND z = w + u) | assumption
+									
+									T(r, u, v, w) | telationator_telated
+
+									lemma : T(r, x, y, z) {
+										TaNMS(r, x, y, z) | telationator_telated
+										T(r, x, y, z) | substitution
+									}
+
+									lemma : x = a AND y = S(b) -> z = e + a {
+										x = a AND y = S(b) | assumption
+										b = v | succ_inj
+
+										T(r, a, b, e) | telationator_telated
+										T(r, a, b, w) | substitution
+
+										w     = e     | truths
+										w + u = e + a | substitution
+									}
+
+									T(s, x, y, z) | telationator_telated
+								}
+
+								T(s, x, y, z) OR (y = 0 AND z = 0) OR {u}{v}{w}(T(s, u, v, w) AND x = u AND y = S(v) AND z = w + u) | telationator_telated
+								T(s, x, y, z) | complex_cases : [T(s, x, y, z), y = 0 AND z = 0, {u}{v}{w}(T(s, u, v, w) AND x = u AND y = S(v) AND z = w + u)]
+							}
+
+							| telation_subset
+						}
+
+						| natural_multiplication_successor_subset
+					}
+
+					lemma : [c][d](T(s, a, S(b), c) AND T(s, a, S(b), d) -> c = d) {
+						element c, d from goal
+						T(s, a, S(b), c) AND T(s, a, S(b), d) | assumption
+						c = e + a | telationator_telated
+						  = d | telationator_telated
+					}
+				}
+
+				| nat_induction
+				
+			}
+
+			element b from goal b @ nat | assumption
+			element r from {r}(r = NaturalMultiplicationSuccessor(r) AND [c][d](T(r, a, b, c) AND T(r, a, b, d) -> c = d)) | lema
+			element c, d from goal
+			TaNM(a, b, c) AND TaNM(a, b, d) | assumption
+			T(r, a, b, c) | telationator_telated
+			T(r, a, b, d) | telationator_telated
+			c = d | truths
+		}
+
+		| telation_is_functional
+	}
+}
+
+theorem mul_is_nat : [a @ nat][b @ nat] a * b @ nat {
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption
+
+	IsBinaryFunction(NaturalMultiplication, nat) | natural_multiplication_is_binary_function
+
+	a * b @ nat | binary_function_in_bound
+}
+
+theorem nat_mul_zero : [a @ nat] a * 0 = 0 {
+	element a from goal a @ nat | assumption
+
+	IsBinaryFunction(NaturalMultiplication, nat) | natural_multiplication_is_binary_function
+
+	TaNM(a, 0, 0) | natural_multiplication_mul_zero
+	a * 0 = 0 | binary_function_map
+}
+
+theorem nat_mul_succ : [a @ nat][b @ nat] a * S(b) = a * b + a {
+	element a from goal a @ nat | assumption
+	element b from goal b @ nat | assumption
+
+	IsBinaryFunction(NaturalMultiplication, nat) | natural_multiplication_is_binary_function
+
+	TaNM(a, b, a * b) | binary_function_map
+	TaNM(a, S(b), a * b + a) | natural_multiplication_mul_succ
+	a * S(b) =  a * b + a | binary_function_map
+}

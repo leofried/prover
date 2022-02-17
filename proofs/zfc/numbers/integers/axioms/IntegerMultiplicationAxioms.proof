@@ -1,0 +1,130 @@
+import zfc {
+	axioms
+	relations
+	numbers {
+		helpers
+		naturals
+		integers {
+			Integers
+		}
+	}
+}
+
+transparent predicate @ from ElementOfSymbol
+transparent predicate C from Celated
+transparent function .. from BinaryMapSymbol
+transparent function  + from +n+
+transparent function  * from *n*
+transparent function  r from IntegerEquivalenceRelation
+
+opaque function IntegerMultiplicationA(a, b, c, d): a * c + b * d
+opaque function IntegerMultiplicationB(a, b, c, d): a * d + b * c
+
+transparent function  A from IntegerMultiplicationA
+transparent function  B from IntegerMultiplicationB
+
+opaque function IntegerMultiplication: HelperBinary{A, B}(r)
+
+transparent function |3| *z* (a, b): a ..(IntegerMultiplication) b
+
+theorem integer_multiplication_is_helper_binary : IsHelperBinary{Int, A, B}(int, r, nat, nat) {
+	IsEquivalenceCelation(r, nat, nat) | integers_are_equivalence_relation
+
+	IsHelperPartition{Int}(int, r) | integers_are_helper_partition
+
+	lemma : IsHelperBinaryClosed{A, B}(nat, nat) {
+		lemma : [a @ nat][b @ nat][c @ nat][d @ nat](A(a, b, c, d) @ nat AND B(a, b, c, d) @ nat) {
+			element a from goal a @ nat | assumption
+			element b from goal b @ nat | assumption
+			element c from goal c @ nat | assumption
+			element d from goal d @ nat | assumption
+			
+			a * c @ nat | mul_is_nat
+			a * d @ nat | mul_is_nat
+			b * c @ nat | mul_is_nat
+			b * d @ nat | mul_is_nat
+
+			a * c + b * d @ nat | add_is_nat
+			a * d + b * c @ nat | add_is_nat
+		}
+
+		| is_helper_binary_closed
+	}
+
+	lemma : IsHelperBinaryWellDefined{A, B}(r, nat, nat) {
+		lemma : [a @ nat][b @ nat][c @ nat][d @ nat][e @ nat][f @ nat][g @ nat][h @ nat](C(r, a, b, c, d) AND C(r, e, f, g, h) -> C(r, A(a, b, e, f), B(a, b, e, f), A(c, d, g, h), B(c, d, g, h))) {
+			element a from goal a @ nat | assumption
+			element b from goal b @ nat | assumption
+			element c from goal c @ nat | assumption
+			element d from goal d @ nat | assumption
+			element e from goal e @ nat | assumption
+			element f from goal f @ nat | assumption
+			element g from goal g @ nat | assumption
+			element h from goal h @ nat | assumption
+
+			for [x, w] : [a, b, c, d] {
+				for [y, z] : [e, f, g, h] {
+					x * y @ nat | mul_is_nat
+					(x * y) + (w * z) @ nat | add_is_nat
+				}
+			}
+
+			((a * e) + (b * f)) + ((c * h) + (d * g)) @ nat | add_is_nat
+			((a * f) + (b * e)) + ((c * g) + (d * h)) @ nat | add_is_nat
+
+			C(r, a, b, c, d) AND C(r, e, f, g, h) | assumption
+
+			  (((a * e) +   (b * f)) +  ((c * h)   + (d * g))) + (d * e)  
+			=   (d * e) + (((a * e)  +   (b * f))  + ((c * h)   + (d * g))) | nat_add_comm
+			= ( (d * e) +  ((a * e)  +   (b * f))) + ((c * h)   + (d * g))  | nat_add_assoc
+			= (((d * e) +   (a * e)) +   (b * f) ) + ((c * h)   + (d * g))  | nat_add_assoc
+			= (((d      +   a) * e ) +   (b * f) ) + ((c * h)   + (d * g))  | nat_add_mul
+			= (((a      +   d) * e ) +   (b * f) ) + ((c * h)   + (d * g))  | nat_add_comm
+			= (((b      +   c) * e ) +   (b * f) ) + ((c * h)   + (d * g))  | integers_are_equivalent
+			= (((b * e) +   (c * e)) +   (b * f) ) + ((c * h)   + (d * g))  | nat_add_mul
+			= (((b * e) +   (b * f)) +   (c * e) ) + ((c * h)   + (d * g))  | nat_add_paren_comm_right
+			=  ((b * e) +   (b * f)) + ( (c * e)   + ((c * h)   + (d * g))) | nat_add_assoc
+			=  ((b * e) +   (b * f)) + (((c * e)   +  (c * h))  + (d * g) ) | nat_add_assoc
+			=  ((b * e) +   (b * f)) + (( c * (e   +       h))  + (d * g) ) | nat_mul_add
+			=  ((b * e) +   (b * f)) + (( c * (f   +       g))  + (d * g) ) | integers_are_equivalent
+			=  ((b * e) +   (b * f)) + (((c * f)   +  (c * g))  + (d * g) ) | nat_mul_add
+			=  ((b * e) +   (b * f)) + ( (c * f)   + ((c * g)   + (d * g))) | nat_add_assoc
+			= (((b * e) +   (b * f)) +   (c * f) ) + ((c * g)   + (d * g))  | nat_add_assoc
+			= ( (b * e) +  ((b * f)  +   (c * f))) + ((c * g)   + (d * g))  | nat_add_assoc
+			= ( (b * e) +  ((b       +   c) * f )) + ((c * g)   + (d * g))  | nat_add_mul
+			= ( (b * e) +  ((a       +   d) * f )) + ((c * g)   + (d * g))  | integers_are_equivalent
+			= ( (b * e) +  ((a * f)  +   (d * f))) + ((c * g)   + (d * g))  | nat_add_mul
+			= (((b * e) +   (a * f)) +   (d * f) ) + ((c * g)   + (d * g))  | nat_add_assoc
+			=  ((b * e) +   (a * f)) + ( (d * f)   + ((c * g)   + (d * g))) | nat_add_assoc
+			=  ((b * e) +   (a * f)) + ( (c * g)   + ((d * f)   + (d * g))) | nat_add_paren_comm_left
+			=  ((b * e) +   (a * f)) + ( (c * g)   + ( d * (f   +      g))) | nat_mul_add
+			=  ((b * e) +   (a * f)) + ( (c * g)   + ( d * (e   +      h))) | integers_are_equivalent
+			=  ((b * e) +   (a * f)) + ( (c * g)   + ( d * (h   +      e))) | nat_add_comm
+			=  ((b * e) +   (a * f)) + ( (c * g)   + ((d * h)   + (d * e))) | nat_mul_add
+			=  ((b * e) +   (a * f)) + (((c * g)   +  (d * h))  + (d * e) ) | nat_add_assoc
+			= (((b * e) +   (a * f)) +  ((c * g)   +  (d * h))) + (d * e)   | nat_add_assoc
+			= (((a * f) +   (b * e)) +  ((c * g)   +  (d * h))) + (d * e)   | nat_add_comm
+
+
+			((a * e) + (b * f)) + ((c * h) + (d * g)) = ((a * f) + (b * e)) + ((c * g) + (d * h)) | nat_add_cancel_right
+			| integers_are_equivalent
+		}
+
+		| is_helper_binary_well_defined
+	}
+}
+
+theorem integer_multiplication_is_function : IsBinaryFunction(IntegerMultiplication, int) {
+	IsHelperBinary{Int, A, B}(int, r, nat, nat) | integer_multiplication_is_helper_binary
+	| helper_binary
+}
+
+theorem int_mul : [a @ nat][b @ nat][c @ nat][d @ nat] Int(a, b) *z* Int(c, d) = Int(a * c + b * d, a * d + b * c) {
+	IsHelperBinary{Int, A, B}(int, r, nat, nat) | integer_multiplication_is_helper_binary
+	| helper_binary
+}
+
+theorem mul_is_int : [x @ int][y @ int] x *z* y @ int {
+	IsBinaryFunction(IntegerMultiplication, int) | integer_multiplication_is_function
+	| binary_function_in_bound
+}

@@ -1,13 +1,16 @@
-import zfc.axioms.Extensionality
-import zfc.axioms.Propositions
+import zfc.axioms {
+	Extensionality
+	Propositions
+}
 
-function Replacement{(1)}(1)
+transparent predicate @ from ElementOfSymbol
 
-axiom axiom_of_replacement {F(1)} : [a][y](y @ Replacement{F}(a) <-> {x}(x @ a AND y = F(x)))
+opaque function Replacement{F(1)}(a)
 
-theorem in_replacement {F(1)} : [a][x](x @ a -> F(x) @ Replacement{F}(a)) {
+axiom axiom_of_replacement {F(1)} : [a][y](y @ Replacement{F}(a) <-> {x @ a} y = F(x))
+
+theorem in_replacement {F(1)} : [a] [x @ a] F(x) @ Replacement{F}(a) {
 	element a, x from goal
 	x @ a | assumption
-	{y}(y @ a AND F(x) = F(y)) | example
 	F(x) @ Replacement{F}(a) | axiom_of_replacement
 }
